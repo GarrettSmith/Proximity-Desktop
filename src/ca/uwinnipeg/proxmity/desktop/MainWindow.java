@@ -161,6 +161,7 @@ public class MainWindow extends ApplicationWindow {
           doSnapshot();
         }
       };
+      actnSnapshot.setEnabled(false);
     }
     {
       actnExit = new Action("Exit@Shift+Ctrl+Q") {
@@ -272,12 +273,17 @@ public class MainWindow extends ApplicationWindow {
     // get a file path
     String path = dialog.open();
     
-    // load the image
-    ImageData data = new ImageData(path);
-    mImage = new Image(Display.getCurrent(), data);
-    
-    // request a redraw
-    canvas.redraw();
+    if (path != null) {    
+      // load the image
+      ImageData data = new ImageData(path);
+      mImage = new Image(Display.getCurrent(), data);
+
+      // request a redraw
+      canvas.redraw();
+
+      // enable disabled buttons
+      actnSnapshot.setEnabled(true);
+    }
   }
 
   /**
