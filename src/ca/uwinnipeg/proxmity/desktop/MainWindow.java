@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package ca.uwinnipeg.proxmity.desktop;
 
 import org.eclipse.jface.action.Action;
@@ -7,8 +10,12 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -24,15 +31,24 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.swt.custom.CBanner;
-import org.eclipse.swt.widgets.Label;
 
+/**
+ * The main window of the application.
+ * @author Garrett Smith
+ *
+ */
 public class MainWindow extends ApplicationWindow {
   private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
   private Action actnOpen;
   private Action actnSnapshot;
   private Action actnExit;
   private Action actnAbout;
+  
+  private Canvas canvas;
+  
+  private Image mImage;
+  
+  private MainController mController;
 
   /**
    * Create the application window.
@@ -59,7 +75,7 @@ public class MainWindow extends ApplicationWindow {
     Composite composite = new Composite(sashForm, SWT.NONE);
     composite.setLayout(new GridLayout(2, false));
     
-    Tree tree_feature = formToolkit.createTree(composite, SWT.BORDER | SWT.MULTI);
+    Tree tree_feature = formToolkit.createTree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     tree_feature.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
     
     Button btnAdd = new Button(composite, SWT.NONE);
@@ -108,9 +124,18 @@ public class MainWindow extends ApplicationWindow {
       btnDifference.setText("Difference");
     }
     {
-      Canvas canvas = new Canvas(composite_1, SWT.BORDER);
+      canvas = new Canvas(composite_1, SWT.BORDER);
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+      canvas.addPaintListener(new PaintListener() {
+        
+        public void paintControl(PaintEvent e) {
+          if (mImage != null) {
+            e.gc.drawImage(mImage, 0, 0);
+          }
+        }
+      });
     }
+    
     sashForm.setWeights(new int[] {160, 637});
 
     return container;
@@ -197,6 +222,8 @@ public class MainWindow extends ApplicationWindow {
   public static void main(String args[]) {
     try {
       MainWindow window = new MainWindow();
+      MainController controller = new MainController();
+      window.setController(controller);
       window.setBlockOnOpen(true);
       window.open();
       Display.getCurrent().dispose();
@@ -223,21 +250,51 @@ public class MainWindow extends ApplicationWindow {
     return new Point(450, 300);
   }
   
+  public void setController(MainController controller) {
+    mController = controller;
+  }
+  
   // Actions
 
+  /**
+   * Respond to the open item being selected.
+   */
   public void doOpen() {
+    // create the dialog to select an image file
     FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
     dialog.setText("Select an image file");
     dialog.setFilterExtensions(new String[]{"*.jpg;*.;*.gif"});
-    dialog.open();    
+    
+    // get a file path
+    String path = dialog.open();
+    
+    // load the image
+    ImageData data = new ImageData(path);
+    mImage = new Image(Display.getCurrent(), data);
+    
+    // request a redraw
+    canvas.redraw();
   }
 
+  /**
+   * Show the about dialog.
+   */
   public void doAbout() {
     AboutDialog dialog = new AboutDialog(getShell());
     dialog.open();
   }
 
-  public void doExit() {
-    
+  /**
+   * Exit the program.
+   */
+  public void doExit() {    
+    close();
+  }
+  
+  @Override
+  public boolean close() {
+    // tell the controller we are closing
+    mController.onClose();
+    return super.close();
   }
 }
