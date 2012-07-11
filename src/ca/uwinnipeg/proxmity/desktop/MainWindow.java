@@ -125,7 +125,6 @@ public class MainWindow extends ApplicationWindow {
     }
     {
       canvas = new Canvas(composite_1, SWT.BORDER);
-      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
       canvas.addPaintListener(new PaintListener() {
         
         public void paintControl(PaintEvent e) {
@@ -134,6 +133,7 @@ public class MainWindow extends ApplicationWindow {
           }
         }
       });
+      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     }
     
     sashForm.setWeights(new int[] {160, 637});
@@ -156,6 +156,10 @@ public class MainWindow extends ApplicationWindow {
     }
     {
       actnSnapshot = new Action("Snapshot") {
+        @Override
+        public void run() {
+          doSnapshot();
+        }
       };
     }
     {
@@ -263,7 +267,7 @@ public class MainWindow extends ApplicationWindow {
     // create the dialog to select an image file
     FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
     dialog.setText("Select an image file");
-    dialog.setFilterExtensions(new String[]{"*.jpg;*.;*.gif"});
+    dialog.setFilterExtensions(new String[]{"*.jpg;*.png;*.gif"});
     
     // get a file path
     String path = dialog.open();
@@ -281,6 +285,12 @@ public class MainWindow extends ApplicationWindow {
    */
   public void doAbout() {
     AboutDialog dialog = new AboutDialog(getShell());
+    dialog.open();
+  }
+  
+  public void doSnapshot() {
+    SnapshotDialog dialog = new SnapshotDialog(getShell());
+    dialog.setImage(mImage);
     dialog.open();
   }
 

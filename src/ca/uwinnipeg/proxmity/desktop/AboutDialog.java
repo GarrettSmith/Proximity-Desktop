@@ -9,14 +9,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 public class AboutDialog extends Dialog {
-  private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
+  //private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
 
   /**
    * Create the dialog.
@@ -64,7 +61,7 @@ public class AboutDialog extends Dialog {
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
     // TODO: setup buttons properly
-    Button btnClose = createButton(
+    createButton(
         parent, 
         IDialogConstants.CANCEL_ID, 
         IDialogConstants.CLOSE_LABEL, 
