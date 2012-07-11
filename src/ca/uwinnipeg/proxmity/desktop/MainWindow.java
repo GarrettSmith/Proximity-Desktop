@@ -18,11 +18,14 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.swt.custom.CBanner;
+import org.eclipse.swt.widgets.Label;
 
 public class MainWindow extends ApplicationWindow {
   private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
@@ -223,7 +226,10 @@ public class MainWindow extends ApplicationWindow {
   // Actions
 
   public void doOpen() {
-    System.out.println("Open selected");
+    FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+    dialog.setText("Select an image file");
+    dialog.setFilterExtensions(new String[]{"*.jpg;*.;*.gif"});
+    dialog.open();    
   }
 
   public void doAbout() {

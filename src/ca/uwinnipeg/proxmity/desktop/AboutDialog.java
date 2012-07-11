@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class AboutDialog extends Dialog {
   private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
@@ -65,7 +66,7 @@ public class AboutDialog extends Dialog {
     // TODO: setup buttons properly
     Button btnClose = createButton(
         parent, 
-        IDialogConstants.CLOSE_ID, 
+        IDialogConstants.CANCEL_ID, 
         IDialogConstants.CLOSE_LABEL, 
         true);
     
@@ -74,6 +75,7 @@ public class AboutDialog extends Dialog {
         IDialogConstants.CLOSE_ID, 
         IDialogConstants.CLOSE_LABEL, 
         false);
+    btnCredits.setEnabled(false);
     btnCredits.setText("Credits");
     
     Button btnLicence = createButton(
@@ -81,6 +83,7 @@ public class AboutDialog extends Dialog {
         IDialogConstants.CLOSE_ID, 
         IDialogConstants.CLOSE_LABEL, 
         false);
+    btnLicence.setEnabled(false);
     btnLicence.setText("Licence");
   }
 
@@ -90,6 +93,14 @@ public class AboutDialog extends Dialog {
   @Override
   protected Point getInitialSize() {
     return new Point(450, 300);
+  }
+  
+  @Override
+  protected void buttonPressed(int buttonId) {
+    switch (buttonId) {
+      default:
+        super.buttonPressed(buttonId);
+    }
   }
 
 }
