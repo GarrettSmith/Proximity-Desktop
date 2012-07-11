@@ -6,7 +6,11 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -22,9 +26,10 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 
 public class MainWindow extends ApplicationWindow {
   private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
-  private Action toolbar_open;
-  private Action menu_file;
-  private Action toolbar_snapshot;
+  private Action actnOpen;
+  private Action actnSnapshot;
+  private Action actnExit;
+  private Action actnAbout;
 
   /**
    * Create the application window.
@@ -44,45 +49,66 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected Control createContents(Composite parent) {
     Composite container = new Composite(parent, SWT.NONE);
-    container.setLayout(new GridLayout(2, false));
+    container.setLayout(new FillLayout(SWT.HORIZONTAL));
     
-    Tree tree_feature = formToolkit.createTree(container, SWT.BORDER);
-    tree_feature.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 2));
-    formToolkit.paintBordersFor(tree_feature);
+    SashForm sashForm = new SashForm(container, SWT.NONE);
+    
+    Composite composite = new Composite(sashForm, SWT.NONE);
+    composite.setLayout(new GridLayout(2, false));
+    
+    Tree tree_feature = formToolkit.createTree(composite, SWT.BORDER | SWT.MULTI);
+    tree_feature.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+    
+    Button btnAdd = new Button(composite, SWT.NONE);
+    btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+    btnAdd.setText("Add Feature");
+    
+    Button btnRemove = new Button(composite, SWT.NONE);
+    btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+    btnRemove.setText("Remove");
+    
+    Composite composite_1 = new Composite(sashForm, SWT.NONE);
+    composite_1.setLayout(new GridLayout(1, false));
     {
-      ToolBar tabBar = new ToolBar(container, SWT.FLAT | SWT.RIGHT);
+      ToolBar propertyBar = new ToolBar(composite_1, SWT.FLAT | SWT.RIGHT);
+      propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
       {
-        ToolItem tab_regions = new ToolItem(tabBar, SWT.NONE);
-        tab_regions.setWidth(-1);
-        tab_regions.setText("Regions");
+        // TODO: Switch between properties
+        ToolItem btnRegions = new ToolItem(propertyBar, SWT.RADIO);
+        btnRegions.addSelectionListener(new SelectionAdapter() {
+          @Override
+          public void widgetSelected(SelectionEvent e) {
+            System.out.println("Regions Selected");
+          }
+        });
+        btnRegions.setSelection(true);
+        btnRegions.setWidth(-1);
+        btnRegions.setText("Regions");
       }
       {
-        ToolItem tab_neighbourhoods = new ToolItem(tabBar, SWT.NONE);
-        tab_neighbourhoods.setWidth(-1);
-        tab_neighbourhoods.setText("Neighbourhoods");
+        ToolItem btnNeighbourhoods = new ToolItem(propertyBar, SWT.RADIO);
+        btnNeighbourhoods.setWidth(-1);
+        btnNeighbourhoods.setText("Neighbourhoods");
       }
       {
-        ToolItem tab_intersection = new ToolItem(tabBar, SWT.NONE);
-        tab_intersection.setWidth(-1);
-        tab_intersection.setText("Intersection");
+        ToolItem btnIntersection = new ToolItem(propertyBar, SWT.RADIO);
+        btnIntersection.setWidth(-1);
+        btnIntersection.setText("Intersection");
       }
       
-      ToolItem tab_compliment = new ToolItem(tabBar, SWT.NONE);
-      tab_compliment.setWidth(-1);
-      tab_compliment.setText("Compliment");
+      ToolItem btnCompliment = new ToolItem(propertyBar, SWT.RADIO);
+      btnCompliment.setWidth(-1);
+      btnCompliment.setText("Compliment");
       
-      ToolItem tab_difference = new ToolItem(tabBar, SWT.NONE);
-      tab_difference.setWidth(-1);
-      tab_difference.setText("Difference");
+      ToolItem btnDifference = new ToolItem(propertyBar, SWT.RADIO);
+      btnDifference.setWidth(-1);
+      btnDifference.setText("Difference");
     }
     {
-      Canvas canvas = new Canvas(container, SWT.BORDER);
-      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 2));
+      Canvas canvas = new Canvas(composite_1, SWT.BORDER);
+      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     }
-    
-    Button button_add_feature = new Button(container, SWT.NONE);
-    button_add_feature.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-    button_add_feature.setText("Add Feature");
+    sashForm.setWeights(new int[] {160, 637});
 
     return container;
   }
@@ -93,19 +119,35 @@ public class MainWindow extends ApplicationWindow {
   private void createActions() {
     // Create the actions
     {
-      toolbar_open = new Action("Open") {
+      actnOpen = new Action("&Open@Ctrl+O") {
+        @Override
+        public void run() {
+          doOpen();
+        }
       };
     }
     {
-      menu_file = new Action("File") {
+      actnSnapshot = new Action("Snapshot") {
       };
     }
     {
-      toolbar_snapshot = new Action("Snapshot") {
+      actnExit = new Action("Exit@Shift+Ctrl+Q") {
+        @Override
+        public void run() {
+          doExit();
+        }
+      };
+    }
+    {
+      actnAbout = new Action("About") {
+        @Override
+        public void run() {
+          doAbout();
+        }
       };
     }
   }
-
+  
   /**
    * Create the menu manager.
    * @return the menu manager
@@ -113,7 +155,14 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected MenuManager createMenuManager() {
     MenuManager menuManager = new MenuManager("menu");
-    menuManager.add(menu_file);
+    MenuManager menuFile = new MenuManager("&File", null);
+    menuManager.add(menuFile);
+    menuFile.add(actnOpen);
+    menuFile.add(actnExit);
+    
+    MenuManager menuHelp = new MenuManager("&Help");
+    menuManager.add(menuHelp);
+    menuHelp.add(actnAbout);
     return menuManager;
   }
 
@@ -124,8 +173,7 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected ToolBarManager createToolBarManager(int style) {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
-    toolBarManager.add(toolbar_open);
-    toolBarManager.add(toolbar_snapshot);
+    toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
 
@@ -170,5 +218,20 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected Point getInitialSize() {
     return new Point(450, 300);
+  }
+  
+  // Actions
+
+  public void doOpen() {
+    System.out.println("Open selected");
+  }
+
+  public void doAbout() {
+    AboutDialog dialog = new AboutDialog(getShell());
+    dialog.open();
+  }
+
+  public void doExit() {
+    
   }
 }
