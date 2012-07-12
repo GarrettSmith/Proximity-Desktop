@@ -29,8 +29,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.jface.action.Separator;
 
 /**
  * The main window of the application.
@@ -43,6 +43,8 @@ public class MainWindow extends ApplicationWindow {
   private Action actnExit;
   private Action actnAbout;
   
+  private Action actnAddFeatures;
+  
   private Action actnRegions;
   private Action actnNeighbourhoods;
   private Action actnIntersection;
@@ -54,8 +56,6 @@ public class MainWindow extends ApplicationWindow {
   private Image mImage;
   
   private MainController mController;
-  
-  private ToolBarManager propertyBarManager;
   
   // frames
   private Composite frameStack;
@@ -79,6 +79,7 @@ public class MainWindow extends ApplicationWindow {
    * Create contents of the application window.
    * @param parent
    */
+  // TODO: break down createContents
   @Override
   protected Control createContents(Composite parent) {
     Composite container = new Composite(parent, SWT.NONE);
@@ -87,18 +88,16 @@ public class MainWindow extends ApplicationWindow {
     SashForm sashForm = new SashForm(container, SWT.NONE);
     
     Composite composite = new Composite(sashForm, SWT.NONE);
-    composite.setLayout(new GridLayout(2, false));
+    composite.setLayout(new GridLayout(1, false));
     
     Tree tree = new Tree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
     
-    Button btnAdd = new Button(composite, SWT.NONE);
+    ActionContributionItem add = new ActionContributionItem(actnAddFeatures);
+    add.fill(composite);
+    Button btnAdd = (Button) add.getWidget();
     btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-    btnAdd.setText("Add Feature");
-    
-    Button btnRemove = new Button(composite, SWT.NONE);
-    btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-    btnRemove.setText("Remove");
+    btnAdd.setText("Add Features");
     
     frameStack = new Composite(sashForm, SWT.NONE);
     stackLayout = new StackLayout();
@@ -109,7 +108,7 @@ public class MainWindow extends ApplicationWindow {
     {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-      propertyBarManager = new ToolBarManager(propertyBar);
+      ToolBarManager propertyBarManager = new ToolBarManager(propertyBar);
       propertyBarManager.add(actnRegions);
       propertyBarManager.add(actnNeighbourhoods);
       propertyBarManager.add(actnIntersection);
@@ -195,14 +194,26 @@ public class MainWindow extends ApplicationWindow {
       };
     }  
     
+    // features
+    {
+      actnAddFeatures = new Action("Add Features") {
+        @Override
+        public void run() {
+          doAddFeatures();
+        }
+      };
+    }
+    
     // properties
     // TODO: Switch between properties
     {
       actnRegions = new Action("Regions", Action.AS_RADIO_BUTTON) {
         @Override
         public void run() {
-
-        }
+          if (isChecked()) {
+            System.out.println("Regions checked!");
+          }
+        }        
       };
     }
     {
@@ -249,6 +260,7 @@ public class MainWindow extends ApplicationWindow {
     MenuManager menuFile = new MenuManager("&File", null);
     menuManager.add(menuFile);
     menuFile.add(actnOpen);
+    menuFile.add(new Separator());
     menuFile.add(actnExit);
     
     MenuManager menuHelp = new MenuManager("&Help");
@@ -384,6 +396,14 @@ public class MainWindow extends ApplicationWindow {
    */
   public void doExit() {    
     close();
+  }
+  
+  /**
+   * Opens dialog to load new features to be used.
+   */
+  public void doAddFeatures() {
+    AddFeaturesDialog dialog = new AddFeaturesDialog(getShell());
+    dialog.open();
   }
   
   @Override
