@@ -13,6 +13,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
@@ -21,6 +22,10 @@ public class AddFeaturesDialog extends Dialog {
   private Composite container;
   
   private CheckboxTreeViewer treeViewer;
+  
+  private Button btnFolder;
+
+  private String mPath;
 
   /**
    * Create the dialog.
@@ -45,7 +50,17 @@ public class AddFeaturesDialog extends Dialog {
     Label lblFolder = new Label(container, SWT.NONE);
     lblFolder.setText("Source folder: ");
 
-    Button btnFolder = new Button(container, SWT.NONE);
+    btnFolder = new Button(container, SWT.NONE);
+    btnFolder.addSelectionListener(new SelectionListener() {
+      
+      public void widgetSelected(SelectionEvent e) {
+        doBrowse();
+      }
+      
+      public void widgetDefaultSelected(SelectionEvent e) {
+        widgetSelected(e);
+      }
+    });
     btnFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     btnFolder.setText("Browse");
     
@@ -57,7 +72,7 @@ public class AddFeaturesDialog extends Dialog {
 
     return container;
   }
-
+  
   /**
    * Add the selection and deselection buttons to the dialog.
    * @param composite org.eclipse.swt.widgets.Composite
@@ -111,6 +126,16 @@ public class AddFeaturesDialog extends Dialog {
   @Override
   protected Point getInitialSize() {
     return new Point(450, 500);
+  }
+
+  public void doBrowse() {
+    DirectoryDialog dialog = new DirectoryDialog(getShell());
+    String path = dialog.open();
+    
+    if (path != null) {
+      btnFolder.setText(path.substring(path.lastIndexOf('/')+1));
+      mPath = path;
+    }
   }
 
 }

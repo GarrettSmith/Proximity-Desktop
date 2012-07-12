@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.jface.action.Separator;
+import java.util.ResourceBundle;
 
 /**
  * The main window of the application.
@@ -38,6 +39,7 @@ import org.eclipse.jface.action.Separator;
  *
  */
 public class MainWindow extends ApplicationWindow {
+  private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proxmity.desktop.messages"); //$NON-NLS-1$
   private Action actnOpen;
   private Action actnSnapshot;
   private Action actnExit;
@@ -138,11 +140,11 @@ public class MainWindow extends ApplicationWindow {
     Label lblOpenButton = new Label(buttonFrame, SWT.NONE);
     lblOpenButton.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
     lblOpenButton.setBounds(0, 0, 569, 582);
-    lblOpenButton.setText("You must first select an image to use.");
+    lblOpenButton.setText(BUNDLE.getString("MainWindow.lblOpenButton.text")); //$NON-NLS-1$
     
     ActionContributionItem open = new ActionContributionItem(actnOpen);
     open.fill(buttonFrame);
-    Button btnNewButton = (Button) open.getWidget();//new Button(buttonFrame, SWT.NONE);
+    Button btnNewButton = (Button) open.getWidget();
     btnNewButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
     btnNewButton.setBounds(0, 0, 81, 27);
     btnNewButton.setText("Select Image");
@@ -161,7 +163,7 @@ public class MainWindow extends ApplicationWindow {
   private void createActions() {
     // Create the actions
     {
-      actnOpen = new Action("&Open@Ctrl+O") {
+      actnOpen = new Action(BUNDLE.getString("MainWindow.actnOpen.text")) { //$NON-NLS-1$
         @Override
         public void run() {
           doOpen();
@@ -169,7 +171,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnSnapshot = new Action("Snapshot") {
+      actnSnapshot = new Action(BUNDLE.getString("MainWindow.actnSnapshot.text")) { //$NON-NLS-1$
         @Override
         public void run() {
           doSnapshot();
@@ -178,7 +180,7 @@ public class MainWindow extends ApplicationWindow {
       actnSnapshot.setEnabled(false);
     }
     {
-      actnExit = new Action("Exit@Shift+Ctrl+Q") {
+      actnExit = new Action(BUNDLE.getString("MainWindow.actnExit.text")) { //$NON-NLS-1$
         @Override
         public void run() {
           doExit();
@@ -186,7 +188,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnAbout = new Action("About") {
+      actnAbout = new Action(BUNDLE.getString("MainWindow.actnAbout.text")) { //$NON-NLS-1$
         @Override
         public void run() {
           doAbout();
@@ -207,7 +209,7 @@ public class MainWindow extends ApplicationWindow {
     // properties
     // TODO: Switch between properties
     {
-      actnRegions = new Action("Regions", Action.AS_RADIO_BUTTON) {
+      actnRegions = new Action(BUNDLE.getString("MainWindow.actnRegions.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
         @Override
         public void run() {
           if (isChecked()) {
@@ -217,7 +219,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnNeighbourhoods = new Action("Neighbourhoods", Action.AS_RADIO_BUTTON) {
+      actnNeighbourhoods = new Action(BUNDLE.getString("MainWindow.actnNeighbourhoods.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
         @Override
         public void run() {
 
@@ -225,7 +227,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnIntersection = new Action("Intersection", Action.AS_RADIO_BUTTON) {
+      actnIntersection = new Action(BUNDLE.getString("MainWindow.actnIntersection.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
         @Override
         public void run() {
 
@@ -233,7 +235,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnCompliment = new Action("Compliment", Action.AS_RADIO_BUTTON) {
+      actnCompliment = new Action(BUNDLE.getString("MainWindow.actnCompliment.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
         @Override
         public void run() {
 
@@ -241,7 +243,7 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnDifference = new Action("Difference", Action.AS_RADIO_BUTTON) {
+      actnDifference = new Action(BUNDLE.getString("MainWindow.actnDifference.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
         @Override
         public void run() {
 
@@ -314,7 +316,7 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
-    newShell.setText("Proximity Desktop");
+    newShell.setText(BUNDLE.getString("MainWindow.newShell.text")); //$NON-NLS-1$
   }
 
   /**
