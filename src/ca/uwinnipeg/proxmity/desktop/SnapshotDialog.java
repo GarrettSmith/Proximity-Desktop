@@ -9,8 +9,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -140,10 +141,20 @@ public class SnapshotDialog extends Dialog {
   
   @Override
   protected void okPressed() {
-    // TODO: save image
+    if (doSave()) {
+      super.okPressed();
+    }
+  }
+  
+  public boolean doSave() {
+    // TODO Auto-generated method stub
     String fileName = mPath + '/' + text.getText();
     System.out.println(fileName);
-    super.okPressed();
+    ImageLoader imgLoader = new ImageLoader();
+    imgLoader.data = new ImageData[] {mImage.getImageData()};
+    imgLoader.save(fileName, SWT.IMAGE_PNG);
+    // TODO: find if we saved the image
+    return true;
   }
 
   /**
