@@ -4,12 +4,14 @@
 package ca.uwinnipeg.proxmity.desktop;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,7 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.swt.widgets.Label;
 
 /**
  * The main window of the application.
@@ -38,7 +40,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
  *
  */
 public class MainWindow extends ApplicationWindow {
-  private final FormToolkit formToolkit = new FormToolkit(Display.getDefault());
   private Action actnOpen;
   private Action actnSnapshot;
   private Action actnExit;
@@ -49,6 +50,13 @@ public class MainWindow extends ApplicationWindow {
   private Image mImage;
   
   private MainController mController;
+  
+  // frames
+  private Composite frameStack;
+  private StackLayout stackLayout;
+  
+  private Composite buttonFrame;
+  private Composite canvasFrame;
 
   /**
    * Create the application window.
@@ -75,8 +83,8 @@ public class MainWindow extends ApplicationWindow {
     Composite composite = new Composite(sashForm, SWT.NONE);
     composite.setLayout(new GridLayout(2, false));
     
-    Tree tree_feature = formToolkit.createTree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
-    tree_feature.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+    Tree tree = new Tree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
+    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
     
     Button btnAdd = new Button(composite, SWT.NONE);
     btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -86,10 +94,14 @@ public class MainWindow extends ApplicationWindow {
     btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
     btnRemove.setText("Remove");
     
-    Composite composite_1 = new Composite(sashForm, SWT.NONE);
-    composite_1.setLayout(new GridLayout(1, false));
+    frameStack = new Composite(sashForm, SWT.NONE);
+    stackLayout = new StackLayout();
+    frameStack.setLayout(stackLayout);
+    
+    canvasFrame = new Composite(frameStack, SWT.NONE);
+    canvasFrame.setLayout(new GridLayout(1, false));
     {
-      ToolBar propertyBar = new ToolBar(composite_1, SWT.FLAT | SWT.RIGHT);
+      ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT | SWT.RIGHT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
       {
         // TODO: Switch between properties
@@ -101,30 +113,25 @@ public class MainWindow extends ApplicationWindow {
           }
         });
         btnRegions.setSelection(true);
-        btnRegions.setWidth(-1);
         btnRegions.setText("Regions");
       }
       {
         ToolItem btnNeighbourhoods = new ToolItem(propertyBar, SWT.RADIO);
-        btnNeighbourhoods.setWidth(-1);
         btnNeighbourhoods.setText("Neighbourhoods");
       }
       {
         ToolItem btnIntersection = new ToolItem(propertyBar, SWT.RADIO);
-        btnIntersection.setWidth(-1);
         btnIntersection.setText("Intersection");
       }
       
       ToolItem btnCompliment = new ToolItem(propertyBar, SWT.RADIO);
-      btnCompliment.setWidth(-1);
       btnCompliment.setText("Compliment");
       
       ToolItem btnDifference = new ToolItem(propertyBar, SWT.RADIO);
-      btnDifference.setWidth(-1);
       btnDifference.setText("Difference");
     }
     {
-      canvas = new Canvas(composite_1, SWT.BORDER);
+      canvas = new Canvas(canvasFrame, SWT.BORDER);
       canvas.addPaintListener(new PaintListener() {
         
         public void paintControl(PaintEvent e) {
@@ -136,9 +143,32 @@ public class MainWindow extends ApplicationWindow {
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     }
     
-    sashForm.setWeights(new int[] {160, 637});
+    buttonFrame = new Composite(frameStack, SWT.NONE);
+    buttonFrame.setLayout(new GridLayout(1, false));
+    
+    Label lblOpenButton = new Label(buttonFrame, SWT.NONE);
+    lblOpenButton.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
+    lblOpenButton.setBounds(0, 0, 569, 582);
+    lblOpenButton.setText("You must first select an image to use.");
+    
+    ActionContributionItem open = new ActionContributionItem(actnOpen);
+    open.fill(buttonFrame);
+    Button btnNewButton = (Button) open.getWidget();//new Button(buttonFrame, SWT.NONE);
+    btnNewButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+    btnNewButton.setBounds(0, 0, 81, 27);
+    btnNewButton.setText("Select Image");
+    
+    stackLayout.topControl = buttonFrame;
+    frameStack.layout();
+    
+    sashForm.setWeights(new int[] {160, 398});
 
     return container;
+  }
+  
+  public void swapFrame(Composite frame) {
+    stackLayout.topControl = frame;
+    frameStack.layout();
   }
 
   /**
@@ -273,6 +303,13 @@ public class MainWindow extends ApplicationWindow {
     // get a file path
     String path = dialog.open();
     
+    // swap frames if this is the first image selected
+    if (stackLayout.topControl == buttonFrame) {
+      stackLayout.topControl = canvasFrame;
+      frameStack.layout();
+    }
+    
+    // draw the image
     if (path != null) {    
       // load the image
       ImageData data = new ImageData(path);
@@ -294,6 +331,9 @@ public class MainWindow extends ApplicationWindow {
     dialog.open();
   }
   
+  /**
+   * Save a snapshot of the current view.
+   */
   public void doSnapshot() {
     SnapshotDialog dialog = new SnapshotDialog(getShell());
     dialog.setImage(mImage);
