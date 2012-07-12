@@ -409,8 +409,7 @@ public class MainWindow extends ApplicationWindow {
    * Save a snapshot of the current view.
    */
   public void doSnapshot() {
-    SnapshotDialog dialog = new SnapshotDialog(getShell());
-    dialog.setImage(mImage);
+    SnapshotDialog dialog = new SnapshotDialog(getShell(), mImage);
     dialog.open();
   }
 

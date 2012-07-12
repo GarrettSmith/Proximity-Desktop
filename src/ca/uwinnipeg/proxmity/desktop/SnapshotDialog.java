@@ -7,8 +7,11 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -16,16 +19,23 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+//TODO: get rid of magic numbers
 public class SnapshotDialog extends Dialog {
+  
+  public final int HEIGHT = 300;
+  
   private Text text;
   private Canvas canvas;
   private Button btnFolder;
   
   private Image mImage;
+  
+  private float mScale;
   
   private String mPath;
 
@@ -33,8 +43,10 @@ public class SnapshotDialog extends Dialog {
    * Create the dialog.
    * @param parentShell
    */
-  public SnapshotDialog(Shell parentShell) {
+  public SnapshotDialog(Shell parentShell, Image image) {
     super(parentShell);
+    mImage = image;
+    mScale = Math.min(1, ((float)HEIGHT / mImage.getBounds().height));
   }
 
   /**
@@ -50,12 +62,14 @@ public class SnapshotDialog extends Dialog {
     canvas.addPaintListener(new PaintListener() {
       
       public void paintControl(PaintEvent e) {
-        if (mImage != null) {
-          e.gc.drawImage(mImage, 0, 0);
-        }
+        draw(e.gc);
       }
     });
-    canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+    
+    
+    GridData gd_canvas = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+    gd_canvas.widthHint = 0;
+    canvas.setLayoutData(gd_canvas);
     
     Label lblName = new Label(container, SWT.NONE);
     lblName.setText("Name: ");
@@ -87,8 +101,18 @@ public class SnapshotDialog extends Dialog {
     
     Composite composite = new Composite(container, SWT.NONE);
     composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
+    
+    
 
     return container;
+  }
+  
+  protected void draw(GC gc) {
+    Transform transform = new Transform(Display.getCurrent());
+    transform.scale(mScale, mScale);
+        
+    gc.setTransform(transform);
+    gc.drawImage(mImage, 0, 0);
   }
   
   /**
@@ -108,7 +132,10 @@ public class SnapshotDialog extends Dialog {
    */
   @Override
   protected Point getInitialSize() {
-    return new Point(600, 300);
+    // find scale
+    mScale = Math.min(1, ((float)220 / mImage.getBounds().height));
+    
+    return new Point((int) (285 + (mImage.getBounds().width * mScale)), HEIGHT);
   }
   
   @Override
@@ -117,15 +144,6 @@ public class SnapshotDialog extends Dialog {
     String fileName = mPath + '/' + text.getText();
     System.out.println(fileName);
     super.okPressed();
-  }
-  
-  /**
-   * Set the image to be saved.
-   * @param image
-   */
-  public void setImage(Image image) {
-    mImage = image;
-    if (canvas != null) canvas.redraw();
   }
 
   /**
