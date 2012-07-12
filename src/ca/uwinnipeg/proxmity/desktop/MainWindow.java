@@ -17,6 +17,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
@@ -68,6 +69,7 @@ public class MainWindow extends ApplicationWindow {
   
   private Composite buttonFrame;
   private Composite canvasFrame;
+  private Action actnAddRegion;
 
   /**
    * Create the application window.
@@ -129,6 +131,18 @@ public class MainWindow extends ApplicationWindow {
       canvas.addPaintListener(new PaintListener() {
         
         public void paintControl(PaintEvent e) {
+          Display display = Display.getCurrent();
+          
+          //draw background
+          Rectangle bg = canvas.getBounds();
+          e.gc.setAlpha(255);
+          e.gc.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
+          e.gc.fillRectangle(0, 0, bg.width, bg.height);
+          e.gc.setForeground(display.getSystemColor(SWT.COLOR_BLACK));
+          e.gc.setBackground(new Color(display, 60, 60, 60));
+          e.gc.fillGradientRectangle(0, bg.height/2, bg.width, bg.height/2, true);
+          
+          //draw image
           if (mImage != null) {
             Rectangle canvasBounds = canvas.getBounds();
             Rectangle imageBounds = mImage.getBounds();
@@ -270,6 +284,10 @@ public class MainWindow extends ApplicationWindow {
         }
       };
     }
+    {
+      actnAddRegion = new Action(BUNDLE.getString("MainWindow.action.text")) { //$NON-NLS-1$
+      };
+    }
   }
 
   /**
@@ -284,6 +302,7 @@ public class MainWindow extends ApplicationWindow {
     menuFile.add(actnOpen);
     menuFile.add(new Separator());
     menuFile.add(actnExit);
+    menuManager.add(new MenuManager(BUNDLE.getString("MainWindow.other.text"))); //$NON-NLS-1$
     
     MenuManager menuHelp = new MenuManager("&Help");
     menuManager.add(menuHelp);
@@ -298,6 +317,7 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected ToolBarManager createToolBarManager(int style) {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
+    toolBarManager.add(actnAddRegion);
     toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
