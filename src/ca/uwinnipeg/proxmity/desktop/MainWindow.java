@@ -14,8 +14,6 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
@@ -28,11 +26,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.Label;
 
 /**
  * The main window of the application.
@@ -45,11 +43,19 @@ public class MainWindow extends ApplicationWindow {
   private Action actnExit;
   private Action actnAbout;
   
+  private Action actnRegions;
+  private Action actnNeighbourhoods;
+  private Action actnIntersection;
+  private Action actnCompliment;
+  private Action actnDifference;
+  
   private Canvas canvas;
   
   private Image mImage;
   
   private MainController mController;
+  
+  private ToolBarManager propertyBarManager;
   
   // frames
   private Composite frameStack;
@@ -101,34 +107,18 @@ public class MainWindow extends ApplicationWindow {
     canvasFrame = new Composite(frameStack, SWT.NONE);
     canvasFrame.setLayout(new GridLayout(1, false));
     {
-      ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT | SWT.RIGHT);
+      ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-      {
-        // TODO: Switch between properties
-        ToolItem btnRegions = new ToolItem(propertyBar, SWT.RADIO);
-        btnRegions.addSelectionListener(new SelectionAdapter() {
-          @Override
-          public void widgetSelected(SelectionEvent e) {
-            System.out.println("Regions Selected");
-          }
-        });
-        btnRegions.setSelection(true);
-        btnRegions.setText("Regions");
-      }
-      {
-        ToolItem btnNeighbourhoods = new ToolItem(propertyBar, SWT.RADIO);
-        btnNeighbourhoods.setText("Neighbourhoods");
-      }
-      {
-        ToolItem btnIntersection = new ToolItem(propertyBar, SWT.RADIO);
-        btnIntersection.setText("Intersection");
-      }
+      propertyBarManager = new ToolBarManager(propertyBar);
+      propertyBarManager.add(actnRegions);
+      propertyBarManager.add(actnNeighbourhoods);
+      propertyBarManager.add(actnIntersection);
+      propertyBarManager.add(actnCompliment);
+      propertyBarManager.add(actnDifference);
+      propertyBarManager.update(false);
       
-      ToolItem btnCompliment = new ToolItem(propertyBar, SWT.RADIO);
-      btnCompliment.setText("Compliment");
-      
-      ToolItem btnDifference = new ToolItem(propertyBar, SWT.RADIO);
-      btnDifference.setText("Difference");
+      // select the first action
+      actnRegions.setChecked(true);
     }
     {
       canvas = new Canvas(canvasFrame, SWT.BORDER);
@@ -166,11 +156,6 @@ public class MainWindow extends ApplicationWindow {
     return container;
   }
   
-  public void swapFrame(Composite frame) {
-    stackLayout.topControl = frame;
-    frameStack.layout();
-  }
-
   /**
    * Create the actions.
    */
@@ -208,9 +193,52 @@ public class MainWindow extends ApplicationWindow {
           doAbout();
         }
       };
+    }  
+    
+    // properties
+    // TODO: Switch between properties
+    {
+      actnRegions = new Action("Regions", Action.AS_RADIO_BUTTON) {
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnNeighbourhoods = new Action("Neighbourhoods", Action.AS_RADIO_BUTTON) {
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnIntersection = new Action("Intersection", Action.AS_RADIO_BUTTON) {
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnCompliment = new Action("Compliment", Action.AS_RADIO_BUTTON) {
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnDifference = new Action("Difference", Action.AS_RADIO_BUTTON) {
+        @Override
+        public void run() {
+
+        }
+      };
     }
   }
-  
+
   /**
    * Create the menu manager.
    * @return the menu manager
@@ -285,11 +313,22 @@ public class MainWindow extends ApplicationWindow {
     return new Point(450, 300);
   }
   
+  /**
+   * Sets the controller to send and receive data from.
+   * @param controller
+   */
   public void setController(MainController controller) {
     mController = controller;
   }
-  
-  // Actions
+
+  /**
+   * Swaps the currently displayed frame to the given composite.
+   * @param frame
+   */
+  public void swapFrame(Composite frame) {
+    stackLayout.topControl = frame;
+    frameStack.layout();
+  }
 
   /**
    * Respond to the open item being selected.
