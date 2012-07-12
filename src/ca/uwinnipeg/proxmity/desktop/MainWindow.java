@@ -69,7 +69,11 @@ public class MainWindow extends ApplicationWindow {
   
   private Composite buttonFrame;
   private Composite canvasFrame;
-  private Action actnAddRegion;
+  private Action actnPointer;
+  private Action actnRectangle;
+  private Action actnOval;
+  private Action actnPolygon;
+  private Action actnZoom;
 
   /**
    * Create the application window.
@@ -285,7 +289,23 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnAddRegion = new Action(BUNDLE.getString("MainWindow.action.text")) { //$NON-NLS-1$
+      actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+    }
+    {
+      actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+    }
+    {
+      actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+    }
+    {
+      actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+    }
+    {
+      actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
     }
   }
@@ -302,6 +322,9 @@ public class MainWindow extends ApplicationWindow {
     menuFile.add(actnOpen);
     menuFile.add(new Separator());
     menuFile.add(actnExit);
+    
+    MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.menuManager_1.text")); //$NON-NLS-1$
+    menuManager.add(menuEdit);
     menuManager.add(new MenuManager(BUNDLE.getString("MainWindow.other.text"))); //$NON-NLS-1$
     
     MenuManager menuHelp = new MenuManager("&Help");
@@ -317,7 +340,11 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected ToolBarManager createToolBarManager(int style) {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
-    toolBarManager.add(actnAddRegion);
+    toolBarManager.add(actnPointer);
+    toolBarManager.add(actnRectangle);
+    toolBarManager.add(actnOval);
+    toolBarManager.add(actnPolygon);
+    toolBarManager.add(actnZoom);
     toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
