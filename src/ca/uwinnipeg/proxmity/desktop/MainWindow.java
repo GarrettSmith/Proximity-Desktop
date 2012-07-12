@@ -3,9 +3,12 @@
  */
 package ca.uwinnipeg.proxmity.desktop;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.window.ApplicationWindow;
@@ -17,6 +20,8 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -30,8 +35,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.jface.action.Separator;
-import java.util.ResourceBundle;
 
 /**
  * The main window of the application.
@@ -122,11 +125,28 @@ public class MainWindow extends ApplicationWindow {
       actnRegions.setChecked(true);
     }
     {
-      canvas = new Canvas(canvasFrame, SWT.BORDER);
+      canvas = new Canvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED);
       canvas.addPaintListener(new PaintListener() {
         
         public void paintControl(PaintEvent e) {
           if (mImage != null) {
+            Rectangle canvasBounds = canvas.getBounds();
+            Rectangle imageBounds = mImage.getBounds();
+            
+            // find the scale to make the image fill the screen
+            float scaleX = (float) canvasBounds.width / imageBounds.width;
+            float scaleY = (float) canvasBounds.height / imageBounds.height;
+            float scale = Math.min(scaleX, scaleY);
+            scale = Math.min(scale, 1);
+            
+            // find the transform to center
+            float translateX = (float) (canvasBounds.width - imageBounds.width * scale) / 2; 
+            float translateY = (float) (canvasBounds.height - imageBounds.height * scale) / 2; 
+            
+            Transform transform = new Transform(Display.getCurrent());
+            transform.translate(translateX, translateY);
+            transform.scale(scale, scale);
+            e.gc.setTransform(transform);
             e.gc.drawImage(mImage, 0, 0);
           }
         }
@@ -356,14 +376,15 @@ public class MainWindow extends ApplicationWindow {
     // get a file path
     String path = dialog.open();
     
-    // swap frames if this is the first image selected
-    if (stackLayout.topControl == buttonFrame) {
-      stackLayout.topControl = canvasFrame;
-      frameStack.layout();
-    }
-    
     // draw the image
-    if (path != null) {    
+    if (path != null) { 
+      
+      // swap frames if this is the first image selected
+      if (stackLayout.topControl == buttonFrame) {
+        stackLayout.topControl = canvasFrame;
+        frameStack.layout();
+      }
+      
       // load the image
       ImageData data = new ImageData(path);
       mImage = new Image(Display.getCurrent(), data);
