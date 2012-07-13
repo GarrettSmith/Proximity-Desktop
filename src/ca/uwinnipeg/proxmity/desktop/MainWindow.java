@@ -15,19 +15,13 @@ import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -57,7 +51,7 @@ public class MainWindow extends ApplicationWindow {
   private Action actnCompliment;
   private Action actnDifference;
   
-  private Canvas canvas;
+  private ImageCanvas canvas;
   
   private Image mImage;
   
@@ -74,6 +68,22 @@ public class MainWindow extends ApplicationWindow {
   private Action actnOval;
   private Action actnPolygon;
   private Action actnZoom;
+  private Action actnUndo;
+  private Action actnRedo;
+  private Action actnCut;
+  private Action actnCopy;
+  private Action actnPaste;
+  private Action actnDuplicate;
+  private Action actnDelete;
+  private Action actnSelectAll;
+  private Action actnManual;
+  private Action actnZoomIn;
+  private Action actnZoomOut;
+  private Action actnZoom1to1;
+  private Action actnZoomSelection;
+  private Action actnZoomImage;
+  private Action actnFeatures;
+  private Action actionEmpty;
 
   /**
    * Create the application window.
@@ -131,44 +141,7 @@ public class MainWindow extends ApplicationWindow {
       actnRegions.setChecked(true);
     }
     {
-      canvas = new Canvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED);
-      canvas.addPaintListener(new PaintListener() {
-        
-        public void paintControl(PaintEvent e) {
-          Display display = Display.getCurrent();
-          
-          //draw background
-          Rectangle bg = canvas.getBounds();
-          e.gc.setAlpha(255);
-          e.gc.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
-          e.gc.fillRectangle(0, 0, bg.width, bg.height);
-          e.gc.setForeground(display.getSystemColor(SWT.COLOR_BLACK));
-          e.gc.setBackground(new Color(display, 60, 60, 60));
-          e.gc.fillGradientRectangle(0, bg.height/2, bg.width, bg.height/2, true);
-          
-          //draw image
-          if (mImage != null) {
-            Rectangle canvasBounds = canvas.getBounds();
-            Rectangle imageBounds = mImage.getBounds();
-            
-            // find the scale to make the image fill the screen
-            float scaleX = (float) canvasBounds.width / imageBounds.width;
-            float scaleY = (float) canvasBounds.height / imageBounds.height;
-            float scale = Math.min(scaleX, scaleY);
-            scale = Math.min(scale, 1);
-            
-            // find the transform to center
-            float translateX = (float) (canvasBounds.width - imageBounds.width * scale) / 2; 
-            float translateY = (float) (canvasBounds.height - imageBounds.height * scale) / 2; 
-            
-            Transform transform = new Transform(Display.getCurrent());
-            transform.translate(translateX, translateY);
-            transform.scale(scale, scale);
-            e.gc.setTransform(transform);
-            e.gc.drawImage(mImage, 0, 0);
-          }
-        }
-      });
+      canvas = new ImageCanvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED, mImage);
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     }
     
@@ -291,22 +264,105 @@ public class MainWindow extends ApplicationWindow {
     {
       actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnPointer.setEnabled(false);
     }
     {
       actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnRectangle.setEnabled(false);
     }
     {
       actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnOval.setEnabled(false);
     }
     {
       actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnPolygon.setEnabled(false);
     }
     {
       actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnZoom.setEnabled(false);
+    }
+    {
+      actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
+      };
+      actnUndo.setEnabled(false);
+    }
+    {
+      actnRedo = new Action(BUNDLE.getString("MainWindow.actnRedo.text")) { //$NON-NLS-1$
+      };
+      actnRedo.setEnabled(false);
+    }
+    {
+      actnCut = new Action(BUNDLE.getString("MainWindow.actnCut.text")) { //$NON-NLS-1$
+      };
+      actnCut.setEnabled(false);
+    }
+    {
+      actnCopy = new Action(BUNDLE.getString("MainWindow.actnCopy.text")) { //$NON-NLS-1$
+      };
+      actnCopy.setEnabled(false);
+    }
+    {
+      actnPaste = new Action(BUNDLE.getString("MainWindow.actnPaste.text")) { //$NON-NLS-1$
+      };
+      actnPaste.setEnabled(false);
+    }
+    {
+      actnDuplicate = new Action(BUNDLE.getString("MainWindow.actnDuplicate.text")) { //$NON-NLS-1$
+      };
+      actnDuplicate.setEnabled(false);
+    }
+    {
+      actnDelete = new Action(BUNDLE.getString("MainWindow.actnDelete.text")) { //$NON-NLS-1$
+      };
+      actnDelete.setEnabled(false);
+    }
+    {
+      actnSelectAll = new Action(BUNDLE.getString("MainWindow.actnSelectAll.text")) { //$NON-NLS-1$
+      };
+      actnSelectAll.setEnabled(false);
+    }
+    {
+      actnManual = new Action(BUNDLE.getString("MainWindow.actnManual.text")) { //$NON-NLS-1$
+      };
+    }
+    {
+      actnZoomIn = new Action(BUNDLE.getString("MainWindow.actnZoomIn.text")) { //$NON-NLS-1$
+      };
+      actnZoomIn.setEnabled(false);
+    }
+    {
+      actnZoomOut = new Action(BUNDLE.getString("MainWindow.actnZoomOut.text")) { //$NON-NLS-1$
+      };
+      actnZoomOut.setEnabled(false);
+    }
+    {
+      actnZoom1to1 = new Action(BUNDLE.getString("MainWindow.actnZoom1to1.text")) { //$NON-NLS-1$
+      };
+      actnZoom1to1.setEnabled(false);
+    }
+    {
+      actnZoomSelection = new Action(BUNDLE.getString("MainWindow.actnZoomSelection.text")) { //$NON-NLS-1$
+      };
+      actnZoomSelection.setEnabled(false);
+    }
+    {
+      actnZoomImage = new Action(BUNDLE.getString("MainWindow.actnZoomImage.text")) { //$NON-NLS-1$
+      };
+      actnZoomImage.setEnabled(false);
+    }
+    {
+      actnFeatures = new Action(BUNDLE.getString("MainWindow.actnFeatures.text"), Action.AS_CHECK_BOX) { //$NON-NLS-1$
+      };
+    }
+    {
+      actionEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
+      };
+      actionEmpty.setEnabled(false);
     }
   }
 
@@ -319,16 +375,48 @@ public class MainWindow extends ApplicationWindow {
     MenuManager menuManager = new MenuManager("menu");
     MenuManager menuFile = new MenuManager("&File", null);
     menuManager.add(menuFile);
-    menuFile.add(actnOpen);
+    menuFile.add(actnOpen);    
+    MenuManager menuRecent = new MenuManager(BUNDLE.getString("MainWindow.menuRecent.text"));
+    menuFile.add(menuRecent);
+    menuRecent.add(actionEmpty);
+    menuFile.add(new Separator());
+    menuFile.add(actnSnapshot);
     menuFile.add(new Separator());
     menuFile.add(actnExit);
     
     MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.menuManager_1.text")); //$NON-NLS-1$
     menuManager.add(menuEdit);
-    menuManager.add(new MenuManager(BUNDLE.getString("MainWindow.other.text"))); //$NON-NLS-1$
+    menuEdit.add(actnUndo);
+    menuEdit.add(actnRedo);
+    menuEdit.add(new Separator());
+    menuEdit.add(actnCut);
+    menuEdit.add(actnCopy);
+    menuEdit.add(actnPaste);
+    menuEdit.add(new Separator());
+    menuEdit.add(actnDuplicate);
+    menuEdit.add(new Separator());
+    menuEdit.add(actnDelete);
+    menuEdit.add(new Separator());
+    menuEdit.add(actnSelectAll);
+    
+    MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.menuView.text")); //$NON-NLS-1$
+    menuManager.add(menuView);
+    
+    MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.menuZoom.text")); //$NON-NLS-1$
+    menuView.add(menuZoom);
+    menuZoom.add(actnZoomIn);
+    menuZoom.add(actnZoomOut);
+    menuZoom.add(new Separator());
+    menuZoom.add(actnZoom1to1);
+    menuZoom.add(actnZoomSelection);
+    menuZoom.add(actnZoomImage);
+    menuView.add(new Separator());
+    menuView.add(actnFeatures);
     
     MenuManager menuHelp = new MenuManager("&Help");
     menuManager.add(menuHelp);
+    menuHelp.add(actnManual);
+    menuHelp.add(new Separator());
     menuHelp.add(actnAbout);
     return menuManager;
   }
@@ -436,8 +524,8 @@ public class MainWindow extends ApplicationWindow {
       ImageData data = new ImageData(path);
       mImage = new Image(Display.getCurrent(), data);
 
-      // request a redraw
-      canvas.redraw();
+      // update canvas
+      canvas.setImage(mImage);
 
       // enable disabled buttons
       actnSnapshot.setEnabled(true);
