@@ -27,6 +27,10 @@ public class ImageCanvas extends Canvas {
   
   private Transform mTransform;
   
+  private boolean mFitToImage = false;
+  
+  private Rectangle mOldBounds;
+  
   /**
    * Create a canvas with the given image.
    * @param parent
@@ -36,11 +40,13 @@ public class ImageCanvas extends Canvas {
   public ImageCanvas(Composite parent, int style, Image image) {
     super(parent, style);
     
-    setImage(image);
-    
     mDisplay = Display.getCurrent();
     
     mTransform = new Transform(mDisplay);
+    
+    mOldBounds = getBounds();
+    
+    setImage(image);
 
     // register to handle painting
     addPaintListener(new PaintListener() {
@@ -66,7 +72,7 @@ public class ImageCanvas extends Canvas {
   public void setImage(Image image) {
     mImage = image;
     // reset transform
-    fitImage();
+    fitToImage();
     redraw();
   }
 
@@ -74,30 +80,52 @@ public class ImageCanvas extends Canvas {
    * Paints the image with the current transform over a background.
    * @param gc
    */
-  protected void onPaint(GC gc) {
+  protected void onPaint(GC gc) {   
+    Rectangle currentBounds = getBounds();    
     
     //draw background
-    Rectangle bg = getBounds();
     // fill with black
     gc.setBackground(mDisplay.getSystemColor(SWT.COLOR_BLACK));
-    gc.fillRectangle(0, 0, bg.width, bg.height);
+    gc.fillRectangle(0, 0, currentBounds.width, currentBounds.height);
     // draw gradient on bottom
     gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_BLACK));
     gc.setBackground(new Color(mDisplay, 60, 60, 60));
-    gc.fillGradientRectangle(0, bg.height/2, bg.width, bg.height/2, true);
+    gc.fillGradientRectangle(
+        0, 
+        currentBounds.height/2, 
+        currentBounds.width, 
+        currentBounds.height/2, 
+        true);
 
     if (mImage != null) {
+      updateBounds(currentBounds, mOldBounds);
       gc.setTransform(mTransform);
       gc.drawImage(mImage, 0, 0);
     }
+    
+    mOldBounds = currentBounds;
+  }
+  
+  /**
+   * Update the transform to keep the centre of the current transform in the centre of the canvas.
+   * @param current
+   * @param old
+   */
+  private void updateBounds(Rectangle current, Rectangle old) {
+    float dx = (float)(current.width - old.width)/2;
+    float dy = (float)(current.height - old.height)/2;
+    mTransform.translate(dx, dy);
   }
   
   /**
    * Sets the transform to contain and center the image in the canvas.
    */
-  public void fitImage() {
+  public void fitToImage() {
     // reset transform
     mTransform.identity();  
+    
+    // set that we want to stay fit to the image
+    mFitToImage = true;
     
     if (mImage != null) {
       Rectangle canvasBounds = getBounds();
