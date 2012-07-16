@@ -30,8 +30,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -78,6 +80,7 @@ public class MainWindow extends ApplicationWindow {
   private Action actnZoomImage;
   private Action actnFeatures;
   private Action actnEmpty;  
+  private Action actnCenter;
 
   IKeyLookup mKeyLookup;
   
@@ -96,7 +99,8 @@ public class MainWindow extends ApplicationWindow {
   
   private Composite buttonFrame;
   private Composite canvasFrame;
-  private Action actnCenter;
+  
+  private SashForm sashForm;
 
   /**
    * Create the application window.
@@ -120,7 +124,7 @@ public class MainWindow extends ApplicationWindow {
     Composite container = new Composite(parent, SWT.NONE);
     container.setLayout(new FillLayout(SWT.HORIZONTAL));
     
-    SashForm sashForm = new SashForm(container, SWT.NONE);
+    sashForm = new SashForm(container, SWT.NONE);
     sashForm.setSashWidth(5);
     
     Composite composite = new Composite(sashForm, SWT.NONE);
@@ -224,7 +228,7 @@ public class MainWindow extends ApplicationWindow {
     stackLayout.topControl = buttonFrame;
     frameStack.layout();
     
-    sashForm.setWeights(new int[] {160, 398});
+    sashForm.setWeights(new int[] {1, 3});
 
     return container;
   }
@@ -423,7 +427,24 @@ public class MainWindow extends ApplicationWindow {
     }
     {
       actnFeatures = new Action(BUNDLE.getString("MainWindow.actnFeatures.text"), Action.AS_CHECK_BOX) { //$NON-NLS-1$
+        
+        //TODO: toggle features pane
+        @Override
+        public void run() {
+          
+        }     
+        @Override
+        public void runWithEvent(Event event) {
+          MenuItem item = (MenuItem) event.widget;
+          if (item.getSelection()) {
+            sashForm.setWeights(new int[]{1, 3});
+          }
+          else {
+            sashForm.setWeights(new int[]{0, 1});
+          }
+        }
       };
+      actnFeatures.setChecked(true);
     }
     {
       actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
@@ -670,6 +691,14 @@ public class MainWindow extends ApplicationWindow {
    */
   public void doExit() {    
     close();
+  }
+  
+  /**
+   * Toggle displaying the features pane.
+   * @param show
+   */
+  public void doToggleFeatures(boolean show) {
+    
   }
   
   /**
