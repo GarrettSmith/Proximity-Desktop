@@ -121,9 +121,13 @@ public class MainWindow extends ApplicationWindow {
     container.setLayout(new FillLayout(SWT.HORIZONTAL));
     
     SashForm sashForm = new SashForm(container, SWT.NONE);
+    sashForm.setSashWidth(5);
     
     Composite composite = new Composite(sashForm, SWT.NONE);
-    composite.setLayout(new GridLayout(1, false));
+    GridLayout gl_composite = new GridLayout(1, false);
+    gl_composite.marginLeft = 5;
+    gl_composite.marginWidth = 0;
+    composite.setLayout(gl_composite);
     
     Tree tree = new Tree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
@@ -139,7 +143,10 @@ public class MainWindow extends ApplicationWindow {
     frameStack.setLayout(stackLayout);
     
     canvasFrame = new Composite(frameStack, SWT.NONE);
-    canvasFrame.setLayout(new GridLayout(1, false));
+    GridLayout gl_canvasFrame = new GridLayout(1, false);
+    gl_canvasFrame.marginRight = 5;
+    gl_canvasFrame.marginWidth = 0;
+    canvasFrame.setLayout(gl_canvasFrame);
     {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
