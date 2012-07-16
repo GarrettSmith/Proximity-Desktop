@@ -96,6 +96,7 @@ public class MainWindow extends ApplicationWindow {
   
   private Composite buttonFrame;
   private Composite canvasFrame;
+  private Action actnCenter;
 
   /**
    * Create the application window.
@@ -324,67 +325,54 @@ public class MainWindow extends ApplicationWindow {
     {
       actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
-      actnPointer.setEnabled(false);
     }
     {
       actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
-      actnRectangle.setEnabled(false);
     }
     {
       actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
-      actnOval.setEnabled(false);
     }
     {
       actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
-      actnPolygon.setEnabled(false);
     }
     {
       actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
-      actnZoom.setEnabled(false);
     }
     {
       actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
       };
-      actnUndo.setEnabled(false);
     }
     {
       actnRedo = new Action(BUNDLE.getString("MainWindow.actnRedo.text")) { //$NON-NLS-1$
       };
-      actnRedo.setEnabled(false);
     }
     {
       actnCut = new Action(BUNDLE.getString("MainWindow.actnCut.text")) { //$NON-NLS-1$
       };
-      actnCut.setEnabled(false);
     }
     {
       actnCopy = new Action(BUNDLE.getString("MainWindow.actnCopy.text")) { //$NON-NLS-1$
       };
-      actnCopy.setEnabled(false);
     }
     {
       actnPaste = new Action(BUNDLE.getString("MainWindow.actnPaste.text")) { //$NON-NLS-1$
       };
-      actnPaste.setEnabled(false);
     }
     {
       actnDuplicate = new Action(BUNDLE.getString("MainWindow.actnDuplicate.text")) { //$NON-NLS-1$
       };
-      actnDuplicate.setEnabled(false);
     }
     {
       actnDelete = new Action(BUNDLE.getString("MainWindow.actnDelete.text")) { //$NON-NLS-1$
       };
-      actnDelete.setEnabled(false);
     }
     {
       actnSelectAll = new Action(BUNDLE.getString("MainWindow.actnSelectAll.text")) { //$NON-NLS-1$
       };
-      actnSelectAll.setEnabled(false);
     }
     {
       actnManual = new Action(BUNDLE.getString("MainWindow.actnManual.text")) { //$NON-NLS-1$
@@ -399,7 +387,6 @@ public class MainWindow extends ApplicationWindow {
       };
       actnZoomIn.setAccelerator(0 | '=');
       actnZoomIn.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_ADD_NAME));
-      actnZoomIn.setEnabled(false);
     }
     {
       actnZoomOut = new Action(BUNDLE.getString("MainWindow.actnZoomOut.text")) { //$NON-NLS-1$
@@ -410,7 +397,6 @@ public class MainWindow extends ApplicationWindow {
       };
       actnZoomOut.setAccelerator(0 | '-');
       actnZoomOut.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_SUBTRACT_NAME));
-      actnZoomOut.setEnabled(false);
     }
     {
       actnZoom1to1 = new Action(BUNDLE.getString("MainWindow.actnZoom1to1.text")) { //$NON-NLS-1$
@@ -420,13 +406,11 @@ public class MainWindow extends ApplicationWindow {
         }
       };
       actnZoom1to1.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_1_NAME));
-      actnZoom1to1.setEnabled(false);
     }
     {
       actnZoomSelection = new Action(BUNDLE.getString("MainWindow.actnZoomSelection.text")) { //$NON-NLS-1$
       };
       actnZoomSelection.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_2_NAME));
-      actnZoomSelection.setEnabled(false);
     }
     {
       actnZoomImage = new Action(BUNDLE.getString("MainWindow.actnZoomImage.text")) { //$NON-NLS-1$
@@ -436,7 +420,6 @@ public class MainWindow extends ApplicationWindow {
         }
       };
       actnZoomImage.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_3_NAME));
-      actnZoomImage.setEnabled(false);
     }
     {
       actnFeatures = new Action(BUNDLE.getString("MainWindow.actnFeatures.text"), Action.AS_CHECK_BOX) { //$NON-NLS-1$
@@ -445,7 +428,14 @@ public class MainWindow extends ApplicationWindow {
     {
       actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
       };
-      actnEmpty.setEnabled(false);
+    }
+    {
+      actnCenter = new Action(BUNDLE.getString("MainWindow.actnCenter.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          canvas.center();
+        }
+      };
     }
     
     // record all actions that need an image
@@ -460,8 +450,13 @@ public class MainWindow extends ApplicationWindow {
         actnRectangle,
         actnOval,
         actnPolygon,
-        actnZoom
+        actnZoom,
+        actnCenter
     };
+    
+    for (Action a : mImageDependantActions) {
+      a.setEnabled(false);
+    }
     
     // record all actions that need a selection
     mSelectionDependantActions = new Action[] {
@@ -471,6 +466,10 @@ public class MainWindow extends ApplicationWindow {
         actnDelete,
         actnZoomSelection
     };
+    
+    for (Action a : mSelectionDependantActions) {
+      a.setEnabled(false);
+    }
   }
 
   /**
@@ -508,6 +507,8 @@ public class MainWindow extends ApplicationWindow {
     
     MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.menuView.text")); //$NON-NLS-1$
     menuManager.add(menuView);
+    menuView.add(actnCenter);
+    menuView.add(new Separator());
     
     MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.menuZoom.text")); //$NON-NLS-1$
     menuView.add(menuZoom);

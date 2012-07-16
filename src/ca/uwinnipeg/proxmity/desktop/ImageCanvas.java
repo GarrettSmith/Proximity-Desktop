@@ -257,5 +257,16 @@ public class ImageCanvas extends Canvas {
     panBy(dx, dy);
     mFitToImage = false;
   }
+  
+  public void center() {
+    Rectangle canvasBounds = getBounds();
+    Rectangle imageBounds = mImage.getBounds();
+    
+    // find the transform to center
+    mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
+    mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
+    
+    redraw();
+  }
 
 }
