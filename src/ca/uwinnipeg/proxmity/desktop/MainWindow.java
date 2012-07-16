@@ -17,6 +17,8 @@ import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
@@ -27,8 +29,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
@@ -153,6 +157,21 @@ public class MainWindow extends ApplicationWindow {
     {
       canvas = new ImageCanvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED, mImage);
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+      canvas.addMouseWheelListener(new MouseWheelListener() {
+
+        public void mouseScrolled(MouseEvent e) {
+          // check if ctrl is being held
+          if ((e.stateMask & SWT.CTRL) != 0 ) {
+            // check whether to zoom in or out
+            if (e.count < 0) {
+              canvas.zoomIn();
+            }
+            else {
+              canvas.zoomOut();
+            }
+          }
+        }
+      });
     }
     
     buttonFrame = new Composite(frameStack, SWT.NONE);
