@@ -427,21 +427,10 @@ public class MainWindow extends ApplicationWindow {
     }
     {
       actnFeatures = new Action(BUNDLE.getString("MainWindow.actnFeatures.text"), Action.AS_CHECK_BOX) { //$NON-NLS-1$
-        
-        //TODO: toggle features pane
-        @Override
-        public void run() {
-          
-        }     
         @Override
         public void runWithEvent(Event event) {
           MenuItem item = (MenuItem) event.widget;
-          if (item.getSelection()) {
-            sashForm.setWeights(new int[]{1, 3});
-          }
-          else {
-            sashForm.setWeights(new int[]{0, 1});
-          }
+          doToggleFeatures(item.getSelection());
         }
       };
       actnFeatures.setChecked(true);
@@ -449,6 +438,7 @@ public class MainWindow extends ApplicationWindow {
     {
       actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
       };
+      actnEmpty.setEnabled(false);
     }
     {
       actnCenter = new Action(BUNDLE.getString("MainWindow.actnCenter.text")) { //$NON-NLS-1$
@@ -658,6 +648,9 @@ public class MainWindow extends ApplicationWindow {
 
       // enable disabled buttons
       enableImageActions();
+      
+      // tell the controller about the new image
+      mController.onImageSelected(data);
     }
   }
 
@@ -698,7 +691,12 @@ public class MainWindow extends ApplicationWindow {
    * @param show
    */
   public void doToggleFeatures(boolean show) {
-    
+    if (show) {
+      sashForm.setWeights(new int[]{1, 3});
+    }
+    else {
+      sashForm.setWeights(new int[]{0, 1});
+    }
   }
   
   /**
