@@ -252,5 +252,10 @@ public class ImageCanvas extends Canvas {
     mTranslateY += dy;
     redraw();
   }
+  
+  public void pan(float dx, float dy) {
+    panBy(dx, dy);
+    mFitToImage = false;
+  }
 
 }
