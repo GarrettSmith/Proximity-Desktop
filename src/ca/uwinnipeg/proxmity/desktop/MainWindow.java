@@ -11,6 +11,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.bindings.keys.IKeyLookup;
+import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -38,6 +40,7 @@ import org.eclipse.swt.widgets.Tree;
  */
 public class MainWindow extends ApplicationWindow {
   private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proxmity.desktop.messages"); //$NON-NLS-1$
+  
   private Action actnOpen;
   private Action actnSnapshot;
   private Action actnExit;
@@ -51,18 +54,6 @@ public class MainWindow extends ApplicationWindow {
   private Action actnCompliment;
   private Action actnDifference;
   
-  private ImageCanvas canvas;
-  
-  private Image mImage;
-  
-  private MainController mController;
-  
-  // frames
-  private Composite frameStack;
-  private StackLayout stackLayout;
-  
-  private Composite buttonFrame;
-  private Composite canvasFrame;
   private Action actnPointer;
   private Action actnRectangle;
   private Action actnOval;
@@ -83,13 +74,32 @@ public class MainWindow extends ApplicationWindow {
   private Action actnZoomSelection;
   private Action actnZoomImage;
   private Action actnFeatures;
-  private Action actionEmpty;
+  private Action actnEmpty;  
+
+  IKeyLookup mKeyLookup;
+  
+  private Action[] mImageDependantActions;
+  private Action[] mSelectionDependantActions;
+  
+  private ImageCanvas canvas;
+  
+  private Image mImage;
+  
+  private MainController mController;
+  
+  // frames
+  private Composite frameStack;
+  private StackLayout stackLayout;
+  
+  private Composite buttonFrame;
+  private Composite canvasFrame;
 
   /**
    * Create the application window.
    */
   public MainWindow() {
     super(null);
+    mKeyLookup = KeyLookupFactory.getDefault();
     createActions();
     addToolBar(SWT.FLAT | SWT.WRAP);
     addMenuBar();
@@ -332,27 +342,50 @@ public class MainWindow extends ApplicationWindow {
     }
     {
       actnZoomIn = new Action(BUNDLE.getString("MainWindow.actnZoomIn.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          canvas.zoomIn();
+        }
       };
+      actnZoomIn.setAccelerator(0 | '=');
+      actnZoomIn.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_ADD_NAME));
       actnZoomIn.setEnabled(false);
     }
     {
       actnZoomOut = new Action(BUNDLE.getString("MainWindow.actnZoomOut.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          canvas.zoomOut();
+        }
       };
+      actnZoomOut.setAccelerator(0 | '-');
+      actnZoomOut.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_SUBTRACT_NAME));
       actnZoomOut.setEnabled(false);
     }
     {
       actnZoom1to1 = new Action(BUNDLE.getString("MainWindow.actnZoom1to1.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          canvas.zoomTo1();
+        }
       };
+      actnZoom1to1.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_1_NAME));
       actnZoom1to1.setEnabled(false);
     }
     {
       actnZoomSelection = new Action(BUNDLE.getString("MainWindow.actnZoomSelection.text")) { //$NON-NLS-1$
       };
+      actnZoomSelection.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_2_NAME));
       actnZoomSelection.setEnabled(false);
     }
     {
       actnZoomImage = new Action(BUNDLE.getString("MainWindow.actnZoomImage.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          canvas.fitToImage();
+        }
       };
+      actnZoomImage.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_3_NAME));
       actnZoomImage.setEnabled(false);
     }
     {
@@ -360,10 +393,34 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actionEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
+      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
       };
-      actionEmpty.setEnabled(false);
+      actnEmpty.setEnabled(false);
     }
+    
+    // record all actions that need an image
+    mImageDependantActions = new Action[] {
+        actnSnapshot,
+        actnSelectAll,
+        actnZoomIn,
+        actnZoomOut,
+        actnZoom1to1,
+        actnZoomImage,
+        actnPointer,
+        actnRectangle,
+        actnOval,
+        actnPolygon,
+        actnZoom
+    };
+    
+    // record all actions that need a selection
+    mSelectionDependantActions = new Action[] {
+        actnCut,
+        actnCopy,
+        actnDuplicate,
+        actnDelete,
+        actnZoomSelection
+    };
   }
 
   /**
@@ -378,7 +435,7 @@ public class MainWindow extends ApplicationWindow {
     menuFile.add(actnOpen);    
     MenuManager menuRecent = new MenuManager(BUNDLE.getString("MainWindow.menuRecent.text"));
     menuFile.add(menuRecent);
-    menuRecent.add(actionEmpty);
+    menuRecent.add(actnEmpty);
     menuFile.add(new Separator());
     menuFile.add(actnSnapshot);
     menuFile.add(new Separator());
@@ -528,7 +585,16 @@ public class MainWindow extends ApplicationWindow {
       canvas.setImage(mImage);
 
       // enable disabled buttons
-      actnSnapshot.setEnabled(true);
+      enableImageActions();
+    }
+  }
+
+  /**
+   * Enable all actions that only make ssense when we have an image.
+   */
+  private void enableImageActions() {
+    for (Action a : mImageDependantActions) {
+      a.setEnabled(true);
     }
   }
 
