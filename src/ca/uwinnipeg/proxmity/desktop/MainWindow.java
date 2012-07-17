@@ -289,7 +289,58 @@ public class MainWindow extends ApplicationWindow {
    * Create the actions.
    */
   private void createActions() {
-    // Create the actions
+    createFileActions();
+    createEditActions();
+    createViewActions();
+    createHelpActions();
+    createPropertyActions();
+    createToolActions();
+    
+    // features
+    {
+      actnAddFeatures = new Action("Add Features") {
+        @Override
+        public void run() {
+          doAddFeatures();
+        }
+      };
+    }
+    
+    // record all actions that need an image
+    mImageDependantActions = new Action[] {
+        actnSnapshot,
+        actnSelectAll,
+        actnZoomIn,
+        actnZoomOut,
+        actnZoom1to1,
+        actnZoomImage,
+        actnPointer,
+        actnRectangle,
+        actnOval,
+        actnPolygon,
+        actnZoom,
+        actnCenter
+    };
+    
+    for (Action a : mImageDependantActions) {
+      a.setEnabled(false);
+    }
+    
+    // record all actions that need a selection
+    mSelectionDependantActions = new Action[] {
+        actnCut,
+        actnCopy,
+        actnDuplicate,
+        actnDelete,
+        actnZoomSelection
+    };
+    
+    for (Action a : mSelectionDependantActions) {
+      a.setEnabled(false);
+    }
+  }
+
+  private void createFileActions() {
     {
       actnOpen = new Action(BUNDLE.getString("MainWindow.actnOpen.text")) { //$NON-NLS-1$
         @Override
@@ -317,93 +368,13 @@ public class MainWindow extends ApplicationWindow {
       };
     }
     {
-      actnAbout = new Action(BUNDLE.getString("MainWindow.actnAbout.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          doAbout();
-        }
+      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
       };
-    }  
-    
-    // features
-    {
-      actnAddFeatures = new Action("Add Features") {
-        @Override
-        public void run() {
-          doAddFeatures();
-        }
-      };
+      actnEmpty.setEnabled(false);
     }
-    
-    // properties
-    // TODO: Switch between properties
-    {
-      actnRegions = new Action(BUNDLE.getString("MainWindow.actnRegions.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          if (isChecked()) {
-            System.out.println("Regions checked!");
-          }
-        }        
-      };
-    }
-    {
-      actnNeighbourhoods = new Action(BUNDLE.getString("MainWindow.actnNeighbourhoods.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnIntersection = new Action(BUNDLE.getString("MainWindow.actnIntersection.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnCompliment = new Action(BUNDLE.getString("MainWindow.actnCompliment.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnDifference = new Action(BUNDLE.getString("MainWindow.actnDifference.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnPointer.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/pointer.png"));
-    }
-    {
-      actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnRectangle.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/rect.png"));
-    }
-    {
-      actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnOval.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/oval.png"));
-    }
-    {
-      actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnPolygon.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/poly.png"));
-    }
-    {
-      actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnZoom.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/zoom.png"));
-    }
+  }
+  
+  private void createEditActions() {
     {
       actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
       };
@@ -436,10 +407,9 @@ public class MainWindow extends ApplicationWindow {
       actnSelectAll = new Action(BUNDLE.getString("MainWindow.actnSelectAll.text")) { //$NON-NLS-1$
       };
     }
-    {
-      actnManual = new Action(BUNDLE.getString("MainWindow.actnManual.text")) { //$NON-NLS-1$
-      };
-    }
+  }
+  
+  private void createViewActions() {
     {
       actnZoomIn = new Action(BUNDLE.getString("MainWindow.actnZoomIn.text")) { //$NON-NLS-1$
         @Override
@@ -494,11 +464,6 @@ public class MainWindow extends ApplicationWindow {
       actnFeatures.setChecked(true);
     }
     {
-      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
-      };
-      actnEmpty.setEnabled(false);
-    }
-    {
       actnCenter = new Action(BUNDLE.getString("MainWindow.actnCenter.text")) { //$NON-NLS-1$
         @Override
         public void run() {
@@ -506,38 +471,93 @@ public class MainWindow extends ApplicationWindow {
         }
       };
     }
-    
-    // record all actions that need an image
-    mImageDependantActions = new Action[] {
-        actnSnapshot,
-        actnSelectAll,
-        actnZoomIn,
-        actnZoomOut,
-        actnZoom1to1,
-        actnZoomImage,
-        actnPointer,
-        actnRectangle,
-        actnOval,
-        actnPolygon,
-        actnZoom,
-        actnCenter
-    };
-    
-    for (Action a : mImageDependantActions) {
-      a.setEnabled(false);
+  }
+  
+  private void createHelpActions() {
+    {
+      actnManual = new Action(BUNDLE.getString("MainWindow.actnManual.text")) { //$NON-NLS-1$
+      };
     }
-    
-    // record all actions that need a selection
-    mSelectionDependantActions = new Action[] {
-        actnCut,
-        actnCopy,
-        actnDuplicate,
-        actnDelete,
-        actnZoomSelection
-    };
-    
-    for (Action a : mSelectionDependantActions) {
-      a.setEnabled(false);
+    {
+      actnAbout = new Action(BUNDLE.getString("MainWindow.actnAbout.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          doAbout();
+        }
+      };
+    }  
+  }
+  
+  private void createPropertyActions() {
+    {
+      actnRegions = new Action(BUNDLE.getString("MainWindow.actnRegions.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          if (isChecked()) {
+            System.out.println("Regions checked!");
+          }
+        }        
+      };
+    }
+    {
+      actnNeighbourhoods = new Action(BUNDLE.getString("MainWindow.actnNeighbourhoods.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnIntersection = new Action(BUNDLE.getString("MainWindow.actnIntersection.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnCompliment = new Action(BUNDLE.getString("MainWindow.actnCompliment.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+    {
+      actnDifference = new Action(BUNDLE.getString("MainWindow.actnDifference.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+        @Override
+        public void run() {
+
+        }
+      };
+    }
+  }
+  
+  private void createToolActions() {
+    {
+      actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+      actnPointer.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/pointer.png"));
+    }
+    {
+      actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+      actnRectangle.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/rect.png"));
+    }
+    {
+      actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+      actnOval.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/oval.png"));
+    }
+    {
+      actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+      actnPolygon.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/poly.png"));
+    }
+    {
+      actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
+      };
+      actnZoom.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/zoom.png"));
     }
   }
 
