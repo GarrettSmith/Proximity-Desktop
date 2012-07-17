@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.wb.swt.ResourceManager;
 
 /**
  * The main window of the application.
@@ -101,6 +102,54 @@ public class MainWindow extends ApplicationWindow {
   private Composite canvasFrame;
   
   private SashForm sashForm;
+  
+  /**
+   * Listens for mouse wheel to scroll into canvas.
+   */
+  //TODO: zoom to cursor
+  private MouseWheelListener mMouseWheelListener = new MouseWheelListener() {
+    
+    public void mouseScrolled(MouseEvent e) {
+      // check if ctrl is being held
+      if ((e.stateMask & SWT.CTRL) != 0 ) {
+        // check whether to zoom in or out
+        if (e.count < 0) {
+          canvas.zoomOut();
+        }
+        else {
+          canvas.zoomIn();
+        }
+      }
+    }
+  };
+  
+  /**
+   * Listen for panning with the middle mouse button.
+   */
+  private MouseMoveListener mMouseMoveListener = new MouseMoveListener() {
+    
+    private int mPrevX = -1;
+    private int mPrevY = -1;
+    
+    public void mouseMove(MouseEvent e) {
+      // check if the middle mouse button is pressed
+      if ((e.stateMask & SWT.BUTTON2) != 0) {
+        // make if this is the first valid event
+        if (mPrevX != -1) {
+          int dx = e.x - mPrevX;
+          int dy = e.y - mPrevY;              
+          canvas.pan(dx, dy);
+        }
+        // record the previous point
+        mPrevX = e.x;
+        mPrevY = e.y;
+      }
+      else {
+        // record we have stopped
+        mPrevX = -1;
+      }
+    }
+  };
 
   /**
    * Create the application window.
@@ -118,7 +167,6 @@ public class MainWindow extends ApplicationWindow {
    * Create contents of the application window.
    * @param parent
    */
-  // TODO: break down createContents
   @Override
   protected Control createContents(Composite parent) {
     Composite container = new Composite(parent, SWT.NONE);
@@ -127,30 +175,69 @@ public class MainWindow extends ApplicationWindow {
     sashForm = new SashForm(container, SWT.NONE);
     sashForm.setSashWidth(5);
     
-    Composite composite = new Composite(sashForm, SWT.NONE);
+    createFeaturesPane(sashForm);
+    createFramesPane(sashForm);
+    
+    sashForm.setWeights(new int[] {1, 3});
+
+    return container;
+  }
+  
+  /**
+   * Create the right-hand sash to display features.
+   * @param container
+   */
+  private void createFeaturesPane(Composite container) {
+    Composite composite = new Composite(container, SWT.NONE);
+    
+    // create the grid layout for the sash
     GridLayout gl_composite = new GridLayout(1, false);
     gl_composite.marginLeft = 5;
     gl_composite.marginWidth = 0;
     composite.setLayout(gl_composite);
     
+    // create the tree to show features
     Tree tree = new Tree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
     
+    // create the add features button
     ActionContributionItem add = new ActionContributionItem(actnAddFeatures);
     add.fill(composite);
     Button btnAdd = (Button) add.getWidget();
     btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
     btnAdd.setText("Add Features");
-    
-    frameStack = new Composite(sashForm, SWT.NONE);
+  }
+  
+  /**
+   * Create the sash to display the image and select image panes.
+   * @param container
+   */
+  private void createFramesPane(Composite container) {
+    // create the stack for the two frames
+    frameStack = new Composite(container, SWT.NONE);
     stackLayout = new StackLayout();
     frameStack.setLayout(stackLayout);
     
+    createCanvasFrame(frameStack);    
+    createButtonFrame(frameStack);    
+    
+    // put the button frame on top
+    stackLayout.topControl = buttonFrame;
+    frameStack.layout();
+  }
+  
+  /**
+   * Creates the frame with the canvas and property selection.
+   * @param container
+   */
+  private void createCanvasFrame(Composite container) {
     canvasFrame = new Composite(frameStack, SWT.NONE);
     GridLayout gl_canvasFrame = new GridLayout(1, false);
     gl_canvasFrame.marginRight = 5;
     gl_canvasFrame.marginWidth = 0;
     canvasFrame.setLayout(gl_canvasFrame);
+    
+    // create the toolbar to select the property
     {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -165,72 +252,37 @@ public class MainWindow extends ApplicationWindow {
       // select the first action
       actnRegions.setChecked(true);
     }
+    
+    // create the image canvas
     {
       canvas = new ImageCanvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED, mImage);
-      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      // TODO: zoom to cursor
-      canvas.addMouseWheelListener(new MouseWheelListener() {
-        
-        public void mouseScrolled(MouseEvent e) {
-          // check if ctrl is being held
-          if ((e.stateMask & SWT.CTRL) != 0 ) {
-            // check whether to zoom in or out
-            if (e.count < 0) {
-              canvas.zoomOut();
-            }
-            else {
-              canvas.zoomIn();
-            }
-          }
-        }
-      });
-      canvas.addMouseMoveListener(new MouseMoveListener() {
-        
-        private int mPrevX = -1;
-        private int mPrevY = -1;
-        
-        public void mouseMove(MouseEvent e) {
-          // check if the middle mouse button is pressed
-          if ((e.stateMask & SWT.BUTTON2) != 0) {
-            // make if this is the first valid event
-            if (mPrevX != -1) {
-              int dx = e.x - mPrevX;
-              int dy = e.y - mPrevY;              
-              canvas.pan(dx, dy);
-            }
-            // record the previous point
-            mPrevX = e.x;
-            mPrevY = e.y;
-          }
-          else {
-            // record we have stopped
-            mPrevX = -1;
-          }
-        }
-      });
+      canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));      
+      canvas.addMouseWheelListener(mMouseWheelListener);
+      canvas.addMouseMoveListener(mMouseMoveListener);
     }
-    
+  }
+  
+  /**
+   * Create the frame with the button requesting to select the first image.
+   * @param container
+   */
+  private void createButtonFrame(Composite container) {
     buttonFrame = new Composite(frameStack, SWT.NONE);
     buttonFrame.setLayout(new GridLayout(1, false));
     
+    // create the label asking to pick an image
     Label lblOpenButton = new Label(buttonFrame, SWT.NONE);
     lblOpenButton.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
     lblOpenButton.setBounds(0, 0, 569, 582);
     lblOpenButton.setText(BUNDLE.getString("MainWindow.lblOpenButton.text")); //$NON-NLS-1$
     
+    // create the button to open the image
     ActionContributionItem open = new ActionContributionItem(actnOpen);
     open.fill(buttonFrame);
     Button btnNewButton = (Button) open.getWidget();
     btnNewButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
     btnNewButton.setBounds(0, 0, 81, 27);
     btnNewButton.setText("Select Image");
-    
-    stackLayout.topControl = buttonFrame;
-    frameStack.layout();
-    
-    sashForm.setWeights(new int[] {1, 3});
-
-    return container;
   }
   
   /**
@@ -253,6 +305,7 @@ public class MainWindow extends ApplicationWindow {
           doSnapshot();
         }
       };
+      actnSnapshot.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/snap.png"));
       actnSnapshot.setEnabled(false);
     }
     {
@@ -329,22 +382,27 @@ public class MainWindow extends ApplicationWindow {
     {
       actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnPointer.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/pointer.png"));
     }
     {
       actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnRectangle.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/rect.png"));
     }
     {
       actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnOval.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/oval.png"));
     }
     {
       actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnPolygon.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/poly.png"));
     }
     {
       actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
       };
+      actnZoom.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/zoom.png"));
     }
     {
       actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
