@@ -9,6 +9,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -81,6 +82,7 @@ public class ImageCanvas extends Canvas {
     mOldBounds = getBounds();
     redraw();
   }
+  
   /**
    * Paints the image with the current transform over a background.
    * @param gc
@@ -267,6 +269,27 @@ public class ImageCanvas extends Canvas {
     mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
     
     redraw();
+  }
+  
+  public Point toImageSpace(Point p) {
+    Point rtn = new Point(p.x, p.y);
+    
+    // un-shift translation
+    rtn.x -= mTranslateX;
+    rtn.y -= mTranslateY;
+    
+    // un-scale
+    rtn.x /= mScale;
+    rtn.y /= mScale;
+    
+    return rtn;
+  }
+  
+  public boolean contains(Point p) {
+    int width = mImage.getBounds().width;
+    int height = mImage.getBounds().height;
+    
+    return ( (0 <= p.x && p.x <= width) && (0 <= p.y && p.y <= height));
   }
 
 }

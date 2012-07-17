@@ -18,8 +18,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
@@ -33,6 +37,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
@@ -46,6 +51,14 @@ import org.eclipse.wb.swt.ResourceManager;
  */
 public class MainWindow extends ApplicationWindow {
   private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proxmity.desktop.messages"); //$NON-NLS-1$
+  
+  enum Tool {
+    POINTER,
+    RECTANGLE,
+    OVAL,
+    POLYGON,
+    ZOOM
+  }  
   
   private Action actnOpen;
   private Action actnSnapshot;
@@ -93,6 +106,8 @@ public class MainWindow extends ApplicationWindow {
   private Image mImage;
   
   private MainController mController;
+  
+  private Tool mTool = Tool.POINTER;
   
   // frames
   private Composite frameStack;
@@ -150,6 +165,93 @@ public class MainWindow extends ApplicationWindow {
       }
     }
   };
+  
+  private Listener mToolListener = new ToolListener();
+  
+  private class ToolListener implements Listener, MouseListener, MouseMoveListener, PaintListener {
+    
+    private Point mStartImagePoint;
+    private Point mCurrentImagePoint;
+    
+    private Point mStartScreenPoint;
+    private Point mCurrentScreenPoint;
+
+    /**
+     * Route the events to handlers
+     */
+    public void handleEvent(Event event) {
+      switch(event.type) {
+        case SWT.MouseDown:
+          mouseDown(new MouseEvent(event));
+          break;
+        case SWT.MouseUp:
+          mouseUp(new MouseEvent(event));
+          break;
+        case SWT.MouseMove:
+          mouseMove(new MouseEvent(event));
+          break;
+        case SWT.Paint:
+          paintControl(new PaintEvent(event));
+          break;
+      }
+    }
+
+    public void mouseDown(MouseEvent e) {
+      if (e.button == 1) {
+        mStartScreenPoint = new Point(e.x, e.y);
+        mStartImagePoint = canvas.toImageSpace(mStartScreenPoint);
+
+        // check if we clicked outside of the image
+        if (!canvas.contains(mStartImagePoint)) {
+          mStartImagePoint = mStartScreenPoint = null;
+        }
+      }
+    }
+
+    public void mouseUp(MouseEvent e) {
+      
+      switch (mTool) {
+        // TODO: perform action
+      }
+      
+      mStartImagePoint = mStartScreenPoint = null;
+      canvas.redraw();
+    }
+
+    public void mouseMove(MouseEvent e) {
+      // check if the mouse has been clicked
+      if (mStartImagePoint != null) {
+        Point screenPoint = new Point(e.x, e.y);
+        Point imagePoint = canvas.toImageSpace(screenPoint);
+        
+        // make sure the point is within the image
+        if (canvas.contains(imagePoint)) {
+          mCurrentImagePoint = imagePoint;
+          mCurrentScreenPoint = screenPoint;
+          canvas.redraw();
+        }
+      }
+    }
+
+    public void mouseDoubleClick(MouseEvent e) {
+      // Do nothing
+    }
+
+    public void paintControl(PaintEvent e) {
+      GC gc = e.gc;
+      
+      if (mStartImagePoint != null && mCurrentImagePoint != null) {
+        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
+        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
+        gc.drawRectangle(
+            mStartScreenPoint.x, 
+            mStartScreenPoint.y, 
+            width, 
+            height);
+      }
+    }
+    
+  }
 
   /**
    * Create the application window.
@@ -259,6 +361,11 @@ public class MainWindow extends ApplicationWindow {
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));      
       canvas.addMouseWheelListener(mMouseWheelListener);
       canvas.addMouseMoveListener(mMouseMoveListener);
+      
+      canvas.addListener(SWT.MouseDown, mToolListener);
+      canvas.addListener(SWT.MouseUp, mToolListener);
+      canvas.addListener(SWT.MouseMove, mToolListener);
+      canvas.addListener(SWT.Paint, mToolListener);
     }
   }
   
@@ -532,16 +639,6 @@ public class MainWindow extends ApplicationWindow {
     }
   }
   
-  enum Tool {
-    POINTER,
-    RECTANGLE,
-    OVAL,
-    POLYGON,
-    ZOOM
-  }
-  
-  private Tool mTool = Tool.POINTER;
-  
   private class ToolAction extends Action {
     
     private Tool mThisTool;
@@ -560,21 +657,11 @@ public class MainWindow extends ApplicationWindow {
   }
   
   private void createToolActions() {
-    {
-      actnPointer = new ToolAction("MainWindow.action.text", "/icons/pointer.png", Tool.POINTER);
-    }
-    {
-      actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "/icons/rect.png", Tool.RECTANGLE);
-    }
-    {
-      actnOval = new ToolAction("MainWindow.action.text_1", "/icons/oval.png", Tool.OVAL);
-    }
-    {
-      actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "/icons/poly.png", Tool.POLYGON);
-    }
-    {
-      actnZoom = new ToolAction("MainWindow.actnZoom.text", "/icons/zoom.png", Tool.ZOOM);
-    }
+    actnPointer = new ToolAction("MainWindow.action.text", "/icons/pointer.png", Tool.POINTER);
+    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "/icons/rect.png", Tool.RECTANGLE);
+    actnOval = new ToolAction("MainWindow.action.text_1", "/icons/oval.png", Tool.OVAL);
+    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "/icons/poly.png", Tool.POLYGON);
+    actnZoom = new ToolAction("MainWindow.actnZoom.text", "/icons/zoom.png", Tool.ZOOM);
   }
 
   /**
