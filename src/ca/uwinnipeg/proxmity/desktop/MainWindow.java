@@ -357,7 +357,6 @@ public class MainWindow extends ApplicationWindow {
         }
       };
       actnSnapshot.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/snap.png"));
-      actnSnapshot.setEnabled(false);
     }
     {
       actnExit = new Action(BUNDLE.getString("MainWindow.actnExit.text")) { //$NON-NLS-1$
@@ -533,31 +532,48 @@ public class MainWindow extends ApplicationWindow {
     }
   }
   
+  enum Tool {
+    POINTER,
+    RECTANGLE,
+    OVAL,
+    POLYGON,
+    ZOOM
+  }
+  
+  private Tool mTool = Tool.POINTER;
+  
+  private class ToolAction extends Action {
+    
+    private Tool mThisTool;
+    
+    public ToolAction(String label, String icon, Tool tool) {
+      super(BUNDLE.getString(label), Action.AS_RADIO_BUTTON);
+      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, icon));
+      mThisTool = tool;
+    }
+    
+    @Override
+    public void run() {
+      System.out.println(mThisTool);
+      mTool = mThisTool;
+    }
+  }
+  
   private void createToolActions() {
     {
-      actnPointer = new Action(BUNDLE.getString("MainWindow.action.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnPointer.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/pointer.png"));
+      actnPointer = new ToolAction("MainWindow.action.text", "/icons/pointer.png", Tool.POINTER);
     }
     {
-      actnRectangle = new Action(BUNDLE.getString("MainWindow.actnRectangle.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnRectangle.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/rect.png"));
+      actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "/icons/rect.png", Tool.RECTANGLE);
     }
     {
-      actnOval = new Action(BUNDLE.getString("MainWindow.action.text_1"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnOval.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/oval.png"));
+      actnOval = new ToolAction("MainWindow.action.text_1", "/icons/oval.png", Tool.OVAL);
     }
     {
-      actnPolygon = new Action(BUNDLE.getString("MainWindow.actnPolygon.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnPolygon.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/poly.png"));
+      actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "/icons/poly.png", Tool.POLYGON);
     }
     {
-      actnZoom = new Action(BUNDLE.getString("MainWindow.actnZoom.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-      };
-      actnZoom.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/zoom.png"));
+      actnZoom = new ToolAction("MainWindow.actnZoom.text", "/icons/zoom.png", Tool.ZOOM);
     }
   }
 
