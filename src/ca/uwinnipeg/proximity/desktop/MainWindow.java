@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
+import org.eclipse.swt.widgets.Menu;
 
 /**
  * The main window of the application.
@@ -397,6 +398,7 @@ public class MainWindow extends ApplicationWindow {
     {
       canvas = new ImageCanvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED, mImage);
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));      
+
       canvas.addMouseWheelListener(mMouseWheelListener);
       canvas.addMouseMoveListener(mMouseMoveListener);
       
@@ -404,6 +406,22 @@ public class MainWindow extends ApplicationWindow {
       canvas.addListener(SWT.MouseUp, mToolListener);
       canvas.addListener(SWT.MouseMove, mToolListener);
       canvas.addListener(SWT.Paint, mToolListener);
+      
+      MenuManager menuMgr = new MenuManager();
+      menuMgr.add(actnUndo);
+      menuMgr.add(actnRedo);
+      menuMgr.add(new Separator());
+      menuMgr.add(actnCut);
+      menuMgr.add(actnCopy);
+      menuMgr.add(actnPaste);
+      menuMgr.add(new Separator());
+      menuMgr.add(actnDuplicate);
+      menuMgr.add(actnDelete);
+      
+      Menu menu = menuMgr.createContextMenu(canvas);
+      canvas.setMenu(menu);
+    
+      
     }
   }
   
