@@ -5,4 +5,4 @@
  * @author Garrett Smith
  *
  */
-package icons;
+package ca.uwinnipeg.proximity.desktop.strings;

@@ -1,4 +1,4 @@
-package ca.uwinnipeg.proxmity.desktop;
+package ca.uwinnipeg.proximity.desktop;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;

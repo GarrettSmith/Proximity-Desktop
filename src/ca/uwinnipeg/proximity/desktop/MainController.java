@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ca.uwinnipeg.proxmity.desktop;
+package ca.uwinnipeg.proximity.desktop;
 
 import org.eclipse.swt.graphics.ImageData;
 

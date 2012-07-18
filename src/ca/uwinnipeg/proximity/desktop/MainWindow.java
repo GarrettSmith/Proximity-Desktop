@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ca.uwinnipeg.proxmity.desktop;
+package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ResourceBundle;
 
@@ -23,6 +23,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -50,7 +51,7 @@ import org.eclipse.wb.swt.ResourceManager;
  *
  */
 public class MainWindow extends ApplicationWindow {
-  private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proxmity.desktop.messages"); //$NON-NLS-1$
+  private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages"); //$NON-NLS-1$
   
   enum Tool {
     POINTER,
@@ -243,11 +244,48 @@ public class MainWindow extends ApplicationWindow {
       if (mStartImagePoint != null && mCurrentImagePoint != null) {
         int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
         int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
-        gc.drawRectangle(
-            mStartScreenPoint.x, 
-            mStartScreenPoint.y, 
-            width, 
-            height);
+        
+        // draw color
+        Color color;
+        if (mTool == Tool.RECTANGLE || mTool == Tool.OVAL) {
+          // CYAN
+          color = new Color(Display.getCurrent(), 0, 255, 255);
+        }
+        else {
+          // Black
+          color = new Color(Display.getCurrent(), 0, 0, 0);
+        }
+        gc.setForeground(color);
+        
+        if (mTool == Tool.POINTER) {
+          gc.setLineStyle(SWT.LINE_DOT);
+        }
+        
+        switch (mTool) {
+          case RECTANGLE:
+          case ZOOM:
+          case POINTER:
+            gc.drawRectangle(
+                mStartScreenPoint.x, 
+                mStartScreenPoint.y, 
+                width, 
+                height);
+            break;
+          case OVAL:
+            gc.drawOval(
+              mStartScreenPoint.x, 
+              mStartScreenPoint.y, 
+              width, 
+              height);
+            gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
+            gc.setAlpha(150);
+            gc.drawRectangle(
+              mStartScreenPoint.x, 
+              mStartScreenPoint.y, 
+              width, 
+              height);
+            break;
+        }
       }
     }
     
@@ -463,7 +501,7 @@ public class MainWindow extends ApplicationWindow {
           doSnapshot();
         }
       };
-      actnSnapshot.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/icons/snap.png"));
+      actnSnapshot.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/snap.png"));
     }
     {
       actnExit = new Action(BUNDLE.getString("MainWindow.actnExit.text")) { //$NON-NLS-1$
@@ -645,7 +683,7 @@ public class MainWindow extends ApplicationWindow {
     
     public ToolAction(String label, String icon, Tool tool) {
       super(BUNDLE.getString(label), Action.AS_RADIO_BUTTON);
-      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, icon));
+      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/" + icon));
       mThisTool = tool;
     }
     
@@ -657,11 +695,11 @@ public class MainWindow extends ApplicationWindow {
   }
   
   private void createToolActions() {
-    actnPointer = new ToolAction("MainWindow.action.text", "/icons/pointer.png", Tool.POINTER);
-    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "/icons/rect.png", Tool.RECTANGLE);
-    actnOval = new ToolAction("MainWindow.action.text_1", "/icons/oval.png", Tool.OVAL);
-    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "/icons/poly.png", Tool.POLYGON);
-    actnZoom = new ToolAction("MainWindow.actnZoom.text", "/icons/zoom.png", Tool.ZOOM);
+    actnPointer = new ToolAction("MainWindow.action.text", "pointer.png", Tool.POINTER);
+    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "rect.png", Tool.RECTANGLE);
+    actnOval = new ToolAction("MainWindow.action.text_1", "oval.png", Tool.OVAL);
+    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "poly.png", Tool.POLYGON);
+    actnZoom = new ToolAction("MainWindow.actnZoom.text", "zoom.png", Tool.ZOOM);
   }
 
   /**
