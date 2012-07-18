@@ -211,13 +211,20 @@ public class MainWindow extends ApplicationWindow {
     }
 
     public void mouseUp(MouseEvent e) {
-      
-      switch (mTool) {
-        // TODO: perform action
+      // make sure we started in a valid position3
+      if (mStartImagePoint != null) {
+
+        switch (mTool) {
+          case ZOOM:
+            if (mCurrentImagePoint != null) {
+              canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
+            }
+            break;
+        }
+
+        mStartImagePoint = mStartScreenPoint = mCurrentImagePoint =  mCurrentScreenPoint = null;
+        canvas.redraw();
       }
-      
-      mStartImagePoint = mStartScreenPoint = null;
-      canvas.redraw();
     }
 
     public void mouseMove(MouseEvent e) {

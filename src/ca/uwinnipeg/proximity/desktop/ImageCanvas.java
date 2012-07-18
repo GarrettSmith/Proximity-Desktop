@@ -215,16 +215,30 @@ public class ImageCanvas extends Canvas {
     
     mTranslateX += (oldWidth - newWidth)/2;
     mTranslateY += (oldHeight - newHeight)/2;
+
+    redraw();
+  }
+  
+  public void zoomTo(Point startPoint, Point endPoint) {
+    int top = Math.min(startPoint.x, endPoint.x);
+    int left = Math.min(startPoint.y, endPoint.y);
     
-//    int oldW = mBounds.width;
-//    int oldH = mBounds.height;  
-//    
-//    mBounds.width *= scale;
-//    mBounds.height *= scale;
-//    
-//    // offset by half the change in width and height to keep centered
-//    mBounds.x += (oldW - mBounds.width)/2;
-//    mBounds.y += (oldH - mBounds.height)/2;    
+    Rectangle bounds = new Rectangle(
+        top, 
+        left, 
+        Math.abs(endPoint.x - startPoint.x), 
+        Math.abs(endPoint.y - startPoint.y));    
+    
+    Rectangle imageBounds = mImage.getBounds();
+    
+    float scaleX = (float)imageBounds.width / bounds.width;
+    float scaleY = (float)imageBounds.height / bounds.height;
+    
+    mScale = Math.max(scaleX, scaleY);
+
+    mTranslateX = -top * mScale;
+    mTranslateY = -left * mScale;
+    
     redraw();
   }
 
