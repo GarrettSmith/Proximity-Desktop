@@ -47,6 +47,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 
 /**
  * The main window of the application.
@@ -845,6 +847,21 @@ public class MainWindow extends ApplicationWindow {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
     newShell.setText(BUNDLE.getString("MainWindow.newShell.text")); //$NON-NLS-1$
+    
+    // set icon
+    String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
+    Display display = Display.getCurrent();
+    
+    Image[] imgs = new Image[] {
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_16.png").createImage(display),
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_24.png").createImage(display),
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_36.png").createImage(display),
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_48.png").createImage(display),
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_64.png").createImage(display),
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_128.png").createImage()
+  };
+
+    newShell.setImages(imgs);
   }
 
   /**
@@ -852,7 +869,7 @@ public class MainWindow extends ApplicationWindow {
    */
   @Override
   protected Point getInitialSize() {
-    return new Point(450, 300);
+    return new Point(580, 190);
   }
   
   /**

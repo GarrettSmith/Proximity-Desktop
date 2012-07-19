@@ -323,8 +323,6 @@ public class ImageCanvas extends Canvas {
     float dx = ((float)canvasBounds.width / 2) - ((float)imageBounds.width * scale / 2) ;
     float dy = ((float)canvasBounds.height / 2) - ((float)imageBounds.height * scale / 2);
     mTransform.translate((dx - getTranslateX()) / scale, (dy - getTranslateY()) / scale);
-    System.out.println("center: {" + dx + ", " + dy + "}");
-    System.out.println("translation: {" + getTranslateX()/scale + ", " + getTranslateY()/scale + "}");
 //    mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
 //    mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
     
@@ -345,6 +343,7 @@ public class ImageCanvas extends Canvas {
     
     return rtn;
   }
+  
   
   public boolean contains(Point p) {
     int width = mImage.getBounds().width;
