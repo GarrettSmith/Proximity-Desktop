@@ -235,26 +235,45 @@ public class ImageCanvas extends Canvas {
   }
   
   public void zoomTo(Point startPoint, Point endPoint) {
-//    int top = Math.min(startPoint.x, endPoint.x);
-//    int left = Math.min(startPoint.y, endPoint.y);
-//    
-//    Rectangle bounds = new Rectangle(
-//        top, 
-//        left, 
-//        Math.abs(endPoint.x - startPoint.x), 
-//        Math.abs(endPoint.y - startPoint.y));    
-//    
-//    Rectangle imageBounds = mImage.getBounds();
-//    
-//    float scaleX = (float)imageBounds.width / bounds.width;
-//    float scaleY = (float)imageBounds.height / bounds.height;
-//    
-//    mScale = Math.max(scaleX, scaleY);
+    
+    Rectangle canvasBounds = getBounds();
+    
+    int top = Math.min(startPoint.x, endPoint.x);
+    int left = Math.min(startPoint.y, endPoint.y);
+    
+    Rectangle zoomBounds = new Rectangle(
+        top, 
+        left, 
+        Math.abs(endPoint.x - startPoint.x), 
+        Math.abs(endPoint.y - startPoint.y));    
+
+    float width = canvasBounds.width;
+    float height = canvasBounds.height;
+
+    float scaleX = width / zoomBounds.width;
+    float scaleY = height / zoomBounds.height;
+    float scale = Math.max(scaleX, scaleY);
+    //scale = Math.min(scale, 1); 
+    
+    float dScale = Math.max(scaleX, scaleY) / getScale();
+    
+    mTransform.scale(dScale, dScale);
+    
+    System.out.println("scale x: " + scaleX + ", scale y: " + scaleY + ", scale: " + scale + ", scale delta: " + dScale);
+    
+    // find the transform to center
+    scale = getScale();
+    float dx = ((float)canvasBounds.width / 2) - ((float)zoomBounds.width * scale / 2) ;
+    float dy = ((float)canvasBounds.height / 2) - ((float)zoomBounds.height * scale / 2);
+    mTransform.translate((dx - getTranslateX()) / scale, (dy - getTranslateY()) / scale);
+    
+    System.out.println("dx: " + dx + ", dy: " + dy);
+    System.out.println("translate x: " + getTranslateX() + ", translate y: " + getTranslateY());
 //
 //    mTranslateX = -top * mScale;
 //    mTranslateY = -left * mScale;
 //    
-//    redraw();
+    redraw();
   }
 
   public void zoomBy(float dScale) {

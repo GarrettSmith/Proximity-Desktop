@@ -217,22 +217,26 @@ public class MainWindow extends ApplicationWindow {
 
     public void mouseUp(MouseEvent e) {
       // make sure we started in a valid position3
-      if (mStartImagePoint != null && mCurrentImagePoint != mStartImagePoint) {
-        switch (mTool) {
-          case ZOOM:
+      if (mStartImagePoint != null) {
+        
+        // check if the didn't just tap a point
+        if (mCurrentImagePoint != mStartImagePoint) {
+          switch (mTool) {
+            case ZOOM:
               canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
-            break;
-          case RECTANGLE:
-            List<Point> points = new ArrayList<Point>();
-            points.add(mStartImagePoint);
-            points.add(mCurrentImagePoint);
-            mController.addRegion(Region.Shape.RECTANGLE, points);
-            break;
+              break;
+            case RECTANGLE:
+              List<Point> points = new ArrayList<Point>();
+              points.add(mStartImagePoint);
+              points.add(mCurrentImagePoint);
+              mController.addRegion(Region.Shape.RECTANGLE, points);
+              break;
+          }
         }
 
         mStartImagePoint = mStartScreenPoint = null;
         canvas.redraw();
-        
+
       }
     }
 
@@ -858,7 +862,7 @@ public class MainWindow extends ApplicationWindow {
       ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_36.png").createImage(display),
       ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_48.png").createImage(display),
       ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_64.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_128.png").createImage()
+      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_128.png").createImage(display)
   };
 
     newShell.setImages(imgs);
