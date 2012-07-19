@@ -3,6 +3,8 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.eclipse.jface.action.Action;
@@ -39,12 +41,12 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
-import org.eclipse.swt.widgets.Menu;
 
 /**
  * The main window of the application.
@@ -199,9 +201,10 @@ public class MainWindow extends ApplicationWindow {
     }
 
     public void mouseDown(MouseEvent e) {
+      // if the first button was pressed
       if (e.button == 1) {
-        mStartScreenPoint = new Point(e.x, e.y);
-        mStartImagePoint = canvas.toImageSpace(mStartScreenPoint);
+        mStartScreenPoint = mCurrentScreenPoint;
+        mStartImagePoint = mCurrentImagePoint;
 
         // check if we clicked outside of the image
         if (!canvas.contains(mStartImagePoint)) {
@@ -212,33 +215,39 @@ public class MainWindow extends ApplicationWindow {
 
     public void mouseUp(MouseEvent e) {
       // make sure we started in a valid position3
-      if (mStartImagePoint != null) {
-
+      if (mStartImagePoint != null && mCurrentImagePoint != mStartImagePoint) {
         switch (mTool) {
           case ZOOM:
-            if (mCurrentImagePoint != null) {
               canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
-            }
+            break;
+          case RECTANGLE:
+            List<Point> points = new ArrayList<Point>();
+            points.add(mStartImagePoint);
+            points.add(mCurrentImagePoint);
+            mController.addRegion(Region.Shape.RECTANGLE, points);
             break;
         }
 
-        mStartImagePoint = mStartScreenPoint = mCurrentImagePoint =  mCurrentScreenPoint = null;
+        mStartImagePoint = mStartScreenPoint = null;
         canvas.redraw();
+        
       }
     }
 
     public void mouseMove(MouseEvent e) {
-      // check if the mouse has been clicked
+      mCurrentScreenPoint = new Point(e.x, e.y);
+      mCurrentImagePoint = canvas.toImageSpace(mCurrentScreenPoint);
+      
+      // check if the mouse has been clicked and we should draw something
       if (mStartImagePoint != null) {
-        Point screenPoint = new Point(e.x, e.y);
-        Point imagePoint = canvas.toImageSpace(screenPoint);
-        
-        // make sure the point is within the image
-        if (canvas.contains(imagePoint)) {
-          mCurrentImagePoint = imagePoint;
-          mCurrentScreenPoint = screenPoint;
-          canvas.redraw();
-        }
+        // limit points to be within image bounds
+        mCurrentImagePoint.x = Math.max(0, mCurrentImagePoint.x);
+        mCurrentImagePoint.x = Math.min(mImage.getBounds().width, mCurrentImagePoint.x);        
+
+        mCurrentImagePoint.y = Math.max(0, mCurrentImagePoint.y);
+        mCurrentImagePoint.y = Math.min(mImage.getBounds().height, mCurrentImagePoint.y);
+
+        canvas.redraw();
       }
     }
 
@@ -246,12 +255,13 @@ public class MainWindow extends ApplicationWindow {
       // Do nothing
     }
 
-    public void paintControl(PaintEvent e) {
-      GC gc = e.gc;
-      
+    public void paintControl(PaintEvent e) {      
       if (mStartImagePoint != null && mCurrentImagePoint != null) {
-        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
-        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
+        
+        GC gc = e.gc;
+        
+        int width = mCurrentImagePoint.x - mStartImagePoint.x;
+        int height = mCurrentImagePoint.y - mStartImagePoint.y;
         
         // draw color
         Color color;
@@ -274,22 +284,22 @@ public class MainWindow extends ApplicationWindow {
           case ZOOM:
           case POINTER:
             gc.drawRectangle(
-                mStartScreenPoint.x, 
-                mStartScreenPoint.y, 
+                mStartImagePoint.x, 
+                mStartImagePoint.y, 
                 width, 
                 height);
             break;
           case OVAL:
             gc.drawOval(
-              mStartScreenPoint.x, 
-              mStartScreenPoint.y, 
+              mStartImagePoint.x, 
+              mStartImagePoint.y, 
               width, 
               height);
             gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
             gc.setAlpha(150);
             gc.drawRectangle(
-              mStartScreenPoint.x, 
-              mStartScreenPoint.y, 
+              mStartImagePoint.x, 
+              mStartImagePoint.y, 
               width, 
               height);
             break;

@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -29,10 +30,11 @@ public class ImageCanvas extends Canvas {
   
   private Image mImage;
   
-//  private Transform mTransform;  
-  private float mTranslateX = 0;
-  private float mTranslateY = 0;
-  private float mScale = 1;
+//  private float mTranslateX = 0;
+//  private float mTranslateY = 0;
+//  private float mScale = 1;
+  
+  private Transform mTransform;
   
   private boolean mFitToImage = false;
   
@@ -49,7 +51,7 @@ public class ImageCanvas extends Canvas {
     
     mDisplay = Display.getCurrent();
     
-//    mTransform = new Transform(mDisplay);
+    mTransform = new Transform(mDisplay);
     
     setImage(image);
 
@@ -77,9 +79,10 @@ public class ImageCanvas extends Canvas {
   public void setImage(Image image) {
     mImage = image;
     updateMinScale();
+    
     // reset transform
     fitToImage();    
-    mOldBounds = getBounds();
+    
     redraw();
   }
   
@@ -104,16 +107,19 @@ public class ImageCanvas extends Canvas {
         currentBounds.height/2, 
         true);
 
+    // draw the image
     if (mImage != null) {
       updateBounds(currentBounds, mOldBounds);
-      Rectangle imageBounds = mImage.getBounds();
-      gc.drawImage(
-          mImage, 
-          0, 0, mImage.getBounds().width, mImage.getBounds().height, 
-          Math.round(mTranslateX), 
-          Math.round(mTranslateY), 
-          Math.round(mScale * imageBounds.width), 
-          Math.round(mScale * imageBounds.height));
+//      Rectangle imageBounds = mImage.getBounds();
+//      gc.drawImage(
+//          mImage, 
+//          0, 0, mImage.getBounds().width, mImage.getBounds().height, 
+//          Math.round(mTranslateX), 
+//          Math.round(mTranslateY), 
+//          Math.round(mScale * imageBounds.width), 
+//          Math.round(mScale * imageBounds.height));
+      gc.setTransform(mTransform);
+      gc.drawImage(mImage, 0, 0);
     }
     
     mOldBounds = currentBounds;
@@ -156,10 +162,32 @@ public class ImageCanvas extends Canvas {
       else {
         float dx = (float)(current.width - old.width) / 2;
         float dy = (float)(current.height - old.height) / 2;
-        mTranslateX += dx;
-        mTranslateY += dy;
+//        mTranslateX += dx;
+//        mTranslateY += dy;
+        mTransform.translate(dx, dy);
       }
     }
+  }  
+  
+  private float[] getValues() {
+    float[] values = new float[6];
+    mTransform.getElements(values);
+    return values;
+  }
+  
+  public float getScale() {
+//    return mScale;
+    return getValues()[0];
+  }
+  
+  public float getTranslateX() {
+//    return mTranslateX;
+    return getValues()[4];
+  }
+  
+  public float getTranslateY() {
+//    return mTranslateY;
+    return getValues()[5];
   }
   
   /**
@@ -173,14 +201,11 @@ public class ImageCanvas extends Canvas {
       Rectangle canvasBounds = getBounds();
       Rectangle imageBounds = mImage.getBounds();
       
-      mScale = mMinScale;
+//      mScale = mMinScale;
+      float dScale = mMinScale / getScale();
+      mTransform.scale(dScale, dScale);
 
-      // find the transform to center
-      mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
-      mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
-
-      // redraw
-      redraw();
+      center();
     }
   }
   
@@ -189,62 +214,71 @@ public class ImageCanvas extends Canvas {
     mFitToImage = false;
   }
   
-  public float getScale() {
-    return mScale;
-  }
-  
-  public float getTranslateX() {
-    return mTranslateX;
-  }
-  
-  public float getTranslateY() {
-    return mTranslateY;
-  }
-  
   public void zoomTo(float scale) {
-    Rectangle imageBounds = mImage.getBounds();
-    
-    float oldScale = mScale;    
-    mScale = scale;    
-
-    float oldWidth = imageBounds.width * oldScale;
-    float oldHeight = imageBounds.height * oldScale;    
-    
-    float newWidth = imageBounds.width * mScale;
-    float newHeight = imageBounds.height * mScale;
-    
-    mTranslateX += (oldWidth - newWidth)/2;
-    mTranslateY += (oldHeight - newHeight)/2;
-
-    redraw();
+//    Rectangle imageBounds = mImage.getBounds();
+//    
+//    //  float oldScale = mScale;    
+//    mScale = scale;    
+//
+//    float oldWidth = imageBounds.width * oldScale;
+//    float oldHeight = imageBounds.height * oldScale;    
+//    
+//    float newWidth = imageBounds.width * mScale;
+//    float newHeight = imageBounds.height * mScale;
+//    
+//    mTranslateX += (oldWidth - newWidth)/2;
+//    mTranslateY += (oldHeight - newHeight)/2;
+//
+//    redraw();
+    float dScale = scale / getScale();
+    zoomBy(dScale);
   }
   
   public void zoomTo(Point startPoint, Point endPoint) {
-    int top = Math.min(startPoint.x, endPoint.x);
-    int left = Math.min(startPoint.y, endPoint.y);
-    
-    Rectangle bounds = new Rectangle(
-        top, 
-        left, 
-        Math.abs(endPoint.x - startPoint.x), 
-        Math.abs(endPoint.y - startPoint.y));    
-    
-    Rectangle imageBounds = mImage.getBounds();
-    
-    float scaleX = (float)imageBounds.width / bounds.width;
-    float scaleY = (float)imageBounds.height / bounds.height;
-    
-    mScale = Math.max(scaleX, scaleY);
-
-    mTranslateX = -top * mScale;
-    mTranslateY = -left * mScale;
-    
-    redraw();
+//    int top = Math.min(startPoint.x, endPoint.x);
+//    int left = Math.min(startPoint.y, endPoint.y);
+//    
+//    Rectangle bounds = new Rectangle(
+//        top, 
+//        left, 
+//        Math.abs(endPoint.x - startPoint.x), 
+//        Math.abs(endPoint.y - startPoint.y));    
+//    
+//    Rectangle imageBounds = mImage.getBounds();
+//    
+//    float scaleX = (float)imageBounds.width / bounds.width;
+//    float scaleY = (float)imageBounds.height / bounds.height;
+//    
+//    mScale = Math.max(scaleX, scaleY);
+//
+//    mTranslateX = -top * mScale;
+//    mTranslateY = -left * mScale;
+//    
+//    redraw();
   }
 
-  public void zoomBy(float scale) {
-    float dScale = mScale * scale;
-    zoomTo(dScale);
+  public void zoomBy(float dScale) {
+//    float dScale = mScale * scale;
+//    zoomTo(dScale);
+    
+    Rectangle imageBounds = mImage.getBounds();
+    float scale = getScale();
+    
+    float oldWidth = imageBounds.width * scale;
+    float oldHeight = imageBounds.height * scale;
+    
+    float newWidth = oldWidth * dScale;
+    float newHeight = oldHeight * dScale;
+    
+    float dx = (oldWidth - newWidth) / 2;
+    float dy = (oldHeight - newHeight) / 2;
+    
+    mTransform.scale(dScale, dScale);
+    
+    scale = getScale();
+    
+    mTransform.translate(dx / scale, dy / scale);
+    redraw();
   }
 
   public void zoomIn() {
@@ -253,19 +287,25 @@ public class ImageCanvas extends Canvas {
   }
   
   public void zoomOut() {
-    zoomTo(Math.max(mScale * 0.9f, mMinScale));
+//    zoomTo(Math.max(mScale * 0.9f, mMinScale));
+    zoomTo(Math.max(getScale() * 0.9f, mMinScale));
     mFitToImage = false;
   }
   
   public void panTo(float x, float y) {
-    mTranslateX = x;
-    mTranslateY = y;
-    redraw();
+    float dx = getTranslateX() - x;
+    float dy = getTranslateY() - y;
+    panBy(dx, dy);
+//    mTranslateX = x;
+//    mTranslateY = y;
+//    redraw();
   }
   
   public void panBy(float dx, float dy) {
-    mTranslateX += dx;
-    mTranslateY += dy;
+//    mTranslateX += dx;
+//    mTranslateY += dy;
+    float scale = getScale();
+    mTransform.translate(dx / scale, dy / scale);
     redraw();
   }
   
@@ -279,8 +319,14 @@ public class ImageCanvas extends Canvas {
     Rectangle imageBounds = mImage.getBounds();
     
     // find the transform to center
-    mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
-    mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
+    float scale = getScale();
+    float dx = ((float)canvasBounds.width / 2) - ((float)imageBounds.width * scale / 2) ;
+    float dy = ((float)canvasBounds.height / 2) - ((float)imageBounds.height * scale / 2);
+    mTransform.translate((dx - getTranslateX()) / scale, (dy - getTranslateY()) / scale);
+    System.out.println("center: {" + dx + ", " + dy + "}");
+    System.out.println("translation: {" + getTranslateX()/scale + ", " + getTranslateY()/scale + "}");
+//    mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
+//    mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
     
     redraw();
   }
@@ -289,12 +335,13 @@ public class ImageCanvas extends Canvas {
     Point rtn = new Point(p.x, p.y);
     
     // un-shift translation
-    rtn.x -= mTranslateX;
-    rtn.y -= mTranslateY;
+    rtn.x -= getTranslateX();
+    rtn.y -= getTranslateY();
     
     // un-scale
-    rtn.x /= mScale;
-    rtn.y /= mScale;
+    float scale = getScale();
+    rtn.x /= scale;
+    rtn.y /= scale;
     
     return rtn;
   }

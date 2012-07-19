@@ -134,10 +134,10 @@ public class Region {
   }
   
   private static void copyRectangle(Rectangle source, Rectangle dest) {
-    source.x = dest.x;
-    source.y = dest.y;
-    source.width = dest.width;
-    source.height = dest.height;
+    dest.x = source.x;
+    dest.y = source.y;
+    dest.width = source.width;
+    dest.height = source.height;
   }
   
   private static int centerX(Rectangle r) {
