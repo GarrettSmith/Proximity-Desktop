@@ -49,6 +49,7 @@ import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.tool.OvalTool;
 import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
+import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.Tool.ToolHost;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
@@ -115,6 +116,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   private PointerTool toolPointer;
   private RectangleTool toolRect;
   private OvalTool toolOval;
+  private PolygonTool toolPolygon;
   private ZoomTool toolZoom;
   
   private ImageCanvas canvas;
@@ -579,7 +581,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
         actnPointer,
         actnRectangle,
         actnOval,
-//        actnPolygon,
+        actnPolygon,
         actnZoom,
         actnCenter
     };
@@ -798,6 +800,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     toolPointer = new PointerTool(this);
     toolRect = new RectangleTool(this);
     toolOval = new OvalTool(this);
+    toolPolygon = new PolygonTool(this);
     toolZoom = new ZoomTool(this);
   }
   
@@ -805,7 +808,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     actnPointer = toolPointer.getAction();
     actnRectangle = toolRect.getAction();
     actnOval = toolOval.getAction();
-//    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "poly.png", Tool.POLYGON);
+    actnPolygon = toolPolygon.getAction();
     actnZoom = toolZoom.getAction();
   }
 
@@ -877,7 +880,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     actnPointer.setChecked(true);
     toolBarManager.add(actnRectangle);
     toolBarManager.add(actnOval);
-//    toolBarManager.add(actnPolygon);
+    toolBarManager.add(actnPolygon);
     toolBarManager.add(actnZoom);
     toolBarManager.add(actnSnapshot);
     return toolBarManager;

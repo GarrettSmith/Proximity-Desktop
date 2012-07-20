@@ -198,10 +198,7 @@ public class ImageCanvas extends Canvas {
     // set that we want to stay fit to the image
     mFitToImage = true;
     
-    if (mImage != null) {
-      Rectangle canvasBounds = getBounds();
-      Rectangle imageBounds = mImage.getBounds();
-      
+    if (mImage != null) {      
 //      mScale = mMinScale;
       float dScale = mMinScale / getScale();
       mTransform.scale(dScale, dScale);
@@ -360,6 +357,21 @@ public class ImageCanvas extends Canvas {
     float scale = getScale();
     rtn.x /= scale;
     rtn.y /= scale;
+    
+    return rtn;
+  }
+  
+  public Point toScreenSpace(Point p) {
+    Point rtn = new Point(p.x, p.y);
+    
+    // un-scale
+    float scale = getScale();
+    rtn.x *= scale;
+    rtn.y *= scale;
+    
+    // un-shift translation
+    rtn.x += getTranslateX();
+    rtn.y += getTranslateY();
     
     return rtn;
   }
