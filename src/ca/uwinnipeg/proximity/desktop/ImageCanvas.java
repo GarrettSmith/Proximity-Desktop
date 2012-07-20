@@ -364,17 +364,21 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
-  public void toScreenSpace(Rectangle r) {
+  public Rectangle toScreenSpace(Rectangle r) {
+    Rectangle rtn = new Rectangle(r.x, r.y, r.width, r.height);
+    
     // un-scale
     float scale = getScale();
-    r.x *= scale;
-    r.y *= scale;
-    r.width *= scale;
-    r.height *= scale;
+    rtn.x *= scale;
+    rtn.y *= scale;
+    rtn.width *= scale;
+    rtn.height *= scale;
     
     // un-shift translation
-    r.x += getTranslateX();
-    r.y += getTranslateY();
+    rtn.x += getTranslateX();
+    rtn.y += getTranslateY();
+    
+    return rtn;
   }
   
   public boolean contains(Point p) {

@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
@@ -41,7 +40,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -49,22 +47,25 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
 
+import ca.uwinnipeg.proximity.desktop.tool.Pointer;
+import ca.uwinnipeg.proximity.desktop.tool.Tool.ToolHost;
+
 /**
  * The main window of the application.
  * @author Garrett Smith
  *
  */
 // TODO: split up
-public class MainWindow extends ApplicationWindow {
+public class MainWindow extends ApplicationWindow implements ToolHost {
   private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages"); //$NON-NLS-1$
   
-  enum Tool {
-    POINTER,
-    RECTANGLE,
-    OVAL,
-    POLYGON,
-    ZOOM
-  }  
+//  enum Tool {
+//    POINTER,
+//    RECTANGLE,
+//    OVAL,
+//    POLYGON,
+//    ZOOM
+//  }  
   
   private Action actnOpen;
   private Action actnSnapshot;
@@ -107,13 +108,16 @@ public class MainWindow extends ApplicationWindow {
   private Action[] mImageDependantActions;
   private Action[] mSelectionDependantActions;
   
+  // tools
+  private Pointer toolPointer;
+  
   private ImageCanvas canvas;
   
   private Image mImage;
   
   private MainController mController;
   
-  private Tool mTool = Tool.POINTER;
+//  private Tool mTool = Tool.POINTER;
   
   private List<Region> mSelectedRegions = new ArrayList<Region>();
   
@@ -174,162 +178,162 @@ public class MainWindow extends ApplicationWindow {
     }
   };
   
-  private Listener mToolListener = new ToolListener();
-  
-  private class ToolListener implements Listener, MouseListener, MouseMoveListener, PaintListener {
-    
-    private Point mStartImagePoint;
-    private Point mCurrentImagePoint;
-    
-    private Point mStartScreenPoint;
-    private Point mCurrentScreenPoint;
-
-    /**
-     * Route the events to handlers
-     */
-    public void handleEvent(Event event) {
-      switch(event.type) {
-        case SWT.MouseDown:
-          mouseDown(new MouseEvent(event));
-          break;
-        case SWT.MouseUp:
-          mouseUp(new MouseEvent(event));
-          break;
-        case SWT.MouseMove:
-          mouseMove(new MouseEvent(event));
-          break;
-        case SWT.Paint:
-          paintControl(new PaintEvent(event));
-          break;
-      }
-    }
-
-    public void mouseDown(MouseEvent e) {
-      // if the first button was pressed
-      if (e.button == 1) {
-        mStartScreenPoint = mCurrentScreenPoint;
-        mStartImagePoint = mCurrentImagePoint;
-
-        // check if we clicked outside of the image
-        if (!canvas.contains(mStartImagePoint)) {
-          mStartImagePoint = mStartScreenPoint = null;
-        }
-      }
-    }
-
-    public void mouseUp(MouseEvent e) {
-      // make sure we started in a valid position3
-      if (mStartImagePoint != null) {
-        
-        // check if the didn't just click a point
-        if (mCurrentImagePoint != mStartImagePoint) {
-          switch (mTool) {
-            case ZOOM:
-              canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
-              break;
-            case RECTANGLE:
-              List<Point> points = new ArrayList<Point>();
-              points.add(mStartImagePoint);
-              points.add(mCurrentImagePoint);
-              mController.addRegion(Region.Shape.RECTANGLE, points);
-              break;
-          }
-        }
-        // handle clicks
-        else {
-          if (mTool == Tool.POINTER) {
-            // TODO: check if shift or ctrl is being held
-            mSelectedRegions.clear();
-            // see if we clicked any regions
-            for (Region r : mController.getRegions()) {
-              Rectangle bounds = r.getBounds();
-              if (bounds.contains(mStartImagePoint)) {
-                mSelectedRegions.add(r);
-              }
-            }
-          }
-        }
-
-        mStartImagePoint = mStartScreenPoint = null;
-        canvas.redraw();
-
-      }
-    }
-
-    public void mouseMove(MouseEvent e) {
-      mCurrentScreenPoint = new Point(e.x, e.y);
-      mCurrentImagePoint = canvas.toImageSpace(mCurrentScreenPoint);
-      
-      // check if the mouse has been clicked and we should draw something
-      if (mStartImagePoint != null) {
-        // limit points to be within image bounds
-        mCurrentImagePoint.x = Math.max(0, mCurrentImagePoint.x);
-        mCurrentImagePoint.x = Math.min(mImage.getBounds().width, mCurrentImagePoint.x);        
-
-        mCurrentImagePoint.y = Math.max(0, mCurrentImagePoint.y);
-        mCurrentImagePoint.y = Math.min(mImage.getBounds().height, mCurrentImagePoint.y);
-
-        canvas.redraw();
-      }
-    }
-
-    public void mouseDoubleClick(MouseEvent e) {
-      // Do nothing
-    }
-
-    public void paintControl(PaintEvent e) {      
-      if (mStartImagePoint != null && mCurrentImagePoint != null) {
-        
-        GC gc = e.gc;
-        
-        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
-        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
-        
-        // draw color
-        Color color;
-        if (mTool == Tool.RECTANGLE || mTool == Tool.OVAL) {
-          // CYAN
-          color = new Color(Display.getCurrent(), 0, 255, 255);
-        }
-        else {
-          // Black
-          color = new Color(Display.getCurrent(), 0, 0, 0);
-        }
-        gc.setForeground(color);
-        
-        if (mTool == Tool.POINTER) {
-          gc.setLineStyle(SWT.LINE_DOT);
-        }
-        
-        switch (mTool) {
-          case RECTANGLE:
-          case ZOOM:
-          case POINTER:
-            gc.drawRectangle(
-                mStartScreenPoint.x, 
-                mStartScreenPoint.y, 
-                width, 
-                height);
-            break;
-          case OVAL:
-            gc.drawOval(
-              mStartScreenPoint.x, 
-              mStartScreenPoint.y, 
-              width, 
-              height);
-            gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
-            gc.setAlpha(150);
-            gc.drawRectangle(
-              mStartScreenPoint.x, 
-              mStartScreenPoint.y, 
-              width, 
-              height);
-            break;
-        }
-      }
-    }
-    
-  }
+//  private Listener mToolListener = new ToolListener();
+//  
+//  private class ToolListener implements Listener, MouseListener, MouseMoveListener, PaintListener {
+//    
+//    private Point mStartImagePoint;
+//    private Point mCurrentImagePoint;
+//    
+//    private Point mStartScreenPoint;
+//    private Point mCurrentScreenPoint;
+//
+//    /**
+//     * Route the events to handlers
+//     */
+//    public void handleEvent(Event event) {
+//      switch(event.type) {
+//        case SWT.MouseDown:
+//          mouseDown(new MouseEvent(event));
+//          break;
+//        case SWT.MouseUp:
+//          mouseUp(new MouseEvent(event));
+//          break;
+//        case SWT.MouseMove:
+//          mouseMove(new MouseEvent(event));
+//          break;
+//        case SWT.Paint:
+//          paintControl(new PaintEvent(event));
+//          break;
+//      }
+//    }
+//
+//    public void mouseDown(MouseEvent e) {
+//      // if the first button was pressed
+//      if (e.button == 1) {
+//        mStartScreenPoint = mCurrentScreenPoint;
+//        mStartImagePoint = mCurrentImagePoint;
+//
+//        // check if we clicked outside of the image
+//        if (!canvas.contains(mStartImagePoint)) {
+//          mStartImagePoint = mStartScreenPoint = null;
+//        }
+//      }
+//    }
+//
+//    public void mouseUp(MouseEvent e) {
+//      // make sure we started in a valid position3
+//      if (mStartImagePoint != null) {
+//        
+//        // check if the didn't just click a point
+//        if (mCurrentImagePoint != mStartImagePoint) {
+//          switch (mTool) {
+//            case ZOOM:
+//              canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
+//              break;
+//            case RECTANGLE:
+//              List<Point> points = new ArrayList<Point>();
+//              points.add(mStartImagePoint);
+//              points.add(mCurrentImagePoint);
+//              mController.addRegion(Region.Shape.RECTANGLE, points);
+//              break;
+//          }
+//        }
+//        // handle clicks
+//        else {
+//          if (mTool == Tool.POINTER) {
+//            // TODO: check if shift or ctrl is being held
+//            mSelectedRegions.clear();
+//            // see if we clicked any regions
+//            for (Region r : mController.getRegions()) {
+//              Rectangle bounds = r.getBounds();
+//              if (bounds.contains(mStartImagePoint)) {
+//                mSelectedRegions.add(r);
+//              }
+//            }
+//          }
+//        }
+//
+//        mStartImagePoint = mStartScreenPoint = null;
+//        canvas.redraw();
+//
+//      }
+//    }
+//
+//    public void mouseMove(MouseEvent e) {
+//      mCurrentScreenPoint = new Point(e.x, e.y);
+//      mCurrentImagePoint = canvas.toImageSpace(mCurrentScreenPoint);
+//      
+//      // check if the mouse has been clicked and we should draw something
+//      if (mStartImagePoint != null) {
+//        // limit points to be within image bounds
+//        mCurrentImagePoint.x = Math.max(0, mCurrentImagePoint.x);
+//        mCurrentImagePoint.x = Math.min(mImage.getBounds().width, mCurrentImagePoint.x);        
+//
+//        mCurrentImagePoint.y = Math.max(0, mCurrentImagePoint.y);
+//        mCurrentImagePoint.y = Math.min(mImage.getBounds().height, mCurrentImagePoint.y);
+//
+//        canvas.redraw();
+//      }
+//    }
+//
+//    public void mouseDoubleClick(MouseEvent e) {
+//      // Do nothing
+//    }
+//
+//    public void paintControl(PaintEvent e) {      
+//      if (mStartImagePoint != null && mCurrentImagePoint != null) {
+//        
+//        GC gc = e.gc;
+//        
+//        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
+//        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
+//        
+//        // draw color
+//        Color color;
+//        if (mTool == Tool.RECTANGLE || mTool == Tool.OVAL) {
+//          // CYAN
+//          color = new Color(Display.getCurrent(), 0, 255, 255);
+//        }
+//        else {
+//          // Black
+//          color = new Color(Display.getCurrent(), 0, 0, 0);
+//        }
+//        gc.setForeground(color);
+//        
+//        if (mTool == Tool.POINTER) {
+//          gc.setLineStyle(SWT.LINE_DOT);
+//        }
+//        
+//        switch (mTool) {
+//          case RECTANGLE:
+//          case ZOOM:
+//          case POINTER:
+//            gc.drawRectangle(
+//                mStartScreenPoint.x, 
+//                mStartScreenPoint.y, 
+//                width, 
+//                height);
+//            break;
+//          case OVAL:
+//            gc.drawOval(
+//              mStartScreenPoint.x, 
+//              mStartScreenPoint.y, 
+//              width, 
+//              height);
+//            gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
+//            gc.setAlpha(150);
+//            gc.drawRectangle(
+//              mStartScreenPoint.x, 
+//              mStartScreenPoint.y, 
+//              width, 
+//              height);
+//            break;
+//        }
+//      }
+//    }
+//    
+//  }
   
   private PaintListener mPaintRegionsListener = new PaintListener() {
     
@@ -340,7 +344,7 @@ public class MainWindow extends ApplicationWindow {
       gc.setAlpha(100);
       for (Region r : mController.getRegions()) {
         Rectangle bounds = r.getBounds();
-        canvas.toScreenSpace(bounds);
+        bounds = canvas.toScreenSpace(bounds);
         // determine if the region is selected
         if (mSelectedRegions.contains(r)) {
           gc.setBackground(selected);
@@ -354,11 +358,29 @@ public class MainWindow extends ApplicationWindow {
   };
 
   /**
+   * Launch the application.
+   * @param args
+   */
+  public static void main(String args[]) {
+    try {
+      MainWindow window = new MainWindow();
+      MainController controller = new MainController();
+      window.setController(controller);
+      window.setBlockOnOpen(true);
+      window.open();
+      Display.getCurrent().dispose();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Create the application window.
    */
   public MainWindow() {
     super(null);
     mKeyLookup = KeyLookupFactory.getDefault();
+    createTools();
     createActions();
     addToolBar(SWT.FLAT | SWT.WRAP);
     addMenuBar();
@@ -463,10 +485,10 @@ public class MainWindow extends ApplicationWindow {
       canvas.addMouseWheelListener(mMouseWheelListener);
       canvas.addMouseMoveListener(mMouseMoveListener);
       
-      canvas.addListener(SWT.MouseDown, mToolListener);
-      canvas.addListener(SWT.MouseUp, mToolListener);
-      canvas.addListener(SWT.MouseMove, mToolListener);
-      canvas.addListener(SWT.Paint, mToolListener);
+//      canvas.addListener(SWT.MouseDown, mToolListener);
+//      canvas.addListener(SWT.MouseUp, mToolListener);
+//      canvas.addListener(SWT.MouseMove, mToolListener);
+//      canvas.addListener(SWT.Paint, mToolListener);
       
       canvas.addPaintListener(mPaintRegionsListener);
       
@@ -482,9 +504,10 @@ public class MainWindow extends ApplicationWindow {
       menuMgr.add(actnDelete);
       
       Menu menu = menuMgr.createContextMenu(canvas);
-      canvas.setMenu(menu);
-    
+      canvas.setMenu(menu);   
       
+      // setup first tool
+      actnPointer.run();
     }
   }
   
@@ -541,10 +564,10 @@ public class MainWindow extends ApplicationWindow {
         actnZoom1to1,
         actnZoomImage,
         actnPointer,
-        actnRectangle,
-        actnOval,
-        actnPolygon,
-        actnZoom,
+//        actnRectangle,
+//        actnOval,
+//        actnPolygon,
+//        actnZoom,
         actnCenter
     };
     
@@ -758,29 +781,34 @@ public class MainWindow extends ApplicationWindow {
     }
   }
   
-  private class ToolAction extends Action {
-    
-    private Tool mThisTool;
-    
-    public ToolAction(String label, String icon, Tool tool) {
-      super(BUNDLE.getString(label), Action.AS_RADIO_BUTTON);
-      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/" + icon));
-      mThisTool = tool;
-    }
-    
-    @Override
-    public void run() {
-      //System.out.println(mThisTool);
-      mTool = mThisTool;
-    }
+//  private class ToolAction extends Action {
+//    
+//    private Tool mThisTool;
+//    
+//    public ToolAction(String label, String icon, Tool tool) {
+//      super(BUNDLE.getString(label), Action.AS_RADIO_BUTTON);
+//      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/" + icon));
+//      mThisTool = tool;
+//    }
+//    
+//    @Override
+//    public void run() {
+//      //System.out.println(mThisTool);
+//      mTool = mThisTool;
+//    }
+//  }
+  
+  private void createTools() {
+    toolPointer = new Pointer(this);
   }
   
   private void createToolActions() {
-    actnPointer = new ToolAction("MainWindow.action.text", "pointer.png", Tool.POINTER);
-    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "rect.png", Tool.RECTANGLE);
-    actnOval = new ToolAction("MainWindow.action.text_1", "oval.png", Tool.OVAL);
-    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "poly.png", Tool.POLYGON);
-    actnZoom = new ToolAction("MainWindow.actnZoom.text", "zoom.png", Tool.ZOOM);
+    actnPointer = toolPointer.getAction();
+//    actnPointer = new ToolAction("MainWindow.action.text", "pointer.png", Tool.POINTER);
+//    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "rect.png", Tool.RECTANGLE);
+//    actnOval = new ToolAction("MainWindow.action.text_1", "oval.png", Tool.OVAL);
+//    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "poly.png", Tool.POLYGON);
+//    actnZoom = new ToolAction("MainWindow.actnZoom.text", "zoom.png", Tool.ZOOM);
   }
 
   /**
@@ -849,11 +877,11 @@ public class MainWindow extends ApplicationWindow {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
     toolBarManager.add(actnPointer);
     actnPointer.setChecked(true);
-    toolBarManager.add(actnRectangle);
-    toolBarManager.add(actnOval);
-    toolBarManager.add(actnPolygon);
-    toolBarManager.add(actnZoom);
-    toolBarManager.add(actnSnapshot);
+//    toolBarManager.add(actnRectangle);
+//    toolBarManager.add(actnOval);
+//    toolBarManager.add(actnPolygon);
+//    toolBarManager.add(actnZoom);
+//    toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
 
@@ -865,23 +893,6 @@ public class MainWindow extends ApplicationWindow {
   protected StatusLineManager createStatusLineManager() {
     StatusLineManager statusLineManager = new StatusLineManager();
     return statusLineManager;
-  }
-
-  /**
-   * Launch the application.
-   * @param args
-   */
-  public static void main(String args[]) {
-    try {
-      MainWindow window = new MainWindow();
-      MainController controller = new MainController();
-      window.setController(controller);
-      window.setBlockOnOpen(true);
-      window.open();
-      Display.getCurrent().dispose();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   /**
@@ -923,6 +934,18 @@ public class MainWindow extends ApplicationWindow {
    */
   public void setController(MainController controller) {
     mController = controller;
+  }
+
+  public MainController getController() {
+    return mController;
+  }
+
+  public ImageCanvas getCanvas() {
+    return canvas;
+  }
+  
+  public Image getImage() {
+    return mImage;
   }
 
   /**
