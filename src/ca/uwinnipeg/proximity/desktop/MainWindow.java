@@ -358,7 +358,14 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
         else {
           gc.setBackground(unselected);
         }
-        gc.fillRectangle(bounds);
+        switch(r.getShape()) {
+          case RECTANGLE:
+            gc.fillRectangle(bounds);
+            break;
+          case OVAL:
+            gc.fillOval(bounds.x, bounds.y, bounds.width, bounds.height);
+            break;
+        }
       }
     }
   };
