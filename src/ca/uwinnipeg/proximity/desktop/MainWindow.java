@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -47,8 +48,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
 
 /**
  * The main window of the application.
@@ -266,8 +265,8 @@ public class MainWindow extends ApplicationWindow {
         
         GC gc = e.gc;
         
-        int width = mCurrentImagePoint.x - mStartImagePoint.x;
-        int height = mCurrentImagePoint.y - mStartImagePoint.y;
+        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
+        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
         
         // draw color
         Color color;
@@ -290,22 +289,22 @@ public class MainWindow extends ApplicationWindow {
           case ZOOM:
           case POINTER:
             gc.drawRectangle(
-                mStartImagePoint.x, 
-                mStartImagePoint.y, 
+                mStartScreenPoint.x, 
+                mStartScreenPoint.y, 
                 width, 
                 height);
             break;
           case OVAL:
             gc.drawOval(
-              mStartImagePoint.x, 
-              mStartImagePoint.y, 
+              mStartScreenPoint.x, 
+              mStartScreenPoint.y, 
               width, 
               height);
             gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
             gc.setAlpha(150);
             gc.drawRectangle(
-              mStartImagePoint.x, 
-              mStartImagePoint.y, 
+              mStartScreenPoint.x, 
+              mStartScreenPoint.y, 
               width, 
               height);
             break;
@@ -314,6 +313,20 @@ public class MainWindow extends ApplicationWindow {
     }
     
   }
+  
+  private PaintListener mPaintRegionsListener = new PaintListener() {
+    
+    public void paintControl(PaintEvent e) {
+      GC gc = e.gc;
+      gc.setBackground(new Color(Display.getCurrent(), 255, 255, 255));
+      gc.setAlpha(100);
+      for (Region r : mController.getRegions()) {
+        Rectangle bounds = r.getBounds();
+        canvas.toScreenSpace(bounds);
+        gc.fillRectangle(bounds);
+      }
+    }
+  };
 
   /**
    * Create the application window.
@@ -429,6 +442,8 @@ public class MainWindow extends ApplicationWindow {
       canvas.addListener(SWT.MouseUp, mToolListener);
       canvas.addListener(SWT.MouseMove, mToolListener);
       canvas.addListener(SWT.Paint, mToolListener);
+      
+      canvas.addPaintListener(mPaintRegionsListener);
       
       MenuManager menuMgr = new MenuManager();
       menuMgr.add(actnUndo);

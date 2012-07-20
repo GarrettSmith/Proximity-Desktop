@@ -120,6 +120,7 @@ public class ImageCanvas extends Canvas {
 //          Math.round(mScale * imageBounds.height));
       gc.setTransform(mTransform);
       gc.drawImage(mImage, 0, 0);
+      gc.setTransform(null);
     }
     
     mOldBounds = currentBounds;
@@ -363,6 +364,18 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
+  public void toScreenSpace(Rectangle r) {
+    // un-scale
+    float scale = getScale();
+    r.x *= scale;
+    r.y *= scale;
+    r.width *= scale;
+    r.height *= scale;
+    
+    // un-shift translation
+    r.x += getTranslateX();
+    r.y += getTranslateY();
+  }
   
   public boolean contains(Point p) {
     int width = mImage.getBounds().width;

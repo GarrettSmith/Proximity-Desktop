@@ -38,7 +38,7 @@ public class MainController {
    * Returns all the regions added to the image.
    * @return
    */
-  public List<Region> getRegion() {
+  public List<Region> getRegions() {
     return new ArrayList<Region>(mRegions);
   }
 
