@@ -54,6 +54,7 @@ import org.eclipse.wb.swt.ResourceManager;
  * @author Garrett Smith
  *
  */
+// TODO: split up
 public class MainWindow extends ApplicationWindow {
   private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages"); //$NON-NLS-1$
   
@@ -113,6 +114,8 @@ public class MainWindow extends ApplicationWindow {
   private MainController mController;
   
   private Tool mTool = Tool.POINTER;
+  
+  private List<Region> mSelectedRegions = new ArrayList<Region>();
   
   // frames
   private Composite frameStack;
@@ -218,7 +221,7 @@ public class MainWindow extends ApplicationWindow {
       // make sure we started in a valid position3
       if (mStartImagePoint != null) {
         
-        // check if the didn't just tap a point
+        // check if the didn't just click a point
         if (mCurrentImagePoint != mStartImagePoint) {
           switch (mTool) {
             case ZOOM:
@@ -230,6 +233,20 @@ public class MainWindow extends ApplicationWindow {
               points.add(mCurrentImagePoint);
               mController.addRegion(Region.Shape.RECTANGLE, points);
               break;
+          }
+        }
+        // handle clicks
+        else {
+          if (mTool == Tool.POINTER) {
+            // TODO: check if shift or ctrl is being held
+            mSelectedRegions.clear();
+            // see if we clicked any regions
+            for (Region r : mController.getRegions()) {
+              Rectangle bounds = r.getBounds();
+              if (bounds.contains(mStartImagePoint)) {
+                mSelectedRegions.add(r);
+              }
+            }
           }
         }
 
@@ -318,11 +335,19 @@ public class MainWindow extends ApplicationWindow {
     
     public void paintControl(PaintEvent e) {
       GC gc = e.gc;
-      gc.setBackground(new Color(Display.getCurrent(), 255, 255, 255));
+      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
+      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
       gc.setAlpha(100);
       for (Region r : mController.getRegions()) {
         Rectangle bounds = r.getBounds();
         canvas.toScreenSpace(bounds);
+        // determine if the region is selected
+        if (mSelectedRegions.contains(r)) {
+          gc.setBackground(selected);
+        }
+        else {
+          gc.setBackground(unselected);
+        }
         gc.fillRectangle(bounds);
       }
     }
@@ -745,7 +770,7 @@ public class MainWindow extends ApplicationWindow {
     
     @Override
     public void run() {
-      System.out.println(mThisTool);
+      //System.out.println(mThisTool);
       mTool = mThisTool;
     }
   }
@@ -823,6 +848,7 @@ public class MainWindow extends ApplicationWindow {
   protected ToolBarManager createToolBarManager(int style) {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
     toolBarManager.add(actnPointer);
+    actnPointer.setChecked(true);
     toolBarManager.add(actnRectangle);
     toolBarManager.add(actnOval);
     toolBarManager.add(actnPolygon);
@@ -965,6 +991,7 @@ public class MainWindow extends ApplicationWindow {
    * Save a snapshot of the current view.
    */
   public void doSnapshot() {
+    // TODO: prepare image
     SnapshotDialog dialog = new SnapshotDialog(getShell(), mImage);
     dialog.open();
   }
