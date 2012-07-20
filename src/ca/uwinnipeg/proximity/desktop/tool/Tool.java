@@ -48,6 +48,8 @@ public abstract class Tool {
   private Map<Integer, Listener> mListeners;
   
   private ToolHost mHost;
+  
+  private boolean mRegistered = false;
 
   /**
    * An action used to activate a tool.
@@ -63,9 +65,15 @@ public abstract class Tool {
 
     @Override
     public void run() {
-      //System.out.println(mThisTool);
-      // register to receive events
-      addListeners();
+      if (mRegistered != isChecked()) {
+        // register and unregister from events
+        if (isChecked()) {
+          addListeners();
+        }
+        else {
+          removeListeners();
+        }
+      }
     }
   }
   
@@ -86,6 +94,7 @@ public abstract class Tool {
    * Register all the tool's listeners to the canvas.
    */
   public void addListeners() {
+    mRegistered = true;
     ImageCanvas canvas = getCanvas();
     for (Entry<Integer, Listener> e : mListeners.entrySet()) {
       canvas.addListener(e.getKey(), e.getValue());
@@ -96,6 +105,7 @@ public abstract class Tool {
    * Unregister from receiving events.
    */
   public void removeListeners() {
+    mRegistered = false;
     ImageCanvas canvas = getCanvas();
     for (Entry<Integer, Listener> e : mListeners.entrySet()) {
       canvas.removeListener(e.getKey(), e.getValue());
@@ -125,6 +135,13 @@ public abstract class Tool {
   }
   
   public abstract class DragToolListener implements Listener {
+    
+    public void register(Map<Integer, Listener> map) {
+      map.put(SWT.MouseMove, this);
+      map.put(SWT.MouseDown, this);
+      map.put(SWT.MouseUp, this);
+      map.put(SWT.Paint, this);
+    }
 
     // route events
     public void handleEvent(Event event) {
@@ -151,8 +168,8 @@ public abstract class Tool {
     private Point mScreenCurrentPoint;
     
     public void mouseDown(Event event) {
-      // if we are inside the image
-      if (getCanvas().contains(mImageCurrentPoint)) {
+      // if we are pressing the first button inside the image
+      if (event.button == 1 && getCanvas().contains(mImageCurrentPoint)) {
         mScreenStartPoint = mScreenCurrentPoint;
         mImageStartPoint = mImageCurrentPoint;
       }

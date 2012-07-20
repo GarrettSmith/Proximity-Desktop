@@ -5,7 +5,6 @@ package ca.uwinnipeg.proximity.desktop.tool;
 
 import java.util.HashMap;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -14,19 +13,16 @@ import org.eclipse.swt.widgets.Listener;
  * @author Garrett Smith
  *
  */
-public class Pointer extends Tool {
+public class PointerTool extends Tool {
 
-  public Pointer(ToolHost host) {
+  public PointerTool(ToolHost host) {
     super(host, "MainWindow.action.text", "pointer.png");
   }
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
-    Listener listener = new PointerListener();
-    map.put(SWT.MouseMove, listener);
-    map.put(SWT.MouseDown, listener);
-    map.put(SWT.MouseUp, listener);
-    map.put(SWT.Paint, listener);
+    PointerListener listener = new PointerListener();
+    listener.register(map);
     return map;
   }
   
@@ -34,13 +30,17 @@ public class Pointer extends Tool {
 
     @Override
     public void onClick(Event event, Point image, Point screen) {
-      System.out.println("Click");
+      // TODO: select the region under the cursor
     }
 
     @Override
-    public void onDrag(Event event, Point imageStart, Point imageEnd,
-        Point screenStart, Point screenEnd) {
-      System.out.println("Drag");
+    public void onDrag(
+        Event event, 
+        Point imageStart, 
+        Point imageEnd, 
+        Point screenStart, 
+        Point screenEnd) {
+      // TODO: select regions within the drag
     }
     
   }

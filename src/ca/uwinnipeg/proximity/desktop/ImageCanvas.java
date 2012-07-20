@@ -302,13 +302,13 @@ public class ImageCanvas extends Canvas {
   }
 
   public void zoomIn() {
-    zoomBy(1.1f);
+    zoomBy(1.2f);
     mFitToImage = false;
   }
   
   public void zoomOut() {
 //    zoomTo(Math.max(mScale * 0.9f, mMinScale));
-    zoomTo(Math.max(getScale() * 0.9f, mMinScale));
+    zoomTo(Math.max(getScale() * 0.8f, mMinScale));
     mFitToImage = false;
   }
   

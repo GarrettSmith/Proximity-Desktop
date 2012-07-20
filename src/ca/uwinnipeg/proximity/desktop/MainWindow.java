@@ -47,8 +47,11 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
 
-import ca.uwinnipeg.proximity.desktop.tool.Pointer;
+import ca.uwinnipeg.proximity.desktop.tool.OvalTool;
+import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
+import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.Tool.ToolHost;
+import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
 
 /**
  * The main window of the application.
@@ -109,7 +112,10 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   private Action[] mSelectionDependantActions;
   
   // tools
-  private Pointer toolPointer;
+  private PointerTool toolPointer;
+  private RectangleTool toolRect;
+  private OvalTool toolOval;
+  private ZoomTool toolZoom;
   
   private ImageCanvas canvas;
   
@@ -564,10 +570,10 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
         actnZoom1to1,
         actnZoomImage,
         actnPointer,
-//        actnRectangle,
-//        actnOval,
+        actnRectangle,
+        actnOval,
 //        actnPolygon,
-//        actnZoom,
+        actnZoom,
         actnCenter
     };
     
@@ -781,34 +787,19 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     }
   }
   
-//  private class ToolAction extends Action {
-//    
-//    private Tool mThisTool;
-//    
-//    public ToolAction(String label, String icon, Tool tool) {
-//      super(BUNDLE.getString(label), Action.AS_RADIO_BUTTON);
-//      setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/" + icon));
-//      mThisTool = tool;
-//    }
-//    
-//    @Override
-//    public void run() {
-//      //System.out.println(mThisTool);
-//      mTool = mThisTool;
-//    }
-//  }
-  
   private void createTools() {
-    toolPointer = new Pointer(this);
+    toolPointer = new PointerTool(this);
+    toolRect = new RectangleTool(this);
+    toolOval = new OvalTool(this);
+    toolZoom = new ZoomTool(this);
   }
   
   private void createToolActions() {
     actnPointer = toolPointer.getAction();
-//    actnPointer = new ToolAction("MainWindow.action.text", "pointer.png", Tool.POINTER);
-//    actnRectangle = new ToolAction("MainWindow.actnRectangle.text", "rect.png", Tool.RECTANGLE);
-//    actnOval = new ToolAction("MainWindow.action.text_1", "oval.png", Tool.OVAL);
+    actnRectangle = toolRect.getAction();
+    actnOval = toolOval.getAction();
 //    actnPolygon = new ToolAction("MainWindow.actnPolygon.text", "poly.png", Tool.POLYGON);
-//    actnZoom = new ToolAction("MainWindow.actnZoom.text", "zoom.png", Tool.ZOOM);
+    actnZoom = toolZoom.getAction();
   }
 
   /**
@@ -877,11 +868,11 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.WRAP);
     toolBarManager.add(actnPointer);
     actnPointer.setChecked(true);
-//    toolBarManager.add(actnRectangle);
-//    toolBarManager.add(actnOval);
+    toolBarManager.add(actnRectangle);
+    toolBarManager.add(actnOval);
 //    toolBarManager.add(actnPolygon);
-//    toolBarManager.add(actnZoom);
-//    toolBarManager.add(actnSnapshot);
+    toolBarManager.add(actnZoom);
+    toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
 
