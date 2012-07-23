@@ -6,7 +6,10 @@ package ca.uwinnipeg.proximity.desktop.tool;
 import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -15,6 +18,8 @@ import org.eclipse.swt.widgets.Listener;
  *
  */
 public class ZoomTool extends Tool {
+  
+  public static final Color ZOOM_COLOR = new Color(Display.getCurrent(), 0, 0, 0);
 
   /**
    * @param host
@@ -52,6 +57,24 @@ public class ZoomTool extends Tool {
         Point screenStart,
         Point screenEnd) {
       getCanvas().zoomTo(imageStart, imageEnd);
+    }
+    
+    @Override
+    public void paint(
+        Event event, 
+        Point imageStart, 
+        Point imageEnd,
+        Point screenStart, 
+        Point screenEnd) {
+      GC gc = event.gc;
+      gc.setForeground(ZOOM_COLOR);
+      int width = screenEnd.x - screenStart.x;
+      int height = screenEnd.y - screenStart.y;
+      gc.drawRectangle(
+          screenStart.x, 
+          screenStart.y, 
+          width, 
+          height);
     }
     
   }

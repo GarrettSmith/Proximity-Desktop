@@ -11,7 +11,6 @@ import java.util.ResourceBundle;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -140,6 +139,7 @@ public abstract class Tool {
       map.put(SWT.MouseMove, this);
       map.put(SWT.MouseDown, this);
       map.put(SWT.MouseUp, this);
+      map.put(SWT.KeyDown, this);
       map.put(SWT.Paint, this);
     }
 
@@ -155,8 +155,18 @@ public abstract class Tool {
         case SWT.MouseMove:
           mouseMove(event);
           break;
+        case SWT.KeyDown:
+          keyDown(event);
+          break;
         case SWT.Paint:
-          paint(event);
+          if (mImageStartPoint != null) {
+            paint(
+                event, 
+                mImageStartPoint, 
+                mImageCurrentPoint, 
+                mScreenStartPoint, 
+                mScreenCurrentPoint);
+          }
           break;
       }
     }
@@ -166,6 +176,16 @@ public abstract class Tool {
 
     private Point mScreenStartPoint;
     private Point mScreenCurrentPoint;
+    
+    public void keyDown(Event event) {
+      switch(event.keyCode) {
+        // stop action on esc pressed
+        case SWT.ESC: 
+          mScreenStartPoint = mImageStartPoint = null;
+          getCanvas().redraw();
+          break;
+      }
+    }
     
     public void mouseDown(Event event) {
       // if we are pressing the first button inside the image
@@ -222,21 +242,17 @@ public abstract class Tool {
       }
     }
     
-    public void paint(Event event) {
-      if (mScreenStartPoint != null) {
-        GC gc = event.gc;
-        
-        int width = mScreenCurrentPoint.x - mScreenStartPoint.x;
-        int height = mScreenCurrentPoint.y - mScreenStartPoint.y;
-        
-        gc.setForeground(DRAG_COLOR);
-        gc.setLineStyle(SWT.LINE_DOT);
-        
-        gc.drawRectangle(mScreenStartPoint.x, mScreenStartPoint.y, width, height);        
-      }
-    }    
+    public abstract void paint(
+        Event event, 
+        Point imageStart, 
+        Point imageEnd,
+        Point screenStart, 
+        Point screenEnd);
     
-    public abstract void onClick(Event event, Point image, Point screen);
+    public abstract void onClick(
+        Event event, 
+        Point image, 
+        Point screen);
     
     public abstract void onDrag(
         Event event, 

@@ -5,6 +5,8 @@ package ca.uwinnipeg.proximity.desktop.tool;
 
 import java.util.HashMap;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -41,6 +43,26 @@ public class PointerTool extends Tool {
         Point screenStart, 
         Point screenEnd) {
       // TODO: select regions within the drag
+    }
+    
+    @Override
+    public void paint(
+        Event event, 
+        Point imageStart, 
+        Point imageEnd, 
+        Point screenStart,
+        Point screenEnd) {
+      if (screenStart != null) {
+        GC gc = event.gc;
+        
+        int width = screenEnd.x - screenStart.x;
+        int height = screenEnd.y - screenStart.y;
+        
+        gc.setForeground(DRAG_COLOR);
+        gc.setLineStyle(SWT.LINE_DOT);
+        
+        gc.drawRectangle(screenStart.x, screenStart.y, width, height);        
+      }
     }
     
   }

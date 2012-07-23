@@ -34,6 +34,13 @@ public abstract class SimpleRegionTool extends Tool {
     listener.register(map);
     return map;
   }
+
+  public abstract void paintProgress(
+      Event event, 
+      Point imageStart, 
+      Point imageEnd,
+      Point screenStart, 
+      Point screenEnd);
   
   class SimpleRegionListener extends DragToolListener {
 
@@ -54,6 +61,16 @@ public abstract class SimpleRegionTool extends Tool {
       points.add(imageStart);
       points.add(imageEnd);
       getController().addRegion(mShape, points);
+    }
+    
+    @Override
+    public void paint(
+        Event event, 
+        Point imageStart, 
+        Point imageEnd,
+        Point screenStart, 
+        Point screenEnd) {
+      paintProgress(event, imageStart, imageEnd, screenStart, screenEnd);   
     }
     
   }
