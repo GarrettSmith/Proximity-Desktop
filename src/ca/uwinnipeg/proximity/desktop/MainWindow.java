@@ -488,11 +488,27 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   private void createEditActions() {
     {
       actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          if (mController.hasUndo()) {
+            mController.undo();
+          }
+          canvas.redraw();
+        }
       };
+      //actnUndo.setEnabled(false);
     }
     {
       actnRedo = new Action(BUNDLE.getString("MainWindow.actnRedo.text")) { //$NON-NLS-1$
+        @Override
+        public void run() {
+          if (mController.hasRedo()) {
+            mController.redo();
+          }
+          canvas.redraw();
+        }
       };
+      //actnRedo.setEnabled(false);
     }
     {
       actnCut = new Action(BUNDLE.getString("MainWindow.actnCut.text")) { //$NON-NLS-1$

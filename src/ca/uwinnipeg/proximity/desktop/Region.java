@@ -232,6 +232,23 @@ public class Region {
   }
   
   /**
+   * Returns the points of the region.
+   * @return
+   */
+  public Point[] getPoints() {
+    if (mShape == Shape.POLYGON) {
+      return mPoly.getPoints();
+    }
+    else {
+      Rectangle bounds = getBounds();
+      Point[] points = new Point[2];
+      points[0] = new Point(bounds.x, bounds.y);
+      points[1] = new Point(bounds.x + bounds.width, bounds.y + bounds.height);
+      return points;
+    }
+  }
+  
+  /**
    * Gets all the indices of pixels within the {@link Image} contained by this region.
    * @param img
    * @return

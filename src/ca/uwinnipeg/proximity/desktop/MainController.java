@@ -3,13 +3,18 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
+import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
+import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
 import ca.uwinnipeg.proximity.image.Image;
 
 
@@ -23,6 +28,9 @@ public class MainController {
   private Image mImage = new Image();
   
   private List<Region> mRegions = new ArrayList<Region>();
+  
+  private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
+  private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
   
   /**
    * Sets up the image data into the image.
@@ -67,7 +75,8 @@ public class MainController {
           Math.abs(p1.x - p2.x),
           Math.abs(p1.y - p2.y)));
     }
-    mRegions.add(reg);
+    
+    performAction(new AddRegionAction(mRegions, reg));
   }
   
   /**
@@ -75,7 +84,41 @@ public class MainController {
    * @param region
    */
   public void removeRegion(Region region) {
-    mRegions.remove(region);
+    performAction(new RemoveRegionAction(mRegions, region));
+  }
+  
+  protected void performAction(HistoryAction action) {
+    action.apply();
+    mUndoStack.push(action);
+    mRedoStack.clear();
+  }
+  
+  public boolean hasUndo() {
+    return !mUndoStack.isEmpty();
+  }
+  
+  public boolean hasRedo() {
+    return !mRedoStack.isEmpty();
+  }
+  
+  public String getUndoString() {
+    return mUndoStack.peek().getName();
+  }
+  
+  public String getRedoString() {
+    return mRedoStack.peek().getName();
+  }
+  
+  public void undo() {
+    HistoryAction action = mUndoStack.pop();
+    action.unapply();
+    mRedoStack.push(action);
+  }
+  
+  public void redo() {
+    HistoryAction action = mRedoStack.pop();
+    action.apply();
+    mUndoStack.push(action);
   }
   
   /**
