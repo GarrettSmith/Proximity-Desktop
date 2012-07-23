@@ -494,6 +494,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
             mController.undo();
           }
           canvas.redraw();
+          setEnabled(mController.hasUndo());
+          actnRedo.setEnabled(true);
         }
       };
       //actnUndo.setEnabled(false);
@@ -506,6 +508,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
             mController.redo();
           }
           canvas.redraw();
+          setEnabled(mController.hasRedo());
+          actnUndo.setEnabled(true);
         }
       };
       //actnRedo.setEnabled(false);

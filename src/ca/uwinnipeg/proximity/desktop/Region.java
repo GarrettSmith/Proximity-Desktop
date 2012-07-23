@@ -414,36 +414,11 @@ public class Region {
     }
   }
 
-  public Point addPoint(int x, int y) {
-    Point newPoint = new Point(x, y);   
-    Rectangle imageBounds = getImageBounds();
-    // only add a point if it is within image bounds
-    if (imageBounds.contains(x, y)) {
-      int size = mPoly.size();
-      int index = 0;
-      // if we have two or fewer points this doesn't matter
-      if (size > 2) {
-        // find the edge that is closest to the point
-        float closest = Float.MAX_VALUE;
-        Point current, next;
-        for (int i = 0; i < size; i++) {
-          current = mPoly.getPoint(i);
-          next = mPoly.getPoint((i + 1) % size);
-          float d = MathUtil.pointLineDistance(current, next, newPoint);
-          if (d < closest) {
-            closest = d;
-            index = i + 1;
-          }
-        }
-      }        
-  
-      // Add the point between the nearest point and it's nearest, to the new point, neighbour
-      newPoint = mPoly.addPoint(index, newPoint);
-      updateBounds();
-    }
-    return newPoint;
+  public void addPoint(int x, int y) {
+    mPoly.addPoint(x, y);
+    updateBounds();
   }
-  
+
   public Path getPath() {
     Path path = new Path(Display.getCurrent());
     path.addPath(getShapePath());

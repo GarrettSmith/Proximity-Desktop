@@ -59,12 +59,12 @@ public class MainController {
     Region reg = new Region(mImage);
     reg.setShape(shape);
     
-    //
     if (shape == Region.Shape.POLYGON) {
       for (Point p : points) {
         reg.addPoint(p.x, p.y);
       }
     }
+    // add non-polygon shape
     else {
       Point p1 = points.get(0);
       Point p2 = points.get(1);
