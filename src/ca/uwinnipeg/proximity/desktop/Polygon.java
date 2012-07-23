@@ -88,7 +88,7 @@ public class Polygon {
     }
     return ps;
   }
-
+  
   /**
    * Converts the points of the polygon to an array of floats.
    * @return

@@ -186,163 +186,6 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     }
   };
   
-//  private Listener mToolListener = new ToolListener();
-//  
-//  private class ToolListener implements Listener, MouseListener, MouseMoveListener, PaintListener {
-//    
-//    private Point mStartImagePoint;
-//    private Point mCurrentImagePoint;
-//    
-//    private Point mStartScreenPoint;
-//    private Point mCurrentScreenPoint;
-//
-//    /**
-//     * Route the events to handlers
-//     */
-//    public void handleEvent(Event event) {
-//      switch(event.type) {
-//        case SWT.MouseDown:
-//          mouseDown(new MouseEvent(event));
-//          break;
-//        case SWT.MouseUp:
-//          mouseUp(new MouseEvent(event));
-//          break;
-//        case SWT.MouseMove:
-//          mouseMove(new MouseEvent(event));
-//          break;
-//        case SWT.Paint:
-//          paintControl(new PaintEvent(event));
-//          break;
-//      }
-//    }
-//
-//    public void mouseDown(MouseEvent e) {
-//      // if the first button was pressed
-//      if (e.button == 1) {
-//        mStartScreenPoint = mCurrentScreenPoint;
-//        mStartImagePoint = mCurrentImagePoint;
-//
-//        // check if we clicked outside of the image
-//        if (!canvas.contains(mStartImagePoint)) {
-//          mStartImagePoint = mStartScreenPoint = null;
-//        }
-//      }
-//    }
-//
-//    public void mouseUp(MouseEvent e) {
-//      // make sure we started in a valid position3
-//      if (mStartImagePoint != null) {
-//        
-//        // check if the didn't just click a point
-//        if (mCurrentImagePoint != mStartImagePoint) {
-//          switch (mTool) {
-//            case ZOOM:
-//              canvas.zoomTo(mStartImagePoint, mCurrentImagePoint);
-//              break;
-//            case RECTANGLE:
-//              List<Point> points = new ArrayList<Point>();
-//              points.add(mStartImagePoint);
-//              points.add(mCurrentImagePoint);
-//              mController.addRegion(Region.Shape.RECTANGLE, points);
-//              break;
-//          }
-//        }
-//        // handle clicks
-//        else {
-//          if (mTool == Tool.POINTER) {
-//            // TODO: check if shift or ctrl is being held
-//            mSelectedRegions.clear();
-//            // see if we clicked any regions
-//            for (Region r : mController.getRegions()) {
-//              Rectangle bounds = r.getBounds();
-//              if (bounds.contains(mStartImagePoint)) {
-//                mSelectedRegions.add(r);
-//              }
-//            }
-//          }
-//        }
-//
-//        mStartImagePoint = mStartScreenPoint = null;
-//        canvas.redraw();
-//
-//      }
-//    }
-//
-//    public void mouseMove(MouseEvent e) {
-//      mCurrentScreenPoint = new Point(e.x, e.y);
-//      mCurrentImagePoint = canvas.toImageSpace(mCurrentScreenPoint);
-//      
-//      // check if the mouse has been clicked and we should draw something
-//      if (mStartImagePoint != null) {
-//        // limit points to be within image bounds
-//        mCurrentImagePoint.x = Math.max(0, mCurrentImagePoint.x);
-//        mCurrentImagePoint.x = Math.min(mImage.getBounds().width, mCurrentImagePoint.x);        
-//
-//        mCurrentImagePoint.y = Math.max(0, mCurrentImagePoint.y);
-//        mCurrentImagePoint.y = Math.min(mImage.getBounds().height, mCurrentImagePoint.y);
-//
-//        canvas.redraw();
-//      }
-//    }
-//
-//    public void mouseDoubleClick(MouseEvent e) {
-//      // Do nothing
-//    }
-//
-//    public void paintControl(PaintEvent e) {      
-//      if (mStartImagePoint != null && mCurrentImagePoint != null) {
-//        
-//        GC gc = e.gc;
-//        
-//        int width = mCurrentScreenPoint.x - mStartScreenPoint.x;
-//        int height = mCurrentScreenPoint.y - mStartScreenPoint.y;
-//        
-//        // draw color
-//        Color color;
-//        if (mTool == Tool.RECTANGLE || mTool == Tool.OVAL) {
-//          // CYAN
-//          color = new Color(Display.getCurrent(), 0, 255, 255);
-//        }
-//        else {
-//          // Black
-//          color = new Color(Display.getCurrent(), 0, 0, 0);
-//        }
-//        gc.setForeground(color);
-//        
-//        if (mTool == Tool.POINTER) {
-//          gc.setLineStyle(SWT.LINE_DOT);
-//        }
-//        
-//        switch (mTool) {
-//          case RECTANGLE:
-//          case ZOOM:
-//          case POINTER:
-//            gc.drawRectangle(
-//                mStartScreenPoint.x, 
-//                mStartScreenPoint.y, 
-//                width, 
-//                height);
-//            break;
-//          case OVAL:
-//            gc.drawOval(
-//              mStartScreenPoint.x, 
-//              mStartScreenPoint.y, 
-//              width, 
-//              height);
-//            gc.setForeground(new Color(Display.getCurrent(), 255, 255, 255));
-//            gc.setAlpha(150);
-//            gc.drawRectangle(
-//              mStartScreenPoint.x, 
-//              mStartScreenPoint.y, 
-//              width, 
-//              height);
-//            break;
-//        }
-//      }
-//    }
-//    
-//  }
-  
   private PaintListener mPaintRegionsListener = new PaintListener() {
     
     public void paintControl(PaintEvent e) {
@@ -366,6 +209,11 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
             break;
           case OVAL:
             gc.fillOval(bounds.x, bounds.y, bounds.width, bounds.height);
+            break;
+          case POLYGON:
+            int[] points = r.getPolygon().toArray();
+            points = canvas.toScreenSpace(points);
+            gc.fillPolygon(points);
             break;
         }
       }

@@ -7,13 +7,17 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
+import ca.uwinnipeg.proximity.desktop.MathUtil;
+import ca.uwinnipeg.proximity.desktop.Region;
 
 public class PolygonTool extends Tool {
   
@@ -29,6 +33,7 @@ public class PolygonTool extends Tool {
     map.put(SWT.MouseMove, listener);
     map.put(SWT.MouseDown, listener);
     map.put(SWT.MouseUp, listener);
+    map.put(SWT.KeyDown, listener);
     map.put(SWT.Paint, listener);
     return map;
   }
@@ -38,6 +43,27 @@ public class PolygonTool extends Tool {
     private List<Point> mPoints = new ArrayList<Point>();
     
     private Point currentPoint;
+    
+    protected static final int SNAP_TOLLERANCE = 20;
+    
+    protected boolean nearStart(Point point) {
+      // we can only check if we are near the first point if there is a first point
+      if (!mPoints.isEmpty()) {
+        Point first = mPoints.get(0);
+        first = getCanvas().toScreenSpace(first);
+        // find the distance between the points
+        float dist = MathUtil.distance(point, first);
+        if (dist <= SNAP_TOLLERANCE) {
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+      else {
+        return false;
+      }    
+    }
 
     // route events
     public void handleEvent(Event event) {
@@ -51,8 +77,29 @@ public class PolygonTool extends Tool {
         case SWT.MouseMove:
           mouseMove(event);
           break;
+        case SWT.KeyDown:
+          keyDown(event);
+          break;
         case SWT.Paint:
           paint(event);
+          break;
+      }
+    }
+    
+    public void keyDown(Event event) {
+      switch(event.character) {
+        case SWT.ESC:
+          mPoints.clear();
+          getCanvas().redraw();
+          break;
+        case SWT.BS:
+          mPoints.remove(mPoints.size()-1);
+          getCanvas().redraw();
+          break;
+        case SWT.CR:
+          if (mPoints.size() >= 3) {
+            complete();
+          }
           break;
       }
     }
@@ -60,17 +107,40 @@ public class PolygonTool extends Tool {
     public void mouseDown(Event event) {
       // make sure the first button was pressed
       if (event.button == 1) {
-        Point p = new Point(event.x, event.y);      
-        p = getCanvas().toImageSpace(p);
-        mPoints.add(p);
-
-        // draw the new point
-        getCanvas().redraw();
+        if (nearStart(currentPoint) && mPoints.size() >= 3) {
+          complete();
+        }
+        else {
+          addPoint();
+        }
+        
       }
     }
     
-    public void mouseUp(Event event) {
+    protected void addPoint() {
+      ImageCanvas canvas = getCanvas();
+      Point p = canvas.toImageSpace(currentPoint);
+
+      Image image = getImage();
+      Rectangle imageBounds = image.getBounds();
+      Rectangle imageScreenBounds = canvas.toScreenSpace(imageBounds);
       
+      if (imageScreenBounds.contains(currentPoint)) {
+        mPoints.add(p);
+
+        // draw the new point
+        canvas.redraw();
+      }
+    }
+    
+    protected void complete() {
+      getController().addRegion(Region.Shape.POLYGON, mPoints);
+      mPoints.clear();
+      getCanvas().redraw();
+    }
+    
+    public void mouseUp(Event event) {
+      // do nothing
     }
     
     public void mouseMove(Event event) {
@@ -105,9 +175,15 @@ public class PolygonTool extends Tool {
           p = canvas.toScreenSpace(p);
           path.lineTo(p.x, p.y);
         }
-        gc.drawPath(path);        
+
+        if (nearStart(currentPoint)) {
+          path.close();
+        }
+        else {
+          gc.drawLine(p.x, p.y, currentPoint.x, currentPoint.y);
+        }
         
-        gc.drawLine(p.x, p.y, currentPoint.x, currentPoint.y);
+        gc.drawPath(path);  
       }
     }
     

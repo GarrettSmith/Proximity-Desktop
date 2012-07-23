@@ -376,6 +376,26 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
+  public int[] toScreenSpace(int[] points) {
+    int[] rtn = new int[points.length];
+    
+    float scale = getScale();
+    
+    for (int i = 0; i < points.length; i++) {
+      rtn[i] = (int) (points[i] * scale);
+      if (i % 2 == 0) {
+        // x point
+        rtn[i] += getTranslateX();
+      }
+      else {
+        // y point
+        rtn[i] += getTranslateY();
+      }
+    }
+    
+    return rtn;
+  }
+  
   public Rectangle toScreenSpace(Rectangle r) {
     Rectangle rtn = new Rectangle(r.x, r.y, r.width, r.height);
     
