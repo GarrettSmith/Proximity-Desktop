@@ -46,9 +46,9 @@ public class SnapshotDialog extends Dialog {
   
   private String mFileName;
   
-  private Preferences mPrefs = Preferences.userRoot().node(this.getClass().getName());
+  private Preferences mPrefs = Preferences.userRoot().node("proximity-system");
   
-  public static final String PATH = "Path";
+  public static final String PATH = "snapshot path";
   private Composite container;
 
   /**

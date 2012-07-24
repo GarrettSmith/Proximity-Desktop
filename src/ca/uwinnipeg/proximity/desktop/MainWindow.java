@@ -64,7 +64,8 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  */
 // TODO: split up
 public class MainWindow extends ApplicationWindow implements ToolHost {
-  private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages"); //$NON-NLS-1$
+  private static final ResourceBundle BUNDLE = 
+      ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
     
   private Action actnOpen;
   private Action actnSnapshot;
@@ -122,8 +123,10 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   
   private MainController mController;
   
-  private Preferences mPrefs = Preferences.userRoot().node(this.getClass().getName());  
+  private Preferences mPrefs = Preferences.userRoot().node("proximity-system");  
   private Preferences mRecentPrefs = mPrefs.node("recent");
+  
+  private static final int RECENT_DOCUMENTS_LIMIT = 10;
   
   private List<Region> mSelectedRegions = new ArrayList<Region>();
   
@@ -886,6 +889,14 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
 
     // tell the controller about the new image
     mController.onImageSelected(data);
+
+    // shuffle documents down
+    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
+      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
+      if (tmp != null) {
+        mRecentPrefs.put(Integer.toString(i), tmp);
+      }
+    }
 
     // store into recent documents
     mRecentPrefs.put("0", path);
