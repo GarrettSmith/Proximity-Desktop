@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -63,15 +65,7 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
 // TODO: split up
 public class MainWindow extends ApplicationWindow implements ToolHost {
   private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages"); //$NON-NLS-1$
-  
-//  enum Tool {
-//    POINTER,
-//    RECTANGLE,
-//    OVAL,
-//    POLYGON,
-//    ZOOM
-//  }  
-  
+    
   private Action actnOpen;
   private Action actnSnapshot;
   private Action actnExit;
@@ -128,7 +122,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   
   private MainController mController;
   
-//  private Tool mTool = Tool.POINTER;
+  private Preferences mPrefs = Preferences.userRoot().node(this.getClass().getName());  
+  private Preferences mRecentPrefs = mPrefs.node("recent");
   
   private List<Region> mSelectedRegions = new ArrayList<Region>();
   
@@ -675,6 +670,21 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     actnPolygon = toolPolygon.getAction();
     actnZoom = toolZoom.getAction();
   }
+  
+  public class RecentAction extends Action {
+    
+    public String mPath;
+        
+    public RecentAction(String path) {
+      super(path.substring(path.lastIndexOf(File.separatorChar + 1)));
+      mPath = path;
+    }
+    
+    @Override
+    public void run() {
+      openFile(mPath);
+    }
+  }
 
   /**
    * Create the menu manager.
@@ -688,7 +698,22 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuFile.add(actnOpen);    
     MenuManager menuRecent = new MenuManager(BUNDLE.getString("MainWindow.menuRecent.text"));
     menuFile.add(menuRecent);
-    menuRecent.add(actnEmpty);
+    // add all the recent items to the recent menu
+    try {
+      for (String key : mRecentPrefs.keys()) {
+        String path = mRecentPrefs.get(key, null);
+        if (path != null && new File(path).exists()) {
+          menuRecent.add(new RecentAction(path));
+        }
+      }
+    } catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // add the empty action if it is empty
+    if (menuRecent.isEmpty()) {
+      menuRecent.add(actnEmpty);
+    }
     menuFile.add(new Separator());
     menuFile.add(actnSnapshot);
     menuFile.add(new Separator());
@@ -833,31 +858,37 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     
     // get a file path
     String path = dialog.open();
-    
-    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
-    
-    // draw the image
-    if (path != null) { 
-      
-      // swap frames if this is the first image selected
-      if (stackLayout.topControl == buttonFrame) {
-        stackLayout.topControl = canvasFrame;
-        frameStack.layout();
-      }
-      
-      // load the image
-      ImageData data = new ImageData(path);
-      mImage = new Image(Display.getCurrent(), data);
 
-      // update canvas
-      canvas.setImage(mImage);
-
-      // enable disabled buttons
-      enableImageActions();
-      
-      // tell the controller about the new image
-      mController.onImageSelected(data);
+    if (path != null) {     
+      openFile(path);
     }
+  }
+  
+  public void openFile(String path) {  
+
+    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
+
+    // swap frames if this is the first image selected
+    if (stackLayout.topControl == buttonFrame) {
+      stackLayout.topControl = canvasFrame;
+      frameStack.layout();
+    }
+
+    // load the image
+    ImageData data = new ImageData(path);
+    mImage = new Image(Display.getCurrent(), data);
+
+    // update canvas
+    canvas.setImage(mImage);
+
+    // enable disabled buttons
+    enableImageActions();
+
+    // tell the controller about the new image
+    mController.onImageSelected(data);
+
+    // store into recent documents
+    mRecentPrefs.put("0", path);
   }
 
   /**

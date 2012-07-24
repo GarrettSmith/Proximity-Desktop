@@ -191,7 +191,7 @@ public class SnapshotDialog extends Dialog {
    * 
    */
   private void doSetup() {
-    mPath = mPrefs.get(PATH, new File(".").getAbsolutePath());
+    mPath = mPrefs.get(PATH, new File("").getAbsolutePath());
   }
 
   /**
