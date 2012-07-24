@@ -195,7 +195,6 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
       GC gc = e.gc;
       Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
       Color selected = new Color(Display.getCurrent(), 0, 255, 255);
-      gc.setAlpha(100);
       for (Region r : mController.getRegions()) {
         Rectangle bounds = r.getBounds();
         bounds = canvas.toScreenSpace(bounds);
@@ -208,16 +207,34 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
         }
         switch(r.getShape()) {
           case RECTANGLE:
-            gc.fillRectangle(bounds);
+            gc.drawRectangle(bounds);
             break;
           case OVAL:
-            gc.fillOval(bounds.x, bounds.y, bounds.width, bounds.height);
+            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
             break;
           case POLYGON:
             int[] points = r.getPolygon().toArray();
             points = canvas.toScreenSpace(points);
-            gc.fillPolygon(points);
+            gc.drawPolygon(points);
             break;
+        }
+      }
+      // TODO: draw neighbourhood
+      if (mNeighbourhood != null) {
+        ImageData data = mImage.getImageData();
+        Point p = new Point(0, 0);
+        for (Integer i : mNeighbourhood) {
+          p.x = i % mImage.getBounds().width;
+          p.y = i / mImage.getBounds().width;
+          int pixel = data.getPixel(p.x , p.y);
+          pixel = ~pixel; // invert colour
+          // extract the rgb colours from the pixel
+          Color color = 
+              new Color(Display.getCurrent(), (pixel >> 16) & 0xFF, (pixel >> 8) & 0xFF, pixel & 0xFF);
+          gc.setForeground(color);
+          p = canvas.toScreenSpace(p);
+          gc.drawPoint(p.x, p.y);
+          color.dispose();
         }
       }
     }
@@ -350,11 +367,6 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
 
       canvas.addMouseWheelListener(mMouseWheelListener);
       canvas.addMouseMoveListener(mMouseMoveListener);
-      
-//      canvas.addListener(SWT.MouseDown, mToolListener);
-//      canvas.addListener(SWT.MouseUp, mToolListener);
-//      canvas.addListener(SWT.MouseMove, mToolListener);
-//      canvas.addListener(SWT.Paint, mToolListener);
       
       canvas.addPaintListener(mPaintRegionsListener);
       
@@ -622,49 +634,30 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     }  
   }
   
+  public List<Integer> mNeighbourhood;
+  
+  public class PropertyAction extends Action {
+    
+    public PropertyAction(String textKey) {
+      super(BUNDLE.getString(textKey), Action.AS_RADIO_BUTTON);
+    }
+    
+    @Override
+    public void run() {
+      if (isChecked()) {
+        // TODO: magic to display propery
+        mNeighbourhood = mController.getNeighbourhood(mController.getRegions().get(0));
+        canvas.redraw();
+      }
+    }   
+  }
+  
   private void createPropertyActions() {
-    {
-      actnRegions = new Action(BUNDLE.getString("MainWindow.actnRegions.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          if (isChecked()) {
-            System.out.println("Regions checked!");
-          }
-        }        
-      };
-    }
-    {
-      actnNeighbourhoods = new Action(BUNDLE.getString("MainWindow.actnNeighbourhoods.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnIntersection = new Action(BUNDLE.getString("MainWindow.actnIntersection.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnCompliment = new Action(BUNDLE.getString("MainWindow.actnCompliment.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
-    {
-      actnDifference = new Action(BUNDLE.getString("MainWindow.actnDifference.text"), Action.AS_RADIO_BUTTON) { //$NON-NLS-1$
-        @Override
-        public void run() {
-
-        }
-      };
-    }
+    actnRegions = new PropertyAction("MainWindow.actnRegions.text");
+    actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
+    actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
+    actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
+    actnDifference = new PropertyAction("MainWindow.actnDifference.text");
   }
   
   private void createTools() {

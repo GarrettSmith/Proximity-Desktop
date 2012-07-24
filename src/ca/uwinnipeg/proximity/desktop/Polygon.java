@@ -224,7 +224,7 @@ public class Polygon {
         Point p = mPoints.get(i);
         tmp.x = p.x;
         tmp.y = p.y;
-        bounds.union(tmp);
+        bounds = bounds.union(tmp);
       }
     }
     return bounds;

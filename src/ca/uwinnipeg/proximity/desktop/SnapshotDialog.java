@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 //TODO: get rid of magic numbers
+//TODO: DOCUMENT!
 public class SnapshotDialog extends Dialog {
   
   public final int HEIGHT = 300;

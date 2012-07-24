@@ -263,7 +263,7 @@ public class Region {
         // find all the points within the poly
         int[] tmp = new int[bounds.width * bounds.height];
         int i = -1;
-        for (int y = bounds.x; y < bottom(bounds); y++) {
+        for (int y = bounds.y; y < bottom(bounds); y++) {
           for (int x = bounds.x; x < right(bounds); x++) {
             if (mPoly.contains(x, y)) {
               tmp[++i] = mImage.getIndex(x, y);

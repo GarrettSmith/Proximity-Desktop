@@ -12,10 +12,14 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
+import ca.uwinnipeg.proximity.image.BlueFunc;
+import ca.uwinnipeg.proximity.image.GreenFunc;
 import ca.uwinnipeg.proximity.image.Image;
+import ca.uwinnipeg.proximity.image.RedFunc;
 
 
 /**
@@ -23,6 +27,7 @@ import ca.uwinnipeg.proximity.image.Image;
  * @author Garrett Smith
  *
  */
+// TODO: update undo and redo to window
 public class MainController {
   
   private Image mImage = new Image();
@@ -31,6 +36,12 @@ public class MainController {
   
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
+  
+  public MainController() {
+    mImage.addProbeFunc(new RedFunc());
+    mImage.addProbeFunc(new BlueFunc());
+    mImage.addProbeFunc(new GreenFunc());
+  }
   
   /**
    * Sets up the image data into the image.
@@ -87,38 +98,82 @@ public class MainController {
     performAction(new RemoveRegionAction(mRegions, region));
   }
   
+  /**
+   * Applies a {@link HistoryAction} adds it to the undo stack and clears the redo stack.
+   * @param action
+   */
   protected void performAction(HistoryAction action) {
     action.apply();
     mUndoStack.push(action);
     mRedoStack.clear();
   }
   
+  /**
+   * Check if there are actions that can be undone.
+   * @return
+   */
   public boolean hasUndo() {
     return !mUndoStack.isEmpty();
   }
   
+  /**
+   * Check if there are actions that can be redone.
+   * @return
+   */
   public boolean hasRedo() {
     return !mRedoStack.isEmpty();
   }
   
+  /**
+   * Get the name of the next action to be undone.
+   * @return
+   */
   public String getUndoString() {
     return mUndoStack.peek().getName();
   }
   
+  /**
+   * Get the name of the next action to be redone.
+   * @return
+   */
   public String getRedoString() {
     return mRedoStack.peek().getName();
   }
   
+  /**
+   * Unapply the last {@link HistoryAction}, remove it from the undo stack and adds the action to 
+   * the redo stack.
+   */
   public void undo() {
     HistoryAction action = mUndoStack.pop();
     action.unapply();
     mRedoStack.push(action);
   }
   
+  /**
+   * Reapply the next next {@link HistoryAction}, remove it from the redo stack and add it to the 
+   * undo stack.
+   */
   public void redo() {
     HistoryAction action = mRedoStack.pop();
     action.apply();
     mUndoStack.push(action);
+  }
+  
+  public List<Integer> getNeighbourhood(Region reg) {
+    PerceptualSystemSubscriber sub = new PerceptualSystemSubscriber() {
+
+      public void onProgressSet(float progress) {
+        // TODO Auto-generated method stub
+        
+      }
+
+      public boolean isCancelled() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+    };
+    return mImage.neighbourhood(reg.getCenterIndex(), reg.getIndicesList(), sub);
   }
   
   /**
