@@ -3,6 +3,7 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -120,6 +121,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   private ZoomTool toolZoom;
   
   private ImageCanvas canvas;
+  
+  private String mImageName;
   
   private Image mImage;
   
@@ -833,10 +836,12 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     // create the dialog to select an image file
     FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
     dialog.setText("Select an image file");
-    dialog.setFilterExtensions(new String[]{"*.jpg;*.png;*.gif"});
+    dialog.setFilterExtensions(new String[]{"*.jpg;*.png;*.gif;*.bmp"});
     
     // get a file path
     String path = dialog.open();
+    
+    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
     
     // draw the image
     if (path != null) { 
@@ -884,7 +889,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
    */
   public void doSnapshot() {
     // TODO: prepare image
-    SnapshotDialog dialog = new SnapshotDialog(getShell(), mImage);
+    SnapshotDialog dialog = new SnapshotDialog(getShell(), mImage, mImageName);
     dialog.open();
   }
 

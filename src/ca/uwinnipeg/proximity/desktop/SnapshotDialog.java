@@ -1,5 +1,8 @@
 package ca.uwinnipeg.proximity.desktop;
 
+import java.io.File;
+import java.util.prefs.Preferences;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -39,15 +42,24 @@ public class SnapshotDialog extends Dialog {
   private float mScale;
   
   private String mPath;
+  
+  private String mFileName;
+  
+  private Preferences mPrefs = Preferences.userRoot().node(this.getClass().getName());
+  
+  public static final String PATH = "Path";
+  private Composite container;
 
   /**
    * Create the dialog.
    * @param parentShell
    */
-  public SnapshotDialog(Shell parentShell, Image image) {
+  public SnapshotDialog(Shell parentShell, Image image, String fileName) {
     super(parentShell);
     mImage = image;
+    mFileName = fileName;
     mScale = Math.min(1, ((float)HEIGHT / mImage.getBounds().height));
+    doSetup();
   }
 
   /**
@@ -56,33 +68,66 @@ public class SnapshotDialog extends Dialog {
    */
   @Override
   protected Control createDialogArea(Composite parent) {
-    Composite container = (Composite) super.createDialogArea(parent);
-    container.setLayout(new GridLayout(4, false));
+    container = (Composite) super.createDialogArea(parent);
+    container.setLayout(new GridLayout(3, false));
     
+    createCanvas(container);
+    createFileNameEntry(container);
+    createDirectoryEntry(container);
+
+    return container;
+  }
+  
+  protected void draw(GC gc) {
+    Transform transform = new Transform(Display.getCurrent());
+    transform.scale(mScale, mScale);
+        
+    gc.setTransform(transform);
+    gc.drawImage(mImage, 0, 0);
+  }
+  
+  private void createCanvas(Composite container) {
     canvas = new Canvas(container, SWT.BORDER);
+    GridData gd_canvas = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 5);
+    gd_canvas.widthHint = 0;
+    canvas.setLayoutData(gd_canvas);
     canvas.addPaintListener(new PaintListener() {
       
       public void paintControl(PaintEvent e) {
         draw(e.gc);
       }
     });
-    
-    
-    GridData gd_canvas = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
-    gd_canvas.widthHint = 0;
-    canvas.setLayoutData(gd_canvas);
-    
+  }
+  
+  private void createFileNameEntry(Composite container) {
     Label lblName = new Label(container, SWT.NONE);
     lblName.setText("Name: ");
     
     text = new Text(container, SWT.BORDER);
     GridData gd_text = new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1);
-    gd_text.widthHint = 160;
+    gd_text.widthHint = 170;
     text.setLayoutData(gd_text);
-    new Label(container, SWT.NONE);
-    
+    // set the default file name
+    text.setText(getDefaultFileName());
+    text.setFocus();
+    // select everything but the extension
+    text.setSelection(0, text.getText().length() - 4);
+  }
+
+  public String getDefaultFileName() {
+    int i = 0;
+    String origName = mFileName.substring(0, mFileName.lastIndexOf('.'));
+    File f = null;
+    while (f == null || f.exists()) {
+      f = new File(mPath, origName + "-snap-" + i + ".png");
+      i++;      
+    }
+    return f.getName();
+  }
+
+  private void createDirectoryEntry(Composite container) {
+
     Label lblFolder = new Label(container, SWT.NONE);
-    lblFolder.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
     lblFolder.setText("Save in folder: ");
     
     btnFolder = new Button(container, SWT.NONE);
@@ -97,23 +142,7 @@ public class SnapshotDialog extends Dialog {
         widgetSelected(e);
       }
     });
-    btnFolder.setText("Browse");
-    new Label(container, SWT.NONE);
-    
-    Composite composite = new Composite(container, SWT.NONE);
-    composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1));
-    
-    
-
-    return container;
-  }
-  
-  protected void draw(GC gc) {
-    Transform transform = new Transform(Display.getCurrent());
-    transform.scale(mScale, mScale);
-        
-    gc.setTransform(transform);
-    gc.drawImage(mImage, 0, 0);
+    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)+1));
   }
   
   /**
@@ -123,7 +152,7 @@ public class SnapshotDialog extends Dialog {
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
     createButton(parent, IDialogConstants.OK_ID, "Save", true);
-    Button button = createButton(parent, 0, "Copy to Clipborad", false);
+    Button button = createButton(parent, 0, "Copy to Clipboard", false);
     button.setEnabled(false);
     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
   }
@@ -132,6 +161,7 @@ public class SnapshotDialog extends Dialog {
    * Return the initial size of the dialog.
    */
   @Override
+  // TODO: deal with magic numbers
   protected Point getInitialSize() {
     // find scale
     mScale = Math.min(1, ((float)220 / mImage.getBounds().height));
@@ -147,7 +177,6 @@ public class SnapshotDialog extends Dialog {
   }
   
   public boolean doSave() {
-    // TODO Auto-generated method stub
     String fileName = mPath + '/' + text.getText();
     System.out.println(fileName);
     ImageLoader imgLoader = new ImageLoader();
@@ -155,6 +184,13 @@ public class SnapshotDialog extends Dialog {
     imgLoader.save(fileName, SWT.IMAGE_PNG);
     // TODO: find if we saved the image
     return true;
+  }
+  
+  /**
+   * 
+   */
+  private void doSetup() {
+    mPath = mPrefs.get(PATH, new File(".").getAbsolutePath());
   }
 
   /**
@@ -167,6 +203,7 @@ public class SnapshotDialog extends Dialog {
     if (path != null) {
       btnFolder.setText(path.substring(path.lastIndexOf('/')+1));
       mPath = path;
+      mPrefs.put(PATH, mPath);
     }
   }
 }  
