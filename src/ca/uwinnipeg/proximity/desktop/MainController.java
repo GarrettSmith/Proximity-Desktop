@@ -6,16 +6,23 @@ package ca.uwinnipeg.proximity.desktop;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
+import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
+import ca.uwinnipeg.proximity.image.AlphaFunc;
 import ca.uwinnipeg.proximity.image.BlueFunc;
 import ca.uwinnipeg.proximity.image.GreenFunc;
 import ca.uwinnipeg.proximity.image.Image;
@@ -37,10 +44,58 @@ public class MainController {
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
   
+  private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");
+  
+  @SuppressWarnings("unchecked")
+  private static final Class<ProbeFunc<Integer>>[] DEFAULT_FUNCS = 
+      (Class<ProbeFunc<Integer>>[]) new Class<?>[] {
+        AlphaFunc.class,
+        RedFunc.class,
+        GreenFunc.class,
+        BlueFunc.class
+      };
+  
+  private Map<ProbeFunc<Integer>, Boolean> mProbeFuncs = new HashMap<ProbeFunc<Integer>, Boolean>();
+  
   public MainController() {
-    mImage.addProbeFunc(new RedFunc());
-    mImage.addProbeFunc(new BlueFunc());
-    mImage.addProbeFunc(new GreenFunc());
+    loadFuncs();
+  }
+  
+  private void loadFuncs() {
+    try {
+      // load the default probe functions and enable
+      for (Class<ProbeFunc<Integer>> clazz : DEFAULT_FUNCS) {
+//        mProbeFuncs.put(clazz.newInstance(), true);
+        String className = clazz.getName();
+        mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
+      }
+      // load the previously loaded probe funcs
+      for (String classStr : mFuncPrefs.keys()) {
+        Class clazz = Class.forName(classStr);
+        Class<ProbeFunc<Integer>> funcClazz = (Class<ProbeFunc<Integer>>) clazz;
+        mProbeFuncs.put(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
+      }
+    } 
+    catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (InstantiationException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IllegalAccessException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    
+    // add enabled probe funcs
+    for (Entry<ProbeFunc<Integer>, Boolean> entry : mProbeFuncs.entrySet()) {
+      if (entry.getValue()) {
+        mImage.addProbeFunc(entry.getKey());
+      }
+    }
   }
   
   /**
@@ -49,7 +104,7 @@ public class MainController {
    */
   public void onImageSelected(ImageData data) {
     int[] pixels = new int[data.width * data.height];
-    data.getPixels(0, 0, data.width, pixels, 0);
+    data.getPixels(0, 0, pixels.length, pixels, 0);
     mImage.set(pixels, data.width, data.height);
   }
   
@@ -173,7 +228,7 @@ public class MainController {
         return false;
       }
     };
-    return mImage.neighbourhood(reg.getCenterIndex(), reg.getIndicesList(), sub);
+    return mImage.hybridNeighbourhood(reg.getCenterIndex(), reg.getIndicesList(), 0.3f, sub);
   }
   
   /**

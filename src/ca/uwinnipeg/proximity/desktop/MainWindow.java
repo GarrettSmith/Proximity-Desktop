@@ -5,7 +5,9 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -221,18 +223,19 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
       if (mNeighbourhood != null) {
         ImageData data = mImage.getImageData();
         Point p = new Point(0, 0);
-        for (Integer i : mNeighbourhood) {
-          p.x = i % mImage.getBounds().width;
-          p.y = i / mImage.getBounds().width;
-          int pixel = data.getPixel(p.x , p.y);
-          pixel = ~pixel; // invert colour
-          // extract the rgb colours from the pixel
-          Color color = 
-              new Color(Display.getCurrent(), (pixel >> 16) & 0xFF, (pixel >> 8) & 0xFF, pixel & 0xFF);
-          gc.setForeground(color);
-          p = canvas.toScreenSpace(p);
-          gc.drawPoint(p.x, p.y);
-          color.dispose();
+        for (Image img : mNeighbourhood.values()) {
+          
+//          p.x = i % mImage.getBounds().width;
+//          p.y = i / mImage.getBounds().width;
+//          int pixel = data.getPixel(p.x , p.y);
+//          pixel = ~pixel; // invert colour
+//          // extract the rgb colours from the pixel
+//          Color color = 
+//              new Color(Display.getCurrent(), (pixel >> 16) & 0xFF, (pixel >> 8) & 0xFF, pixel & 0xFF);
+//          gc.setForeground(color);
+//          p = canvas.toScreenSpace(p);
+//          gc.drawPoint(p.x, p.y);
+//          color.dispose();
         }
       }
     }
@@ -492,8 +495,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
       };
     }
     {
-      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) { //$NON-NLS-1$
-      };
+      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) {};
       actnEmpty.setEnabled(false);
     }
   }
@@ -511,7 +513,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
           actnRedo.setEnabled(true);
         }
       };
-      //actnUndo.setEnabled(false);
+      actnUndo.setEnabled(false);
     }
     {
       actnRedo = new Action(BUNDLE.getString("MainWindow.actnRedo.text")) { //$NON-NLS-1$
@@ -525,7 +527,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
           actnUndo.setEnabled(true);
         }
       };
-      //actnRedo.setEnabled(false);
+      actnRedo.setEnabled(false);
     }
     {
       actnCut = new Action(BUNDLE.getString("MainWindow.actnCut.text")) { //$NON-NLS-1$
@@ -632,7 +634,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     }  
   }
   
-  public List<Integer> mNeighbourhood;
+  public Map<Region, Image> mNeighbourhood = new HashMap<Region, Image>();
   
   public class PropertyAction extends Action {
     
@@ -644,7 +646,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     public void run() {
       if (isChecked()) {
         // TODO: magic to display propery
-        mNeighbourhood = mController.getNeighbourhood(mController.getRegions().get(0));
+        //mNeighbourhood = mController.getNeighbourhood(mController.getRegions().get(0));
         canvas.redraw();
       }
     }   
@@ -679,7 +681,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     public String mPath;
         
     public RecentAction(String path) {
-      super(path.substring(path.lastIndexOf(File.separatorChar + 1)));
+      super(path.substring(path.lastIndexOf(File.separatorChar) + 1));
       mPath = path;
     }
     
@@ -722,7 +724,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuFile.add(new Separator());
     menuFile.add(actnExit);
     
-    MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.menuManager_1.text")); //$NON-NLS-1$
+    MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.menuManager_1.text"));
     menuManager.add(menuEdit);
     menuEdit.add(actnUndo);
     menuEdit.add(actnRedo);
@@ -737,12 +739,12 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuEdit.add(new Separator());
     menuEdit.add(actnSelectAll);
     
-    MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.menuView.text")); //$NON-NLS-1$
+    MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.menuView.text"));
     menuManager.add(menuView);
     menuView.add(actnCenter);
     menuView.add(new Separator());
     
-    MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.menuZoom.text")); //$NON-NLS-1$
+    MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.menuZoom.text"));
     menuView.add(menuZoom);
     menuZoom.add(actnZoomIn);
     menuZoom.add(actnZoomOut);
@@ -795,7 +797,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   @Override
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
-    newShell.setText(BUNDLE.getString("MainWindow.newShell.text")); //$NON-NLS-1$
+    newShell.setText(BUNDLE.getString("MainWindow.newShell.text"));
     
     // set icon
     String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
@@ -878,8 +880,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     }
 
     // load the image
-    ImageData data = new ImageData(path);
-    mImage = new Image(Display.getCurrent(), data);
+    mImage = new Image(Display.getCurrent(), path);    
 
     // update canvas
     canvas.setImage(mImage);
@@ -888,7 +889,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     enableImageActions();
 
     // tell the controller about the new image
-    mController.onImageSelected(data);
+    mController.onImageSelected(mImage.getImageData());
 
     // shuffle documents down
     for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
