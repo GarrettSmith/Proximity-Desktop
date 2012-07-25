@@ -6,6 +6,7 @@ package ca.uwinnipeg.proximity.desktop;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
 
 /**
@@ -175,58 +176,62 @@ public abstract class PropertyController {
 //    mBroadcastManager.sendBroadcast(intent);    
   }
   
-//  /**
-//   * A tasks that is used to calculate a property.
-//   * <p>
-//   * This handles general things like progress and keeping track of whether it is running.
-//   * @author Garrett Smith
-//   *
-//   */
-//  public abstract class PropertyTask 
-//    extends AsyncTask<Region, Integer, List<Integer>>
-//    implements PerceptualSystemSubscriber {
-//    public static final float PROGRESS_THERSHOLD = 0.001f;
-//  
-//    protected float mLastProgress = 0;
-//  
-//    protected Region mRegion;
-//    protected boolean mRunning = true;
-//  
-//    public boolean isRunning() {
-//      return mRunning;
-//    }
-//  
-//    @Override
-//    protected void onPostExecute(List<Integer> result) {
-//      mRunning = false;
-//      updateProgress(MAX_PROGRESS);
-//    }
-//  
-//    @Override
-//    protected void onCancelled() {
-//      super.onCancelled();
-//      mRunning = false;
-//      updateProgress(0);
-//    }
-//  
-//    @Override
-//    public void onProgressSet(float progress) {
-//      if (progress - mLastProgress > PROGRESS_THERSHOLD) {
-//        mLastProgress = progress;
-//        publishProgress(Integer.valueOf((int) (progress * MAX_PROGRESS)));
-//      }
-//    }
-//  
-//    @Override
-//    protected void onProgressUpdate(Integer... values) {
-//      int value = values[0].intValue();
-//      updateProgress(value);
-//    }
-//  
-//    protected void updateProgress(int value) {
-//      setProgress(value);
-//    }
-//  
-//  };
+  /**
+   * A runnable that calculates the property given a region.
+   * @author Garrett Smith
+   *
+   */
+  public abstract class PropertyRunnable implements Runnable, PerceptualSystemSubscriber {
+    public static final float PROGRESS_THERSHOLD = 0.001f;
+    private float mLastProgress = 0;
+    
+    private Region mRegion;
+    
+    private boolean mCancelled = false;
+    private boolean mRunning = false;
+    
+    private List<Integer> mResult;
+    
+    public PropertyRunnable(Region reg) {
+      mRegion = reg;
+    }
+    
+    public boolean isRunning() {
+      return mRunning;
+    }
+    
+    public void run() {
+      mRunning = true;
+      if (!mCancelled) {
+        mResult = calculateProperty(mRegion);
+      }
+      postRun();
+    }
+    
+    protected abstract List<Integer> calculateProperty(Region region);
+    
+    protected void postRun() {
+      mRunning = false;
+    }
+    
+    public List<Integer> getResult() {
+      return mResult;
+    }
+
+    public void onProgressSet(float progress) {
+      if (progress - mLastProgress > PROGRESS_THERSHOLD) {
+        mLastProgress = progress;
+        // TODO: updateProgress(Integer.valueOf((int) (progress * MAX_PROGRESS)));
+      }
+    }
+
+    public boolean isCancelled() {
+      return mCancelled;
+    }
+    
+    public void cancel() {
+      mCancelled = true;
+    }
+  }
 
 }

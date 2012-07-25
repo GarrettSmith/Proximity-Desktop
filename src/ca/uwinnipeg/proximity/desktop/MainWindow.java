@@ -891,6 +891,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     // tell the controller about the new image
     mController.onImageSelected(mImage.getImageData());
 
+    // TODO: prevent duplicates
+    
     // shuffle documents down
     for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
       String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
