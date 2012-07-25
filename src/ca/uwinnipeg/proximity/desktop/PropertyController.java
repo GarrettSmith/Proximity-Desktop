@@ -6,6 +6,8 @@ package ca.uwinnipeg.proximity.desktop;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
 
@@ -192,14 +194,25 @@ public abstract class PropertyController {
     
     private List<Integer> mResult;
     
+    /**
+     * Create a runnable to calculate the property using the given {@link Region}.
+     * @param reg
+     */
     public PropertyRunnable(Region reg) {
       mRegion = reg;
     }
     
+    /**
+     * Returns true if the runnable is currently running.
+     * @return
+     */
     public boolean isRunning() {
       return mRunning;
     }
     
+    /**
+     * Starts calculating the property for the given region and performs cleanup afterwards.
+     */
     public void run() {
       mRunning = true;
       if (!mCancelled) {
@@ -208,16 +221,28 @@ public abstract class PropertyController {
       postRun();
     }
     
+    /**
+     * Calculates the property.
+     * @param region
+     * @return
+     */
     protected abstract List<Integer> calculateProperty(Region region);
     
     protected void postRun() {
       mRunning = false;
     }
     
+    /**
+     * Returns the result of running or null if the runnable has not finished yet.
+     * @return
+     */
     public List<Integer> getResult() {
       return mResult;
     }
 
+    /**
+     * Update the progress.
+     */
     public void onProgressSet(float progress) {
       if (progress - mLastProgress > PROGRESS_THERSHOLD) {
         mLastProgress = progress;
@@ -225,10 +250,16 @@ public abstract class PropertyController {
       }
     }
 
+    /**
+     * Return true if the runnable has been cancelled.
+     */
     public boolean isCancelled() {
       return mCancelled;
     }
     
+    /**
+     * Cancels the runnable.
+     */
     public void cancel() {
       mCancelled = true;
     }
