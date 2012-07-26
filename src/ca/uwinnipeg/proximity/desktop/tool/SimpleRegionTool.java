@@ -30,7 +30,7 @@ public abstract class SimpleRegionTool extends Tool {
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
-    SimpleRegionListener listener = new SimpleRegionListener();
+    SimpleRegionListener listener = new SimpleRegionListener(this);
     listener.register(map);
     return map;
   }
@@ -43,6 +43,10 @@ public abstract class SimpleRegionTool extends Tool {
       Point screenEnd);
   
   class SimpleRegionListener extends DragToolListener {
+
+    public SimpleRegionListener(Tool tool) {
+      super(tool);
+    }
 
     @Override
     public void onClick(Event event, Point image, Point screen) {

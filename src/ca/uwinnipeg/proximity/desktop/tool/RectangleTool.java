@@ -9,7 +9,9 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
+import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.Region;
+import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
  * @author Garrett Smith
@@ -39,5 +41,16 @@ public class RectangleTool extends SimpleRegionTool {
         screenStart.y, 
         width, 
         height);
+  }
+  
+  public class Action extends ToolAction {
+
+    public Action(RectangleTool tool) {
+      super(
+          MainWindow.getBundle().getString("Actions.Rectangle.text"),
+          ToolAction.ICON_PATH + "rect.png",
+          tool);
+    }
+    
   }
 }

@@ -13,6 +13,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.action.ToolAction;
+
 /**
  * @author Garrett Smith
  *
@@ -32,12 +35,16 @@ public class ZoomTool extends Tool {
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
-    ZoomListener listener = new ZoomListener();
+    ZoomListener listener = new ZoomListener(this);
     listener.register(map);
     return map;
   }
   
   class ZoomListener extends DragToolListener {
+
+    public ZoomListener(Tool tool) {
+      super(tool);
+    }
 
     @Override
     public void onClick(Event event, Point image, Point screen) {
@@ -75,6 +82,17 @@ public class ZoomTool extends Tool {
           screenStart.y, 
           width, 
           height);
+    }
+    
+  }
+  
+  public class Action extends ToolAction {
+
+    public Action(ZoomTool tool) {
+      super(
+          MainWindow.getBundle().getString("Actions.Zoom.text"),
+          ToolAction.ICON_PATH + "zoom.png",
+          tool);
     }
     
   }

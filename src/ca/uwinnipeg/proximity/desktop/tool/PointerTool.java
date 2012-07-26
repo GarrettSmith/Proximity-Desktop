@@ -11,6 +11,9 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.action.ToolAction;
+
 /**
  * @author Garrett Smith
  *
@@ -23,12 +26,16 @@ public class PointerTool extends Tool {
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
-    PointerListener listener = new PointerListener();
+    PointerListener listener = new PointerListener(this);
     listener.register(map);
     return map;
   }
   
   class PointerListener extends DragToolListener {
+
+    public PointerListener(Tool tool) {
+      super(tool);
+    }
 
     @Override
     public void onClick(Event event, Point image, Point screen) {
@@ -63,6 +70,17 @@ public class PointerTool extends Tool {
         
         gc.drawRectangle(screenStart.x, screenStart.y, width, height);        
       }
+    }
+    
+  }
+  
+  public class Action extends ToolAction {
+
+    public Action(PointerTool tool) {
+      super(
+          MainWindow.getBundle().getString("Actions.Pointer.text"),
+          ToolAction.ICON_PATH + "pointer.png",
+          tool);
     }
     
   }

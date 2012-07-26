@@ -167,7 +167,7 @@ public class MainController {
    * Check if there are actions that can be undone.
    * @return
    */
-  public boolean hasUndo() {
+  public boolean getUndo() {
     return !mUndoStack.isEmpty();
   }
   
@@ -175,7 +175,7 @@ public class MainController {
    * Check if there are actions that can be redone.
    * @return
    */
-  public boolean hasRedo() {
+  public boolean getRedo() {
     return !mRedoStack.isEmpty();
   }
   
@@ -184,7 +184,13 @@ public class MainController {
    * @return
    */
   public String getUndoString() {
-    return mUndoStack.peek().getName();
+    StringBuffer str = new StringBuffer();
+    str.append("Undo ");
+    HistoryAction action = mUndoStack.peek();
+    if (action != null) {
+      str.append(action.getName());
+    }
+    return str.toString();
   }
   
   /**
