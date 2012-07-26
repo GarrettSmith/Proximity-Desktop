@@ -565,24 +565,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     MenuManager menuFile = new MenuManager("&File", null);
     menuManager.add(menuFile);
     menuFile.add(actnOpen);    
-    MenuManager menuRecent = new MenuManager(BUNDLE.getString("MainWindow.menuRecent.text"));
-    menuFile.add(menuRecent);
-    // add all the recent items to the recent menu
-    try {
-      for (String key : mRecentPrefs.keys()) {
-        String path = mRecentPrefs.get(key, null);
-        if (path != null && new File(path).exists()) {
-          menuRecent.add(new RecentlyOpenedAction(path));
-        }
-      }
-    } catch (BackingStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    // add the empty action if it is empty
-    if (menuRecent.isEmpty()) {
-      menuRecent.add(actnEmpty);
-    }
+    menuFile.add(createRecentMenu());    
     menuFile.add(new Separator());
     menuFile.add(actnSnapshot);
     menuFile.add(new Separator());
@@ -625,6 +608,28 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuHelp.add(new Separator());
     menuHelp.add(actnAbout);
     return menuManager;
+  }
+  
+  private MenuManager createRecentMenu() {
+    MenuManager menuRecent = 
+        new MenuManager(BUNDLE.getString("MainWindow.OpenRecent.text"));
+    // add all the recent items to the recent menu
+    try {
+      for (String key : mRecentPrefs.keys()) {
+        String path = mRecentPrefs.get(key, null);
+        if (path != null && new File(path).exists()) {
+          menuRecent.add(new RecentlyOpenedAction(path));
+        }
+      }
+    } catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // add the empty action if it is empty
+    if (menuRecent.isEmpty()) {
+      menuRecent.add(actnEmpty);
+    }
+    return menuRecent;
   }
 
   /**
