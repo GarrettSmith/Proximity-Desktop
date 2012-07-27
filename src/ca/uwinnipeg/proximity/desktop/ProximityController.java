@@ -157,11 +157,16 @@ public class ProximityController {
     performAction(new RemoveRegionAction(regions, region));
   }
   
+  public void removeRegions(List<Region> regions) {
+    performAction(new RemoveRegionAction(this.regions, regions));
+  }
+  
   public void setSelected(Region r) {
     selectedRegions.clear();
     if (r != null) {
       selectedRegions.add(r);
     }
+    ProximityDesktop.getApp().updateSelectionActions();
   }
   
   public void setSelected(List<Region> regs) {
@@ -169,9 +174,18 @@ public class ProximityController {
     if (regs != null) {
       selectedRegions.addAll(regs);
     }
+    ProximityDesktop.getApp().updateSelectionActions();
   }
   
   public List<Region> getSelectedRegions() {
+    // get rid of regions that have been removed
+    List<Region> newSelected = new ArrayList<Region>();
+    for (Region r: selectedRegions) {
+      if (regions.contains(r)) {
+        newSelected.add(r);
+      }
+    }
+    selectedRegions = newSelected;
     return new ArrayList<Region>(selectedRegions);
   }
 
@@ -183,7 +197,10 @@ public class ProximityController {
     action.apply();
     mUndoStack.push(action);
     mRedoStack.clear();
-    ProximityDesktop.getApp().updateHistoryActions();
+    
+    ProximityDesktop app = ProximityDesktop.getApp();
+    app.updateHistoryActions();
+    app.getCanvas().redraw();
   }
   
   /**

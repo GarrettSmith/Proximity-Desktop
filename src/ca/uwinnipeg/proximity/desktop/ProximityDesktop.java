@@ -787,4 +787,11 @@ public class ProximityDesktop extends ApplicationWindow {
     actnRedo.setEnabled(CONTROLLER.getRedo());
     actnRedo.setText(CONTROLLER.getRedoString());
   }
+  
+  public void updateSelectionActions() {
+    boolean enable = !CONTROLLER.getSelectedRegions().isEmpty();
+    for (Action a: mSelectionDependantActions) {
+      a.setEnabled(enable);
+    }
+  }
 }

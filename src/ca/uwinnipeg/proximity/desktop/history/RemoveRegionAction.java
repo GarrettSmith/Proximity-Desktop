@@ -3,6 +3,7 @@
  */
 package ca.uwinnipeg.proximity.desktop.history;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.uwinnipeg.proximity.desktop.Region;
@@ -13,28 +14,42 @@ import ca.uwinnipeg.proximity.desktop.Region;
  */
 public class RemoveRegionAction implements HistoryAction {
 
-  private List<Region> mRegions;
-  
-  private Region mRegion;
+  private List<Region> regions;
+
+  private List<Region> dest;
 
   /**
    * 
    */
-  public RemoveRegionAction(List<Region> regions, Region region) {
-    mRegions = regions;
-    mRegion = region;
+  public RemoveRegionAction(List<Region> dest, List<Region> regions) {
+    this.dest = dest;
+    this.regions = regions;
+  }
+  
+  /**
+   * 
+   */
+  public RemoveRegionAction(List<Region> dest, Region region) {
+    this.dest = dest;
+    this.regions = new ArrayList<Region>(1);
+    regions.add(region);
   }
 
   public void apply() {
-    mRegions.remove(mRegion);
+    dest.removeAll(regions);
   }
 
   public void unapply() {
-    mRegions.add(mRegion);
+    dest.addAll(regions);
   }
 
   public String getName() {
-    return "Remove Region";
+    if (regions.size() == 1) {
+      return "Remove Region";
+    }
+    else {
+      return "Remove Regions";
+    }
   }
 
 }
