@@ -5,6 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.edit;
 
 import org.eclipse.jface.action.Action;
 
+import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
@@ -19,11 +20,13 @@ public class UndoAction extends Action {
 
   @Override
   public void run() {
-    if (mController.getUndo()) {
-      mController.undo();
+    ProximityController controller = ProximityDesktop.getController();
+    ProximityDesktop app = ProximityDesktop.getApp();
+    if (controller.getUndo()) {
+      controller.undo();
     }
-    canvas.redraw();
-    setEnabled(mController.getUndo());
-    actnRedo.setEnabled(true);
+    app.getCanvas().redraw();
+    setEnabled(controller.getUndo());
+    app.updateHistoryActions();
   }
 }

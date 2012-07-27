@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
-import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CutAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.DeleteAction;
@@ -75,7 +74,6 @@ import ca.uwinnipeg.proximity.desktop.tool.OvalTool;
 import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
-import ca.uwinnipeg.proximity.desktop.tool.Tool.ToolHost;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
 
 /**
@@ -84,11 +82,13 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  *
  */
 // TODO: split up
-public class ProximityDesktop extends ApplicationWindow implements ToolHost {
+public class ProximityDesktop extends ApplicationWindow {
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
   
   private static ProximityDesktop APP;
+  
+  private static ProximityController CONTROLLER = new ProximityController();
     
   private Action actnOpen;
   private Action actnSnapshot;
@@ -131,20 +131,11 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   private Action[] mImageDependantActions;
   private Action[] mSelectionDependantActions;
   
-  // tools
-  private PointerTool toolPointer;
-  private RectangleTool toolRect;
-  private OvalTool toolOval;
-  private PolygonTool toolPolygon;
-  private ZoomTool toolZoom;
-  
   private ImageCanvas canvas;
   
   private String mImageName;
   
   private Image mImage;
-  
-  private MainController mController;
   
   private Preferences mPrefs = Preferences.userRoot().node("proximity-system");  
   private Preferences mRecentPrefs = mPrefs.node("recent");
@@ -216,7 +207,7 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
       GC gc = e.gc;
       Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
       Color selected = new Color(Display.getCurrent(), 0, 255, 255);
-      for (Region r : mController.getRegions()) {
+      for (Region r : CONTROLLER.getRegions()) {
         Rectangle bounds = r.getBounds();
         bounds = canvas.toScreenSpace(bounds);
         // determine if the region is selected
@@ -269,7 +260,7 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   public static void main(String args[]) {
     Display display = Display.getDefault();
     try {
-      ProximityDesktop window = new ProximityDesktop(new MainController());
+      ProximityDesktop window = new ProximityDesktop();
       window.setBlockOnOpen(true);
       window.open();
       Display.getCurrent().dispose();
@@ -281,12 +272,10 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   /**
    * Create the application window.
    */
-  public ProximityDesktop(MainController controller) {
+  public ProximityDesktop() {
     super(null);
     APP = this;
-    mController = controller;
     mKeyLookup = KeyLookupFactory.getDefault();
-    createTools();
     createActions();
     addToolBar(SWT.FLAT | SWT.WRAP);
     addMenuBar();
@@ -295,6 +284,10 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   
   public static ProximityDesktop getApp() {
     return APP;
+  } 
+
+  public static ProximityController getController() {
+    return CONTROLLER;
   }
   
   public static ResourceBundle getBundle() {
@@ -446,12 +439,48 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
    * Create the actions.
    */
   private void createActions() {
-    createFileActions();
-    createEditActions();
-    createViewActions();
-    createHelpActions();
-    createPropertyActions();
-    createToolActions();
+    // file
+    actnOpen = new OpenAction();
+    actnSnapshot = new SnapshotAction();
+    actnExit = new ExitAction();
+    actnEmpty = new EmptyAction();
+    
+    // edit
+    actnUndo = new UndoAction();
+    actnRedo = new RedoAction();
+    actnCut = new CopyAction();
+    actnCopy = new CutAction();
+    actnPaste = new PasteAction();
+    actnDuplicate = new DuplicateAction();
+    actnDelete = new DeleteAction();
+    actnSelectAll = new SelectAllAction();
+    
+    // view
+    actnZoomIn = new ZoomInAction();
+    actnZoomOut = new ZoomOutAction();
+    actnZoom1to1 = new ZoomTo1Action();
+    actnZoomSelection = new ZoomSelectionAction();
+    actnZoomImage = new ZoomImageAction();
+    actnFeatures = new ToggleFeaturesAction();
+    actnCenter = new CenterAction();
+    
+    // help
+    actnManual = new ManualAction();
+    actnAbout = new AboutAction();
+    
+    // properties
+    //  actnRegions = new PropertyAction("MainWindow.actnRegions.text");
+    //  actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
+    //  actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
+    //  actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
+    //  actnDifference = new PropertyAction("MainWindow.actnDifference.text");
+    
+    // tools
+    actnPointer = new PointerTool.Action();
+    actnRectangle = new RectangleTool.Action();
+    actnOval = new OvalTool.Action();
+    actnPolygon = new PolygonTool.Action();
+    actnZoom = new ZoomTool.Action();
     
     // features
     actnAddFeatures = new EditFeaturesAction();
@@ -488,65 +517,9 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
     for (Action a : mSelectionDependantActions) {
       a.setEnabled(false);
     }
-  }
-
-  private void createFileActions() {
-    actnOpen = new OpenAction();
-    actnSnapshot = new SnapshotAction();
-    actnExit = new ExitAction();
-    actnEmpty = new EmptyAction();
-  }
-  
-  private void createEditActions() {
-    actnUndo = new UndoAction();
-    //TODO: actnUndo.setEnabled(false);
-    actnRedo = new RedoAction();
-    //TODO: actnRedo.setEnabled(false);
-    actnCut = new CopyAction();
-    actnCopy = new CutAction();
-    actnPaste = new PasteAction();
-    actnDuplicate = new DuplicateAction();
-    actnDelete = new DeleteAction();
-    actnSelectAll = new SelectAllAction();
-  }
-  
-  private void createViewActions() {
-    actnZoomIn = new ZoomInAction();
-    actnZoomOut = new ZoomOutAction();
-    actnZoom1to1 = new ZoomTo1Action();
-    actnZoomSelection = new ZoomSelectionAction();
-    actnZoomImage = new ZoomImageAction();
-    actnFeatures = new ToggleFeaturesAction();
-    actnCenter = new CenterAction();
-  }
-  
-  private void createHelpActions() {
-    actnManual = new ManualAction();
-    actnAbout = new AboutAction();
-  }
-  
-  private void createPropertyActions() {
-//    actnRegions = new PropertyAction("MainWindow.actnRegions.text");
-//    actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
-//    actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
-//    actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
-//    actnDifference = new PropertyAction("MainWindow.actnDifference.text");
-  }
-  
-  private void createTools() {
-    toolPointer = new PointerTool(this);
-    toolRect = new RectangleTool(this);
-    toolOval = new OvalTool(this);
-    toolPolygon = new PolygonTool(this);
-    toolZoom = new ZoomTool(this);
-  }
-  
-  private void createToolActions() {
-    actnPointer = new PointerTool.Action(toolPointer);
-    actnRectangle = new RectangleTool.Action(toolRect);
-    actnOval = new OvalTool.Action(toolOval);
-    actnPolygon = new PolygonTool.Action(toolPolygon);
-    actnZoom = new ZoomTool.Action(toolZoom);
+    
+    // setup undo and redo
+    updateHistoryActions();
   }
   
   /**
@@ -686,10 +659,6 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
     return new Point(580, 190);
   }
 
-  public MainController getController() {
-    return mController;
-  }
-
   public ImageCanvas getCanvas() {
     return canvas;
   }
@@ -744,7 +713,7 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
     enableImageActions();
 
     // tell the controller about the new image
-    mController.onImageSelected(mImage.getImageData());
+    CONTROLLER.onImageSelected(mImage.getImageData());
 
     // TODO: prevent duplicates
     
@@ -801,7 +770,20 @@ public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   @Override
   public boolean close() {
     // tell the controller we are closing
-    mController.onClose();
+    CONTROLLER.onClose();
     return super.close();
+  }
+
+  /**
+   * Updates the names and enabled status of the undo and redo actions.
+   */
+  public void updateHistoryActions() {
+    //undo
+    actnUndo.setEnabled(CONTROLLER.getUndo());
+    actnUndo.setText(CONTROLLER.getUndoString());
+    
+    //redo
+    actnRedo.setEnabled(CONTROLLER.getRedo());
+    actnRedo.setText(CONTROLLER.getRedoString());
   }
 }

@@ -5,6 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.edit;
 
 import org.eclipse.jface.action.Action;
 
+import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
@@ -18,11 +19,13 @@ public class RedoAction extends Action {
   }
   @Override
   public void run() {
-    if (mController.getRedo()) {
-      mController.redo();
+    ProximityController controller = ProximityDesktop.getController();
+    ProximityDesktop app = ProximityDesktop.getApp();
+    if (controller.getRedo()) {
+      controller.redo();
     }
-    canvas.redraw();
-    setEnabled(mController.getRedo());
-    actnUndo.setEnabled(true);
+    app.getCanvas().redraw();
+    setEnabled(controller.getRedo());
+    app.updateHistoryActions();
   }
 }

@@ -23,15 +23,6 @@ public class ZoomTool extends Tool {
   
   public static final Color ZOOM_COLOR = new Color(Display.getCurrent(), 0, 0, 0);
 
-  /**
-   * @param host
-   * @param label
-   * @param icon
-   */
-  public ZoomTool(ToolHost host) {
-    super(host);
-  }
-
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
     ZoomListener listener = new ZoomListener(this);
@@ -87,11 +78,11 @@ public class ZoomTool extends Tool {
   
   public static class Action extends ToolAction {
 
-    public Action(ZoomTool tool) {
+    public Action() {
       super(
           "Actions.ZoomTool.text",
           "zoom.png",
-          tool);
+          new ZoomTool());
     }
     
   }

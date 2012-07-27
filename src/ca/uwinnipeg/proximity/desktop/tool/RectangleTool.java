@@ -20,8 +20,8 @@ public class RectangleTool extends SimpleRegionTool {
   
   public static final Color RECT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
-  public RectangleTool(ToolHost host) {
-    super(host, Region.Shape.RECTANGLE);
+  public RectangleTool() {
+    super(Region.Shape.RECTANGLE);
   }
   
   @Override
@@ -44,11 +44,11 @@ public class RectangleTool extends SimpleRegionTool {
   
   public static class Action extends ToolAction {
 
-    public Action(RectangleTool tool) {
+    public Action() {
       super(
           "Actions.RectangleTool.text",
           "rect.png",
-          tool);
+          new RectangleTool());
     }
     
   }

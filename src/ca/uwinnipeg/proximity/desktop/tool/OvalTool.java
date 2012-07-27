@@ -20,8 +20,8 @@ public class OvalTool extends SimpleRegionTool {
   
   public static final Color OVAL_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
-  public OvalTool(ToolHost host) {
-    super(host, Region.Shape.OVAL);
+  public OvalTool() {
+    super(Region.Shape.OVAL);
   }
   
   @Override
@@ -44,11 +44,11 @@ public class OvalTool extends SimpleRegionTool {
   
   public static class Action extends ToolAction {
 
-    public Action(OvalTool tool) {
+    public Action() {
       super(
           "Actions.OvalTool.text",
           "oval.png",
-          tool);
+          new OvalTool());
     }
     
   }

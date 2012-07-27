@@ -19,10 +19,6 @@ import ca.uwinnipeg.proximity.desktop.action.ToolAction;
  */
 public class PointerTool extends Tool {
 
-  public PointerTool(ToolHost host) {
-    super(host);
-  }
-
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
     PointerListener listener = new PointerListener(this);
@@ -75,11 +71,11 @@ public class PointerTool extends Tool {
   
   public static class Action extends ToolAction {
 
-    public Action(PointerTool tool) {
+    public Action() {
       super(
           "Actions.PointerTool.text",
           "pointer.png",
-          tool);
+          new PointerTool());
     }
     
   }

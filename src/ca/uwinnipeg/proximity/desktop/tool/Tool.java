@@ -13,7 +13,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
-import ca.uwinnipeg.proximity.desktop.MainController;
+import ca.uwinnipeg.proximity.desktop.ProximityController;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * A tool provides an action to enable the tool and registers listeners to perform actions.
@@ -22,12 +23,6 @@ import ca.uwinnipeg.proximity.desktop.MainController;
  */
 public abstract class Tool {  
   
-  public interface ToolHost {
-    public ImageCanvas getCanvas();    
-    public MainController getController();
-    public Image getImage();
-  }
-  
   public static final Color DRAG_COLOR = new Color(Display.getCurrent(), 0, 0, 0);
 
   /**
@@ -35,16 +30,13 @@ public abstract class Tool {
    */
   private Map<Integer, Listener> mListeners;
   
-  private ToolHost mHost;
-  
   private boolean registered = false;
 
   public boolean isRegistered() {
     return registered;
   }
   
-  public Tool(ToolHost host) {
-    mHost = host;
+  public Tool() {
     mListeners = createListeners(new HashMap<Integer, Listener>());
   }
   
@@ -78,15 +70,15 @@ public abstract class Tool {
   }
   
   public ImageCanvas getCanvas() {
-    return mHost.getCanvas();
+    return ProximityDesktop.getApp().getCanvas();
   }
   
-  public MainController getController() {
-    return mHost.getController();
+  public ProximityController getController() {
+    return ProximityDesktop.getController();
   }
   
   public Image getImage() {
-    return mHost.getImage();
+    return ProximityDesktop.getApp().getImage();
   }
 
 }

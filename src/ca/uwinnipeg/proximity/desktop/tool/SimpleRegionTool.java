@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
@@ -23,8 +24,8 @@ public abstract class SimpleRegionTool extends Tool {
   
   private Region.Shape mShape;
 
-  public SimpleRegionTool(ToolHost host, Region.Shape shape) {
-    super(host);
+  public SimpleRegionTool(Region.Shape shape) {
+    super();
     mShape = shape;
   }
 
@@ -65,6 +66,7 @@ public abstract class SimpleRegionTool extends Tool {
       points.add(imageStart);
       points.add(imageEnd);
       getController().addRegion(mShape, points);
+      ProximityDesktop.getApp().updateHistoryActions();
     }
     
     @Override

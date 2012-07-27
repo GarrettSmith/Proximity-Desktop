@@ -35,7 +35,7 @@ import ca.uwinnipeg.proximity.image.RedFunc;
  *
  */
 // TODO: update undo and redo to window
-public class MainController {
+public class ProximityController {
   
   private Image mImage = new Image();
   
@@ -57,7 +57,7 @@ public class MainController {
   
   private Map<ProbeFunc<Integer>, Boolean> mProbeFuncs = new HashMap<ProbeFunc<Integer>, Boolean>();
   
-  public MainController() {
+  public ProximityController() {
     loadFuncs();
   }
   
@@ -198,7 +198,13 @@ public class MainController {
    * @return
    */
   public String getRedoString() {
-    return mRedoStack.peek().getName();
+    StringBuffer str = new StringBuffer();
+    str.append("Redo ");
+    HistoryAction action = mRedoStack.peek();
+    if (action != null) {
+      str.append(action.getName());
+    }
+    return str.toString();
   }
   
   /**

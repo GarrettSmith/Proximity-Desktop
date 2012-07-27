@@ -17,16 +17,13 @@ import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
 import ca.uwinnipeg.proximity.desktop.MathUtil;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 public class PolygonTool extends Tool {
   
   public static final Color POINT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
-
-  public PolygonTool(ToolHost host) {
-    super(host);
-  }
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
@@ -138,6 +135,7 @@ public class PolygonTool extends Tool {
       getController().addRegion(Region.Shape.POLYGON, mPoints);
       mPoints.clear();
       getCanvas().redraw();
+      ProximityDesktop.getApp().updateHistoryActions();
     }
     
     public void mouseUp(Event event) {
@@ -192,11 +190,11 @@ public class PolygonTool extends Tool {
   
   public static class Action extends ToolAction {
 
-    public Action(PolygonTool tool) {
+    public Action() {
       super(
           "Actions.PolygonTool.text",
           "poly.png",
-          tool);
+          new PolygonTool());
     }
     
   }
