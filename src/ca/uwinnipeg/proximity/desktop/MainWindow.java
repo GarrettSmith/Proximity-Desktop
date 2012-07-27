@@ -5,13 +5,12 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -20,6 +19,7 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
+import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -32,7 +32,6 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -42,16 +41,38 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
 
+import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
+import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.CutAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.DeleteAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.DuplicateAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.PasteAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.RedoAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.SelectAllAction;
+import ca.uwinnipeg.proximity.desktop.action.edit.UndoAction;
+import ca.uwinnipeg.proximity.desktop.action.file.EmptyAction;
+import ca.uwinnipeg.proximity.desktop.action.file.ExitAction;
+import ca.uwinnipeg.proximity.desktop.action.file.OpenAction;
+import ca.uwinnipeg.proximity.desktop.action.file.RecentlyOpenedAction;
+import ca.uwinnipeg.proximity.desktop.action.file.SnapshotAction;
+import ca.uwinnipeg.proximity.desktop.action.help.AboutAction;
+import ca.uwinnipeg.proximity.desktop.action.help.ManualAction;
+import ca.uwinnipeg.proximity.desktop.action.view.CenterAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ToggleFeaturesAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ZoomImageAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ZoomInAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ZoomOutAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ZoomSelectionAction;
+import ca.uwinnipeg.proximity.desktop.action.view.ZoomTo1Action;
 import ca.uwinnipeg.proximity.desktop.tool.OvalTool;
 import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
@@ -68,6 +89,8 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
 public class MainWindow extends ApplicationWindow implements ToolHost {
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
+  
+  private static MainWindow APP;
     
   private Action actnOpen;
   private Action actnSnapshot;
@@ -220,11 +243,11 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
         }
       }
       // TODO: draw neighbourhood
-      if (mNeighbourhood != null) {
-        ImageData data = mImage.getImageData();
-        Point p = new Point(0, 0);
-        for (Image img : mNeighbourhood.values()) {
-          
+//      if (mNeighbourhood != null) {
+//        ImageData data = mImage.getImageData();
+//        Point p = new Point(0, 0);
+//        for (Image img : mNeighbourhood.values()) {
+//          
 //          p.x = i % mImage.getBounds().width;
 //          p.y = i / mImage.getBounds().width;
 //          int pixel = data.getPixel(p.x , p.y);
@@ -236,8 +259,8 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
 //          p = canvas.toScreenSpace(p);
 //          gc.drawPoint(p.x, p.y);
 //          color.dispose();
-        }
-      }
+//        }
+//      }
     }
   };
 
@@ -246,23 +269,28 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
    * @param args
    */
   public static void main(String args[]) {
-    try {
-      MainWindow window = new MainWindow();
-      MainController controller = new MainController();
-      window.setController(controller);
-      window.setBlockOnOpen(true);
-      window.open();
-      Display.getCurrent().dispose();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    Display display = Display.getDefault();
+    Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
+      public void run() {
+        try {
+          MainWindow window = new MainWindow(new MainController());
+          window.setBlockOnOpen(true);
+          window.open();
+          Display.getCurrent().dispose();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    });
   }
 
   /**
    * Create the application window.
    */
-  public MainWindow() {
+  public MainWindow(MainController controller) {
     super(null);
+    APP = this;
+    mController = controller;
     mKeyLookup = KeyLookupFactory.getDefault();
     createTools();
     createActions();
@@ -270,6 +298,13 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     addMenuBar();
     //addStatusLine();
   }
+  
+  public static MainWindow getApp() {
+    return APP;
+  }
+  
+  public static ResourceBundle getBundle() {
+    return BUNDLE;  }
 
   /**
    * Create contents of the application window.
@@ -425,14 +460,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     createToolActions();
     
     // features
-    {
-      actnAddFeatures = new Action("Add Features") {
-        @Override
-        public void run() {
-          doAddFeatures();
-        }
-      };
-    }
+    actnAddFeatures = new EditFeaturesAction();
     
     // record all actions that need an image
     mImageDependantActions = new Action[] {
@@ -469,187 +497,38 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   }
 
   private void createFileActions() {
-    {
-      actnOpen = new Action(BUNDLE.getString("MainWindow.actnOpen.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          doOpen();
-        }
-      };
-    }
-    {
-      actnSnapshot = new Action(BUNDLE.getString("MainWindow.actnSnapshot.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          doSnapshot();
-        }
-      };
-      actnSnapshot.setImageDescriptor(ResourceManager.getImageDescriptor(MainWindow.class, "/ca/uwinnipeg/proximity/desktop/icons/snap.png"));
-    }
-    {
-      actnExit = new Action(BUNDLE.getString("MainWindow.actnExit.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          doExit();
-        }
-      };
-    }
-    {
-      actnEmpty = new Action(BUNDLE.getString("MainWindow.actionEmpty.text")) {};
-      actnEmpty.setEnabled(false);
-    }
+    actnOpen = new OpenAction();
+    actnSnapshot = new SnapshotAction();
+    actnExit = new ExitAction();
+    actnEmpty = new EmptyAction();
   }
   
   private void createEditActions() {
-    {
-      actnUndo = new Action(BUNDLE.getString("MainWindow.actnUndo.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          if (mController.hasUndo()) {
-            mController.undo();
-          }
-          canvas.redraw();
-          setEnabled(mController.hasUndo());
-          actnRedo.setEnabled(true);
-        }
-      };
-      actnUndo.setEnabled(false);
-    }
-    {
-      actnRedo = new Action(BUNDLE.getString("MainWindow.actnRedo.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          if (mController.hasRedo()) {
-            mController.redo();
-          }
-          canvas.redraw();
-          setEnabled(mController.hasRedo());
-          actnUndo.setEnabled(true);
-        }
-      };
-      actnRedo.setEnabled(false);
-    }
-    {
-      actnCut = new Action(BUNDLE.getString("MainWindow.actnCut.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnCopy = new Action(BUNDLE.getString("MainWindow.actnCopy.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnPaste = new Action(BUNDLE.getString("MainWindow.actnPaste.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnDuplicate = new Action(BUNDLE.getString("MainWindow.actnDuplicate.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnDelete = new Action(BUNDLE.getString("MainWindow.actnDelete.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnSelectAll = new Action(BUNDLE.getString("MainWindow.actnSelectAll.text")) { //$NON-NLS-1$
-      };
-    }
+    actnUndo = new UndoAction();
+    //TODO: actnUndo.setEnabled(false);
+    actnRedo = new RedoAction();
+    //TODO: actnRedo.setEnabled(false);
+    actnCut = new CopyAction();
+    actnCopy = new CutAction();
+    actnPaste = new PasteAction();
+    actnDuplicate = new DuplicateAction();
+    actnDelete = new DeleteAction();
+    actnSelectAll = new SelectAllAction();
   }
   
   private void createViewActions() {
-    {
-      actnZoomIn = new Action(BUNDLE.getString("MainWindow.actnZoomIn.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          canvas.zoomIn();
-        }
-      };
-      actnZoomIn.setAccelerator(0 | '=');
-      actnZoomIn.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_ADD_NAME));
-    }
-    {
-      actnZoomOut = new Action(BUNDLE.getString("MainWindow.actnZoomOut.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          canvas.zoomOut();
-        }
-      };
-      actnZoomOut.setAccelerator(0 | '-');
-      actnZoomOut.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_SUBTRACT_NAME));
-    }
-    {
-      actnZoom1to1 = new Action(BUNDLE.getString("MainWindow.actnZoom1to1.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          canvas.zoomTo1();
-        }
-      };
-      actnZoom1to1.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_1_NAME));
-    }
-    {
-      actnZoomSelection = new Action(BUNDLE.getString("MainWindow.actnZoomSelection.text")) { //$NON-NLS-1$
-      };
-      actnZoomSelection.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_2_NAME));
-    }
-    {
-      actnZoomImage = new Action(BUNDLE.getString("MainWindow.actnZoomImage.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          canvas.fitToImage();
-        }
-      };
-      actnZoomImage.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_3_NAME));
-    }
-    {
-      actnFeatures = new Action(BUNDLE.getString("MainWindow.actnFeatures.text"), Action.AS_CHECK_BOX) { //$NON-NLS-1$
-        @Override
-        public void runWithEvent(Event event) {
-          MenuItem item = (MenuItem) event.widget;
-          doToggleFeatures(item.getSelection());
-        }
-      };
-      actnFeatures.setChecked(true);
-    }
-    {
-      actnCenter = new Action(BUNDLE.getString("MainWindow.actnCenter.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          canvas.center();
-        }
-      };
-    }
+    actnZoomIn = new ZoomInAction();
+    actnZoomOut = new ZoomOutAction();
+    actnZoom1to1 = new ZoomTo1Action();
+    actnZoomSelection = new ZoomSelectionAction();
+    actnZoomImage = new ZoomImageAction();
+    actnFeatures = new ToggleFeaturesAction();
+    actnCenter = new CenterAction();
   }
   
   private void createHelpActions() {
-    {
-      actnManual = new Action(BUNDLE.getString("MainWindow.actnManual.text")) { //$NON-NLS-1$
-      };
-    }
-    {
-      actnAbout = new Action(BUNDLE.getString("MainWindow.actnAbout.text")) { //$NON-NLS-1$
-        @Override
-        public void run() {
-          doAbout();
-        }
-      };
-    }  
-  }
-  
-  public Map<Region, Image> mNeighbourhood = new HashMap<Region, Image>();
-  
-  public class PropertyAction extends Action {
-    
-    public PropertyAction(String textKey) {
-      super(BUNDLE.getString(textKey), Action.AS_RADIO_BUTTON);
-    }
-    
-    @Override
-    public void run() {
-      if (isChecked()) {
-        // TODO: magic to display propery
-        //mNeighbourhood = mController.getNeighbourhood(mController.getRegions().get(0));
-        canvas.redraw();
-      }
-    }   
+    actnManual = new ManualAction();
+    actnAbout = new AboutAction();
   }
   
   private void createPropertyActions() {
@@ -669,28 +548,13 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   }
   
   private void createToolActions() {
-    actnPointer = toolPointer.getAction();
-    actnRectangle = toolRect.getAction();
-    actnOval = toolOval.getAction();
-    actnPolygon = toolPolygon.getAction();
-    actnZoom = toolZoom.getAction();
+    actnPointer = new PointerTool.Action(toolPointer);
+    actnRectangle = new RectangleTool.Action(toolRect);
+    actnOval = new OvalTool.Action(toolOval);
+    actnPolygon = new PolygonTool.Action(toolPolygon);
+    actnZoom = new ZoomTool.Action(toolZoom);
   }
   
-  public class RecentAction extends Action {
-    
-    public String mPath;
-        
-    public RecentAction(String path) {
-      super(path.substring(path.lastIndexOf(File.separatorChar) + 1));
-      mPath = path;
-    }
-    
-    @Override
-    public void run() {
-      openFile(mPath);
-    }
-  }
-
   /**
    * Create the menu manager.
    * @return the menu manager
@@ -701,24 +565,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     MenuManager menuFile = new MenuManager("&File", null);
     menuManager.add(menuFile);
     menuFile.add(actnOpen);    
-    MenuManager menuRecent = new MenuManager(BUNDLE.getString("MainWindow.menuRecent.text"));
-    menuFile.add(menuRecent);
-    // add all the recent items to the recent menu
-    try {
-      for (String key : mRecentPrefs.keys()) {
-        String path = mRecentPrefs.get(key, null);
-        if (path != null && new File(path).exists()) {
-          menuRecent.add(new RecentAction(path));
-        }
-      }
-    } catch (BackingStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    // add the empty action if it is empty
-    if (menuRecent.isEmpty()) {
-      menuRecent.add(actnEmpty);
-    }
+    menuFile.add(createRecentMenu());    
     menuFile.add(new Separator());
     menuFile.add(actnSnapshot);
     menuFile.add(new Separator());
@@ -761,6 +608,28 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuHelp.add(new Separator());
     menuHelp.add(actnAbout);
     return menuManager;
+  }
+  
+  private MenuManager createRecentMenu() {
+    MenuManager menuRecent = 
+        new MenuManager(BUNDLE.getString("MainWindow.OpenRecent.text"));
+    // add all the recent items to the recent menu
+    try {
+      for (String key : mRecentPrefs.keys()) {
+        String path = mRecentPrefs.get(key, null);
+        if (path != null && new File(path).exists()) {
+          menuRecent.add(new RecentlyOpenedAction(path));
+        }
+      }
+    } catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // add the empty action if it is empty
+    if (menuRecent.isEmpty()) {
+      menuRecent.add(actnEmpty);
+    }
+    return menuRecent;
   }
 
   /**
@@ -821,14 +690,6 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   @Override
   protected Point getInitialSize() {
     return new Point(580, 190);
-  }
-  
-  /**
-   * Sets the controller to send and receive data from.
-   * @param controller
-   */
-  public void setController(MainController controller) {
-    mController = controller;
   }
 
   public MainController getController() {
@@ -913,14 +774,6 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
       a.setEnabled(true);
     }
   }
-
-  /**
-   * Show the about dialog.
-   */
-  public void doAbout() {
-    AboutDialog dialog = new AboutDialog(getShell());
-    dialog.open();
-  }
   
   /**
    * Save a snapshot of the current view.
@@ -942,21 +795,13 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
    * Toggle displaying the features pane.
    * @param show
    */
-  public void doToggleFeatures(boolean show) {
+  public void toggleFeatures(boolean show) {
     if (show) {
       sashForm.setWeights(new int[]{1, 3});
     }
     else {
       sashForm.setWeights(new int[]{0, 1});
     }
-  }
-  
-  /**
-   * Opens dialog to load new features to be used.
-   */
-  public void doAddFeatures() {
-    AddFeaturesDialog dialog = new AddFeaturesDialog(getShell());
-    dialog.open();
   }
   
   @Override
