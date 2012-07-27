@@ -4,7 +4,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
@@ -22,9 +21,6 @@ import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -39,7 +35,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
@@ -81,7 +76,6 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  * @author Garrett Smith
  *
  */
-// TODO: split up
 public class ProximityDesktop extends ApplicationWindow {
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
@@ -142,8 +136,6 @@ public class ProximityDesktop extends ApplicationWindow {
   
   private static final int RECENT_DOCUMENTS_LIMIT = 10;
   
-  private List<Region> mSelectedRegions = new ArrayList<Region>();
-  
   // frames
   private Composite frameStack;
   private StackLayout stackLayout;
@@ -152,66 +144,12 @@ public class ProximityDesktop extends ApplicationWindow {
   private Composite canvasFrame;
   
   private SashForm sashForm;
-  
-  private PaintListener mPaintRegionsListener = new PaintListener() {
-    
-    public void paintControl(PaintEvent e) {
-      GC gc = e.gc;
-      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
-      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
-      List<Region> selectedRegions = CONTROLLER.getSelectedRegions();
-      for (Region r : CONTROLLER.getRegions()) {
-        Rectangle bounds = r.getBounds();
-        bounds = canvas.toScreenSpace(bounds);
-        // determine if the region is selected
-        if (selectedRegions.contains(r)) {
-          gc.setForeground(selected);
-        }
-        else {
-          gc.setForeground(unselected);
-        }
-        switch(r.getShape()) {
-          case RECTANGLE:
-            gc.drawRectangle(bounds);
-            break;
-          case OVAL:
-            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-            break;
-          case POLYGON:
-            int[] points = r.getPolygon().toArray();
-            points = canvas.toScreenSpace(points);
-            gc.drawPolygon(points);
-            break;
-        }
-      }
-      // TODO: draw neighbourhood
-//      if (mNeighbourhood != null) {
-//        ImageData data = mImage.getImageData();
-//        Point p = new Point(0, 0);
-//        for (Image img : mNeighbourhood.values()) {
-//          
-//          p.x = i % mImage.getBounds().width;
-//          p.y = i / mImage.getBounds().width;
-//          int pixel = data.getPixel(p.x , p.y);
-//          pixel = ~pixel; // invert colour
-//          // extract the rgb colours from the pixel
-//          Color color = 
-//              new Color(Display.getCurrent(), (pixel >> 16) & 0xFF, (pixel >> 8) & 0xFF, pixel & 0xFF);
-//          gc.setForeground(color);
-//          p = canvas.toScreenSpace(p);
-//          gc.drawPoint(p.x, p.y);
-//          color.dispose();
-//        }
-//      }
-    }
-  };
 
   /**
    * Launch the application.
    * @param args
    */
   public static void main(String args[]) {
-    Display display = Display.getDefault();
     try {
       ProximityDesktop window = new ProximityDesktop();
       window.setBlockOnOpen(true);
@@ -221,6 +159,17 @@ public class ProximityDesktop extends ApplicationWindow {
       e.printStackTrace();
     }
   }
+
+  public static ProximityDesktop getApp() {
+    return APP;
+  }
+
+  public static ProximityController getController() {
+    return CONTROLLER;
+  }
+
+  public static ResourceBundle getBundle() {
+  return BUNDLE;  }
 
   /**
    * Create the application window.
@@ -235,16 +184,82 @@ public class ProximityDesktop extends ApplicationWindow {
     //addStatusLine();
   }
   
-  public static ProximityDesktop getApp() {
-    return APP;
-  } 
-
-  public static ProximityController getController() {
-    return CONTROLLER;
+  public ImageCanvas getCanvas() {
+    return canvas;
   }
+
+  public Image getImage() {
+    return mImage;
+  }
+
+  public void openFile(String path) {  
   
-  public static ResourceBundle getBundle() {
-    return BUNDLE;  }
+    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
+  
+    // swap frames if this is the first image selected
+    if (stackLayout.topControl == buttonFrame) {
+      stackLayout.topControl = canvasFrame;
+      frameStack.layout();
+    }
+  
+    // load the image
+    mImage = new Image(Display.getCurrent(), path);    
+  
+    // update canvas
+    canvas.setImage(mImage);
+  
+    // enable disabled buttons
+    enableImageActions();
+  
+    // tell the controller about the new image
+    CONTROLLER.onImageSelected(mImage.getImageData());
+  
+    // TODO: prevent duplicates
+    
+    // shuffle documents down
+    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
+      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
+      if (tmp != null) {
+        mRecentPrefs.put(Integer.toString(i), tmp);
+      }
+    }
+  
+    // store into recent documents
+    mRecentPrefs.put("0", path);
+  }
+
+  /**
+   * Configure the shell.
+   * @param newShell
+   */
+  @Override
+  protected void configureShell(Shell newShell) {
+    super.configureShell(newShell);
+    newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
+    
+    // set icon
+    String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
+    Display display = Display.getCurrent();
+    
+    Image[] imgs = new Image[] {
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_16.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_24.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_36.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_48.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_64.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_128.png").createImage(display)
+  };
+  
+    newShell.setImages(imgs);
+  }
+
+  /**
+   * Return the initial size of the window.
+   */
+  @Override
+  protected Point getInitialSize() {
+    return new Point(580, 190);
+  }
 
   /**
    * Create contents of the application window.
@@ -292,6 +307,19 @@ public class ProximityDesktop extends ApplicationWindow {
   }
   
   /**
+   * Toggle displaying the features pane.
+   * @param show
+   */
+  public void toggleFeatures(boolean show) {
+    if (show) {
+      sashForm.setWeights(new int[]{1, 3});
+    }
+    else {
+      sashForm.setWeights(new int[]{0, 1});
+    }
+  }
+
+  /**
    * Create the sash to display the image and select image panes.
    * @param container
    */
@@ -309,6 +337,15 @@ public class ProximityDesktop extends ApplicationWindow {
     frameStack.layout();
   }
   
+  /**
+   * Swaps the currently displayed frame to the given composite.
+   * @param frame
+   */
+  public void swapFrame(Composite frame) {
+    stackLayout.topControl = frame;
+    frameStack.layout();
+  }
+
   /**
    * Creates the frame with the canvas and property selection.
    * @param container
@@ -343,8 +380,6 @@ public class ProximityDesktop extends ApplicationWindow {
 
       canvas.addMouseWheelListener(new ZoomListener(canvas));
       canvas.addMouseMoveListener(new PanListener(canvas));
-      
-      canvas.addPaintListener(mPaintRegionsListener);
       
       MenuManager menuMgr = new MenuManager();
       menuMgr.add(actnUndo);
@@ -476,6 +511,26 @@ public class ProximityDesktop extends ApplicationWindow {
   }
   
   /**
+   * Updates the names and enabled status of the undo and redo actions.
+   */
+  public void updateHistoryActions() {
+    //undo
+    actnUndo.setEnabled(CONTROLLER.getUndo());
+    actnUndo.setText(CONTROLLER.getUndoString());
+    
+    //redo
+    actnRedo.setEnabled(CONTROLLER.getRedo());
+    actnRedo.setText(CONTROLLER.getRedoString());
+  }
+
+  public void updateSelectionActions() {
+    boolean enable = !CONTROLLER.getSelectedRegions().isEmpty();
+    for (Action a: mSelectionDependantActions) {
+      a.setEnabled(enable);
+    }
+  }
+
+  /**
    * Create the menu manager.
    * @return the menu manager
    */
@@ -580,109 +635,6 @@ public class ProximityDesktop extends ApplicationWindow {
   }
 
   /**
-   * Configure the shell.
-   * @param newShell
-   */
-  @Override
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
-    
-    // set icon
-    String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
-    Display display = Display.getCurrent();
-    
-    Image[] imgs = new Image[] {
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_16.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_24.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_36.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_48.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_64.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_128.png").createImage(display)
-  };
-
-    newShell.setImages(imgs);
-  }
-
-  /**
-   * Return the initial size of the window.
-   */
-  @Override
-  protected Point getInitialSize() {
-    return new Point(580, 190);
-  }
-
-  public ImageCanvas getCanvas() {
-    return canvas;
-  }
-  
-  public Image getImage() {
-    return mImage;
-  }
-
-  /**
-   * Swaps the currently displayed frame to the given composite.
-   * @param frame
-   */
-  public void swapFrame(Composite frame) {
-    stackLayout.topControl = frame;
-    frameStack.layout();
-  }
-
-  /**
-   * Respond to the open item being selected.
-   */
-  public void doOpen() {
-    // create the dialog to select an image file
-    FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
-    dialog.setText("Select an image file");
-    dialog.setFilterExtensions(new String[]{"*.jpg;*.png;*.gif;*.bmp"});
-    
-    // get a file path
-    String path = dialog.open();
-
-    if (path != null) {     
-      openFile(path);
-    }
-  }
-  
-  public void openFile(String path) {  
-
-    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
-
-    // swap frames if this is the first image selected
-    if (stackLayout.topControl == buttonFrame) {
-      stackLayout.topControl = canvasFrame;
-      frameStack.layout();
-    }
-
-    // load the image
-    mImage = new Image(Display.getCurrent(), path);    
-
-    // update canvas
-    canvas.setImage(mImage);
-
-    // enable disabled buttons
-    enableImageActions();
-
-    // tell the controller about the new image
-    CONTROLLER.onImageSelected(mImage.getImageData());
-
-    // TODO: prevent duplicates
-    
-    // shuffle documents down
-    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
-      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
-      if (tmp != null) {
-        mRecentPrefs.put(Integer.toString(i), tmp);
-      }
-    }
-
-    // store into recent documents
-    mRecentPrefs.put("0", path);
-  }
-
-  /**
    * Enable all actions that only make ssense when we have an image.
    */
   private void enableImageActions() {
@@ -691,59 +643,10 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
   
-  /**
-   * Save a snapshot of the current view.
-   */
-  public void doSnapshot() {
-    // TODO: prepare image
-    SnapshotDialog dialog = new SnapshotDialog(getShell(), mImage, mImageName);
-    dialog.open();
-  }
-
-  /**
-   * Exit the program.
-   */
-  public void doExit() {    
-    close();
-  }
-  
-  /**
-   * Toggle displaying the features pane.
-   * @param show
-   */
-  public void toggleFeatures(boolean show) {
-    if (show) {
-      sashForm.setWeights(new int[]{1, 3});
-    }
-    else {
-      sashForm.setWeights(new int[]{0, 1});
-    }
-  }
-  
   @Override
   public boolean close() {
     // tell the controller we are closing
     CONTROLLER.onClose();
     return super.close();
-  }
-
-  /**
-   * Updates the names and enabled status of the undo and redo actions.
-   */
-  public void updateHistoryActions() {
-    //undo
-    actnUndo.setEnabled(CONTROLLER.getUndo());
-    actnUndo.setText(CONTROLLER.getUndoString());
-    
-    //redo
-    actnRedo.setEnabled(CONTROLLER.getRedo());
-    actnRedo.setText(CONTROLLER.getRedoString());
-  }
-  
-  public void updateSelectionActions() {
-    boolean enable = !CONTROLLER.getSelectedRegions().isEmpty();
-    for (Action a: mSelectionDependantActions) {
-      a.setEnabled(enable);
-    }
   }
 }

@@ -3,6 +3,8 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -122,7 +124,38 @@ public class ImageCanvas extends Canvas {
       gc.drawImage(mImage, 0, 0);
       gc.setTransform(null);
     }
-    
+
+    // TODO: draw regions
+    Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
+    Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+    ProximityController controller = ProximityDesktop.getController();
+    List<Region> selectedRegions = controller.getSelectedRegions();
+    for (Region r : controller.getRegions()) {
+      Rectangle bounds = r.getBounds();
+      bounds = toScreenSpace(bounds);
+      // determine if the region is selected
+      if (selectedRegions.contains(r)) {
+        gc.setForeground(selected);
+      }
+      else {
+        gc.setForeground(unselected);
+      }
+      switch(r.getShape()) {
+        case RECTANGLE:
+          gc.drawRectangle(bounds);
+          break;
+        case OVAL:
+          gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
+          break;
+        case POLYGON:
+          int[] points = r.getPolygon().toArray();
+          points = toScreenSpace(points);
+          gc.drawPolygon(points);
+          break;
+      }
+    }
+
+    // store the new bounds
     mOldBounds = currentBounds;
   }
 
