@@ -153,54 +153,6 @@ public class ProximityDesktop extends ApplicationWindow {
   
   private SashForm sashForm;
   
-  /**
-   * Listens for mouse wheel to scroll into canvas.
-   */
-  //TODO: zoom to cursor
-  private MouseWheelListener mMouseWheelListener = new MouseWheelListener() {
-    
-    public void mouseScrolled(MouseEvent e) {
-      // check if ctrl is being held
-      if ((e.stateMask & SWT.CTRL) != 0 ) {
-        // check whether to zoom in or out
-        if (e.count < 0) {
-          canvas.zoomOut();
-        }
-        else {
-          canvas.zoomIn();
-        }
-      }
-    }
-  };
-  
-  /**
-   * Listen for panning with the middle mouse button.
-   */
-  private MouseMoveListener mMouseMoveListener = new MouseMoveListener() {
-    
-    private int mPrevX = -1;
-    private int mPrevY = -1;
-    
-    public void mouseMove(MouseEvent e) {
-      // check if the middle mouse button is pressed
-      if ((e.stateMask & SWT.BUTTON2) != 0) {
-        // make if this is the first valid event
-        if (mPrevX != -1) {
-          int dx = e.x - mPrevX;
-          int dy = e.y - mPrevY;              
-          canvas.pan(dx, dy);
-        }
-        // record the previous point
-        mPrevX = e.x;
-        mPrevY = e.y;
-      }
-      else {
-        // record we have stopped
-        mPrevX = -1;
-      }
-    }
-  };
-  
   private PaintListener mPaintRegionsListener = new PaintListener() {
     
     public void paintControl(PaintEvent e) {
@@ -389,8 +341,8 @@ public class ProximityDesktop extends ApplicationWindow {
       canvas = new ImageCanvas(canvasFrame, SWT.BORDER | SWT.DOUBLE_BUFFERED, mImage);
       canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));      
 
-      canvas.addMouseWheelListener(mMouseWheelListener);
-      canvas.addMouseMoveListener(mMouseMoveListener);
+      canvas.addMouseWheelListener(new ZoomListener(canvas));
+      canvas.addMouseMoveListener(new PanListener(canvas));
       
       canvas.addPaintListener(mPaintRegionsListener);
       
