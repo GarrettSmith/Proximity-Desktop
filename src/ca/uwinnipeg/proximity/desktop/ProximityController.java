@@ -179,6 +179,7 @@ public class ProximityController {
       selectedRegions.add(r);
     }
     ProximityDesktop.getApp().updateSelectionActions();
+    ProximityDesktop.getApp().getCanvas().redraw();
   }
   
   public void setSelected(List<Region> regs) {
@@ -187,6 +188,7 @@ public class ProximityController {
       selectedRegions.addAll(regs);
     }
     ProximityDesktop.getApp().updateSelectionActions();
+    ProximityDesktop.getApp().getCanvas().redraw();
   }
   
   public List<Region> getSelectedRegions() {
