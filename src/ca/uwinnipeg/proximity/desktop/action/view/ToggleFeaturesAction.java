@@ -7,7 +7,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MenuItem;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -17,7 +17,7 @@ public class ToggleFeaturesAction extends Action {
   
   public ToggleFeaturesAction() {
     super(
-        MainWindow.getBundle().getString("MainWindow.actnFeatures.text"), 
+        ProximityDesktop.getBundle().getString("Actions.ToggleFeatures.text"), 
         Action.AS_CHECK_BOX);
     setChecked(true);
   }
@@ -25,7 +25,7 @@ public class ToggleFeaturesAction extends Action {
   @Override
   public void runWithEvent(Event event) {
     MenuItem item = (MenuItem) event.widget;
-    MainWindow.getApp().toggleFeatures(item.getSelection());
+    ProximityDesktop.getApp().toggleFeatures(item.getSelection());
   }
 
 }

@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
@@ -30,7 +29,7 @@ public class ZoomTool extends Tool {
    * @param icon
    */
   public ZoomTool(ToolHost host) {
-    super(host, "MainWindow.actnZoom.text", "zoom.png");
+    super(host);
   }
 
   @Override
@@ -86,12 +85,12 @@ public class ZoomTool extends Tool {
     
   }
   
-  public class Action extends ToolAction {
+  public static class Action extends ToolAction {
 
     public Action(ZoomTool tool) {
       super(
-          MainWindow.getBundle().getString("Actions.Zoom.text"),
-          ToolAction.ICON_PATH + "zoom.png",
+          "Actions.ZoomTool.text",
+          "zoom.png",
           tool);
     }
     

@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public abstract class PropertyAction extends Action {
   
   public PropertyAction(String textKey) {
-    super(MainWindow.getBundle().getString(textKey), Action.AS_RADIO_BUTTON);
+    super(ProximityDesktop.getBundle().getString(textKey), Action.AS_RADIO_BUTTON);
   }
   
   @Override

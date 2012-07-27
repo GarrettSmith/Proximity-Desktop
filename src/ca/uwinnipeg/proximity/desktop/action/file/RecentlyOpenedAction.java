@@ -7,7 +7,7 @@ import java.io.File;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -24,6 +24,6 @@ public class RecentlyOpenedAction extends Action {
   
   @Override
   public void run() {
-    MainWindow.getApp().openFile(mPath);
+    ProximityDesktop.getApp().openFile(mPath);
   }
 }

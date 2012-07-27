@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.file;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class EmptyAction extends Action {
   
   public EmptyAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actionEmpty.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Empty.text"));
     setEnabled(false);
   }
 

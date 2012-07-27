@@ -23,8 +23,8 @@ public abstract class SimpleRegionTool extends Tool {
   
   private Region.Shape mShape;
 
-  public SimpleRegionTool(ToolHost host, String label, String icon, Region.Shape shape) {
-    super(host, label, icon);
+  public SimpleRegionTool(ToolHost host, Region.Shape shape) {
+    super(host);
     mShape = shape;
   }
 

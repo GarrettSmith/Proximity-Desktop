@@ -9,7 +9,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
@@ -22,7 +21,7 @@ public class OvalTool extends SimpleRegionTool {
   public static final Color OVAL_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
   public OvalTool(ToolHost host) {
-    super(host, "MainWindow.action.text_1", "oval.png", Region.Shape.OVAL);
+    super(host, Region.Shape.OVAL);
   }
   
   @Override
@@ -43,12 +42,12 @@ public class OvalTool extends SimpleRegionTool {
         height);
   }
   
-  public class Action extends ToolAction {
+  public static class Action extends ToolAction {
 
     public Action(OvalTool tool) {
       super(
-          MainWindow.getBundle().getString("Actions.Oval.text"),
-          ToolAction.ICON_PATH + "oval.png",
+          "Actions.OvalTool.text",
+          "oval.png",
           tool);
     }
     

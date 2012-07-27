@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
-import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.MathUtil;
 import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
@@ -26,7 +25,7 @@ public class PolygonTool extends Tool {
   public static final Color POINT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
   public PolygonTool(ToolHost host) {
-    super(host, "MainWindow.actnPolygon.text", "poly.png");
+    super(host);
   }
 
   @Override
@@ -191,12 +190,12 @@ public class PolygonTool extends Tool {
     
   }
   
-  public class Action extends ToolAction {
+  public static class Action extends ToolAction {
 
     public Action(PolygonTool tool) {
       super(
-          MainWindow.getBundle().getString("Actions.Polygon.text"),
-          ToolAction.ICON_PATH + "poly.png",
+          "Actions.PolygonTool.text",
+          "poly.png",
           tool);
     }
     

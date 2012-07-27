@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.view;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,12 +14,12 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class CenterAction extends Action {
   
   public CenterAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnCenter.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Center.text"));
   }
   
   @Override
   public void run() {
-    MainWindow.getApp().getCanvas().center();
+    ProximityDesktop.getApp().getCanvas().center();
   }
 
 }

@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.view;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class ZoomSelectionAction extends Action {
   
   public ZoomSelectionAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnZoomSelection.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.ZoomSelection.text"));
     //TODO: setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_2_NAME));
   }
   

@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.edit;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,6 +14,6 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class CopyAction extends Action {
 
   public CopyAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnCut.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Cut.text"));
   }
 }

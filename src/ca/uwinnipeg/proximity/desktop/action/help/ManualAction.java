@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.help;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class ManualAction extends Action {
 
   public ManualAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnManual.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Manual.text"));
   }
   
   @Override

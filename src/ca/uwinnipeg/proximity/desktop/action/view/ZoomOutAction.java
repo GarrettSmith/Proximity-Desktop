@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.view;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,13 +14,13 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class ZoomOutAction extends Action {
   
   public ZoomOutAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnZoomOut.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.ZoomOut.text"));
     setAccelerator(0 | '-');
     //TODO:actnZoomOut.setAccelerator(0 | mKeyLookup.formalKeyLookup(IKeyLookup.NUMPAD_SUBTRACT_NAME));
   }
   
   @Override
   public void run() {
-    MainWindow.getApp().getCanvas().zoomOut();
+    ProximityDesktop.getApp().getCanvas().zoomOut();
   }
 }

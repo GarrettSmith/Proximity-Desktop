@@ -9,7 +9,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
@@ -22,7 +21,7 @@ public class RectangleTool extends SimpleRegionTool {
   public static final Color RECT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
   public RectangleTool(ToolHost host) {
-    super(host, "MainWindow.actnRectangle.text", "rect.png", Region.Shape.RECTANGLE);
+    super(host, Region.Shape.RECTANGLE);
   }
   
   @Override
@@ -43,12 +42,12 @@ public class RectangleTool extends SimpleRegionTool {
         height);
   }
   
-  public class Action extends ToolAction {
+  public static class Action extends ToolAction {
 
     public Action(RectangleTool tool) {
       super(
-          MainWindow.getBundle().getString("Actions.Rectangle.text"),
-          ToolAction.ICON_PATH + "rect.png",
+          "Actions.RectangleTool.text",
+          "rect.png",
           tool);
     }
     

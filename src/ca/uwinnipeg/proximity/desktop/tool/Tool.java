@@ -43,7 +43,7 @@ public abstract class Tool {
     return registered;
   }
   
-  public Tool(ToolHost host, String label, String icon) {
+  public Tool(ToolHost host) {
     mHost = host;
     mListeners = createListeners(new HashMap<Integer, Listener>());
   }

@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.file;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,12 +14,12 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class ExitAction extends Action {
   
   public ExitAction() {
-    super(MainWindow.getBundle().getString("MainWindow.actnExit.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Exit.text"));
   }
   
   @Override
   public void run() {
-    MainWindow.getApp().close();
+    ProximityDesktop.getApp().close();
   }
 
 }

@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.edit;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class PasteAction extends Action {
   
   public PasteAction() {
-    super(MainWindow.getBundle().getString("Actions.Paste.paste"));
+    super(ProximityDesktop.getBundle().getString("Actions.Paste.text"));
   }
 
 }

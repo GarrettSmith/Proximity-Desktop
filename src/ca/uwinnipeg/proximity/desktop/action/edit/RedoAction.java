@@ -5,7 +5,7 @@ package ca.uwinnipeg.proximity.desktop.action.edit;
 
 import org.eclipse.jface.action.Action;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author garrett
@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.desktop.MainWindow;
 public class RedoAction extends Action {
   
   public RedoAction() {
-    super(MainWindow.getBundle().getString("Actions.Redo.text"));
+    super(ProximityDesktop.getBundle().getString("Actions.Redo.text"));
   }
   @Override
   public void run() {

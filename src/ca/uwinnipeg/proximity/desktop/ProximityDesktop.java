@@ -10,7 +10,6 @@ import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.MenuManager;
@@ -19,7 +18,6 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
-import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -86,11 +84,11 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  *
  */
 // TODO: split up
-public class MainWindow extends ApplicationWindow implements ToolHost {
+public class ProximityDesktop extends ApplicationWindow implements ToolHost {
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
   
-  private static MainWindow APP;
+  private static ProximityDesktop APP;
     
   private Action actnOpen;
   private Action actnSnapshot;
@@ -270,24 +268,20 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
    */
   public static void main(String args[]) {
     Display display = Display.getDefault();
-    Realm.runWithDefault(SWTObservables.getRealm(display), new Runnable() {
-      public void run() {
-        try {
-          MainWindow window = new MainWindow(new MainController());
-          window.setBlockOnOpen(true);
-          window.open();
-          Display.getCurrent().dispose();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    });
+    try {
+      ProximityDesktop window = new ProximityDesktop(new MainController());
+      window.setBlockOnOpen(true);
+      window.open();
+      Display.getCurrent().dispose();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
    * Create the application window.
    */
-  public MainWindow(MainController controller) {
+  public ProximityDesktop(MainController controller) {
     super(null);
     APP = this;
     mController = controller;
@@ -299,7 +293,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     //addStatusLine();
   }
   
-  public static MainWindow getApp() {
+  public static ProximityDesktop getApp() {
     return APP;
   }
   
@@ -385,15 +379,15 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
       ToolBarManager propertyBarManager = new ToolBarManager(propertyBar);
-      propertyBarManager.add(actnRegions);
-      propertyBarManager.add(actnNeighbourhoods);
-      propertyBarManager.add(actnIntersection);
-      propertyBarManager.add(actnCompliment);
-      propertyBarManager.add(actnDifference);
+//      propertyBarManager.add(actnRegions);
+//      propertyBarManager.add(actnNeighbourhoods);
+//      propertyBarManager.add(actnIntersection);
+//      propertyBarManager.add(actnCompliment);
+//      propertyBarManager.add(actnDifference);
       propertyBarManager.update(false);
       
       // select the first action
-      actnRegions.setChecked(true);
+//      actnRegions.setChecked(true);
     }
     
     // create the image canvas
@@ -437,7 +431,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     Label lblOpenButton = new Label(buttonFrame, SWT.NONE);
     lblOpenButton.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
     lblOpenButton.setBounds(0, 0, 569, 582);
-    lblOpenButton.setText(BUNDLE.getString("MainWindow.lblOpenButton.text")); //$NON-NLS-1$
+    lblOpenButton.setText(BUNDLE.getString("MainWindow.OpenLabel.text")); //$NON-NLS-1$
     
     // create the button to open the image
     ActionContributionItem open = new ActionContributionItem(actnOpen);
@@ -532,11 +526,11 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   }
   
   private void createPropertyActions() {
-    actnRegions = new PropertyAction("MainWindow.actnRegions.text");
-    actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
-    actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
-    actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
-    actnDifference = new PropertyAction("MainWindow.actnDifference.text");
+//    actnRegions = new PropertyAction("MainWindow.actnRegions.text");
+//    actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
+//    actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
+//    actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
+//    actnDifference = new PropertyAction("MainWindow.actnDifference.text");
   }
   
   private void createTools() {
@@ -562,7 +556,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   @Override
   protected MenuManager createMenuManager() {
     MenuManager menuManager = new MenuManager("menu");
-    MenuManager menuFile = new MenuManager("&File", null);
+    MenuManager menuFile = new MenuManager(BUNDLE.getString("MainWindow.File.text"));
     menuManager.add(menuFile);
     menuFile.add(actnOpen);    
     menuFile.add(createRecentMenu());    
@@ -571,7 +565,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuFile.add(new Separator());
     menuFile.add(actnExit);
     
-    MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.menuManager_1.text"));
+    MenuManager menuEdit = new MenuManager(BUNDLE.getString("MainWindow.Edit.text"));
     menuManager.add(menuEdit);
     menuEdit.add(actnUndo);
     menuEdit.add(actnRedo);
@@ -586,12 +580,12 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuEdit.add(new Separator());
     menuEdit.add(actnSelectAll);
     
-    MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.menuView.text"));
+    MenuManager menuView = new MenuManager(BUNDLE.getString("MainWindow.View.text"));
     menuManager.add(menuView);
     menuView.add(actnCenter);
     menuView.add(new Separator());
     
-    MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.menuZoom.text"));
+    MenuManager menuZoom = new MenuManager(BUNDLE.getString("MainWindow.Zoom.text"));
     menuView.add(menuZoom);
     menuZoom.add(actnZoomIn);
     menuZoom.add(actnZoomOut);
@@ -602,7 +596,7 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
     menuView.add(new Separator());
     menuView.add(actnFeatures);
     
-    MenuManager menuHelp = new MenuManager("&Help");
+    MenuManager menuHelp = new MenuManager(BUNDLE.getString("MainWindow.Help.text"));
     menuManager.add(menuHelp);
     menuHelp.add(actnManual);
     menuHelp.add(new Separator());
@@ -666,19 +660,19 @@ public class MainWindow extends ApplicationWindow implements ToolHost {
   @Override
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
-    newShell.setText(BUNDLE.getString("MainWindow.newShell.text"));
+    newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
     
     // set icon
     String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
     Display display = Display.getCurrent();
     
     Image[] imgs = new Image[] {
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_16.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_24.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_36.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_48.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_64.png").createImage(display),
-      ResourceManager.getImageDescriptor(MainWindow.class, dir + "launcher_128.png").createImage(display)
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_16.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_24.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_36.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_48.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_64.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_128.png").createImage(display)
   };
 
     newShell.setImages(imgs);

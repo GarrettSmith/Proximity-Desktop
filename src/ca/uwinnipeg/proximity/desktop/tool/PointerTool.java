@@ -11,7 +11,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import ca.uwinnipeg.proximity.desktop.MainWindow;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
@@ -21,7 +20,7 @@ import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 public class PointerTool extends Tool {
 
   public PointerTool(ToolHost host) {
-    super(host, "MainWindow.action.text", "pointer.png");
+    super(host);
   }
 
   @Override
@@ -74,12 +73,12 @@ public class PointerTool extends Tool {
     
   }
   
-  public class Action extends ToolAction {
+  public static class Action extends ToolAction {
 
     public Action(PointerTool tool) {
       super(
-          MainWindow.getBundle().getString("Actions.Pointer.text"),
-          ToolAction.ICON_PATH + "pointer.png",
+          "Actions.PointerTool.text",
+          "pointer.png",
           tool);
     }
     
