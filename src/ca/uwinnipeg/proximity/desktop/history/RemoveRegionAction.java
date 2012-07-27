@@ -14,37 +14,37 @@ import ca.uwinnipeg.proximity.desktop.Region;
  */
 public class RemoveRegionAction implements HistoryAction {
 
-  private List<Region> regions;
+  private List<Region> mRegions;
 
-  private List<Region> dest;
+  private List<Region> mDest;
 
   /**
    * 
    */
   public RemoveRegionAction(List<Region> dest, List<Region> regions) {
-    this.dest = dest;
-    this.regions = regions;
+    this.mDest = dest;
+    this.mRegions = regions;
   }
   
   /**
    * 
    */
   public RemoveRegionAction(List<Region> dest, Region region) {
-    this.dest = dest;
-    this.regions = new ArrayList<Region>(1);
-    regions.add(region);
+    this.mDest = dest;
+    this.mRegions = new ArrayList<Region>(1);
+    mRegions.add(region);
   }
 
   public void apply() {
-    dest.removeAll(regions);
+    mDest.removeAll(mRegions);
   }
 
   public void unapply() {
-    dest.addAll(regions);
+    mDest.addAll(mRegions);
   }
 
   public String getName() {
-    if (regions.size() == 1) {
+    if (mRegions.size() == 1) {
       return "Remove Region";
     }
     else {

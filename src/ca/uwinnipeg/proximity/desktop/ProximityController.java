@@ -148,6 +148,18 @@ public class ProximityController {
     
     performAction(new AddRegionAction(regions, reg));
   }
+
+  /**
+   * Adds a region to the image.
+   * @param shape
+   * @param points
+   */
+  public void addRegions(List<Region> regs) {    
+    // select the newly added regions
+    setSelected(regs);
+    
+    performAction(new AddRegionAction(regions, regs));
+  }
   
   /**
    * Removes a region from the image.
@@ -178,14 +190,6 @@ public class ProximityController {
   }
   
   public List<Region> getSelectedRegions() {
-    // get rid of regions that have been removed
-    List<Region> newSelected = new ArrayList<Region>();
-    for (Region r: selectedRegions) {
-      if (regions.contains(r)) {
-        newSelected.add(r);
-      }
-    }
-    selectedRegions = newSelected;
     return new ArrayList<Region>(selectedRegions);
   }
 
@@ -198,9 +202,23 @@ public class ProximityController {
     mUndoStack.push(action);
     mRedoStack.clear();
     
+    updateSelectedRegions();
+    
     ProximityDesktop app = ProximityDesktop.getApp();
     app.updateHistoryActions();
+    app.updateSelectionActions();
     app.getCanvas().redraw();
+  }
+  
+  private void updateSelectedRegions() {
+    // get rid of regions that have been removed
+    List<Region> newSelected = new ArrayList<Region>();
+    for (Region r: selectedRegions) {
+      if (regions.contains(r)) {
+        newSelected.add(r);
+      }
+    }
+    selectedRegions = newSelected;
   }
   
   /**
