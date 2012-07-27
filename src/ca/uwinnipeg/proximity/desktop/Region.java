@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Display;
 
 import ca.uwinnipeg.proximity.image.Image;
 
@@ -47,9 +45,6 @@ public class Region {
   
   // The image this region belongs to
   protected Image mImage;  
-
-  // Flags if one time setup has been done
-  private static boolean SETUP = false;
   
   /**
    * Creates a new region within the given image.
@@ -158,10 +153,6 @@ public class Region {
     int dy = y - r.y;
     offsetRectangle(r, dx, dy);
   }
-
-  private Rectangle getImageBounds() {
-    return new Rectangle(0, 0, mImage.getWidth(), mImage.getHeight());
-  }
   
   private static int right(Rectangle r) {
     return r.x + r.width;
@@ -248,6 +239,40 @@ public class Region {
     }
   }
   
+  public boolean contains(Point point) {
+    Rectangle bounds = getBounds();
+    boolean contains = false;
+    // first check if it is within the rectangular bounds
+    if (bounds.contains(point)) {
+      switch(mShape) {
+        case POLYGON:
+          contains = mPoly.contains(point.x, point.y);
+          break;
+        case OVAL:
+          int cx = centerX(bounds);
+          int cy = centerY(bounds);
+          int rx2 = right(bounds) - cx;
+          rx2 *= rx2; // square
+          int ry2 = bottom(bounds) - cy;
+          ry2 *= ry2; // square
+          float dx = (float)(point.x - cx);
+          dx *= dx;
+          dx /= rx2;
+          float dy = (float)(point.y - cy);
+          dy *= dy;
+          dy /= ry2;
+          contains = (dx + dy <= 1);
+          break;
+        default:
+          contains = true;
+      }
+    }
+    else {
+      contains = false;
+    }
+    return contains;
+  }
+  
   /**
    * Gets all the indices of pixels within the {@link Image} contained by this region.
    * @param img
@@ -297,7 +322,7 @@ public class Region {
             dy /= ry2;
             
             // if the point is within the oval
-            if ( dx + dy <= 1) {
+            if (dx + dy <= 1) {
               tmp2[++j] = mImage.getIndex(x, y);
             }
           }
@@ -418,75 +443,5 @@ public class Region {
     mPoly.addPoint(x, y);
     updateBounds();
   }
-
-  public Path getPath() {
-    Path path = new Path(Display.getCurrent());
-    path.addPath(getShapePath());
-
-    // only add center point when the shape is a poly with atleast 3 points
-    if (!(mShape == Shape.POLYGON && mPoly.size() < 3)) {
-      path.addPath(getCenterPath());
-    }
-    
-    return path;
-  }
-
-  /**
-   * Returns the path representing this region in image space.
-   * @return
-   */
-  // TODO: get the proper shape path
-  public Path getShapePath() {
-    Path shapePath = new Path(Display.getCurrent());
-  
-    switch (mShape) {
-      case RECTANGLE:
-        Rectangle bounds = getBounds();
-        shapePath.addRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
-        break;
-      case OVAL:
-        //TODO:shapePath.addOval(getBoundsF(), Path.Direction.CW);
-        break;
-      case POLYGON:
-        shapePath.addPath(mPoly.getPath());
-        break;
-    }
-    
-    return shapePath;
-  }
-
-  /**
-   * Returns the path representing the center pixel of this region in image space.
-   * @return
-   */
-  public Path getCenterPath() {
-    Path centerPath = new Path(Display.getCurrent());
-    
-    Rectangle bounds = getBounds();
-    int cx = centerX(bounds);
-    int cy = centerY(bounds);
-    
-    int size = 10;
-    
-    centerPath.addRectangle(
-        bounds.x - size/2, 
-        bounds.y - size/2, 
-        size, 
-        size);
-    
-    return centerPath;
-  }
-  
-//  /**
-//   * Returns the paint that is the same colour as the center pixel of this region.
-//   * @return
-//   */
-//  TODO: public Paint getCenterPaint() {
-//    Rectangle bounds = getBounds();
-//    Paint paint = new Paint(CENTER_BASE_PAINT);
-//    int color = mImage.getPixel(bounds.centerX(), bounds.centerY());
-//    paint.setColor(color);
-//    return paint;
-//  }
 
 }

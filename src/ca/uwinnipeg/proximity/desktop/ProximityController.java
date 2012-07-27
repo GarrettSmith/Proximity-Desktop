@@ -39,7 +39,8 @@ public class ProximityController {
   
   private Image mImage = new Image();
   
-  private List<Region> mRegions = new ArrayList<Region>();
+  private List<Region> regions = new ArrayList<Region>();
+  private List<Region> selectedRegions = new ArrayList<Region>();
   
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
@@ -113,7 +114,7 @@ public class ProximityController {
    * @return
    */
   public List<Region> getRegions() {
-    return new ArrayList<Region>(mRegions);
+    return new ArrayList<Region>(regions);
   }
 
   /**
@@ -142,7 +143,10 @@ public class ProximityController {
           Math.abs(p1.y - p2.y)));
     }
     
-    performAction(new AddRegionAction(mRegions, reg));
+    // select the newly added region
+    setSelected(reg);
+    
+    performAction(new AddRegionAction(regions, reg));
   }
   
   /**
@@ -150,9 +154,27 @@ public class ProximityController {
    * @param region
    */
   public void removeRegion(Region region) {
-    performAction(new RemoveRegionAction(mRegions, region));
+    performAction(new RemoveRegionAction(regions, region));
   }
   
+  public void setSelected(Region r) {
+    selectedRegions.clear();
+    if (r != null) {
+      selectedRegions.add(r);
+    }
+  }
+  
+  public void setSelected(List<Region> regs) {
+    selectedRegions.clear();
+    if (regs != null) {
+      selectedRegions.addAll(regs);
+    }
+  }
+  
+  public List<Region> getSelectedRegions() {
+    return new ArrayList<Region>(selectedRegions);
+  }
+
   /**
    * Applies a {@link HistoryAction} adds it to the undo stack and clears the redo stack.
    * @param action
@@ -161,6 +183,7 @@ public class ProximityController {
     action.apply();
     mUndoStack.push(action);
     mRedoStack.clear();
+    ProximityDesktop.getApp().updateHistoryActions();
   }
   
   /**

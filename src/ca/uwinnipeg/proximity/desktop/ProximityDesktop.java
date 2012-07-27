@@ -207,15 +207,16 @@ public class ProximityDesktop extends ApplicationWindow {
       GC gc = e.gc;
       Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
       Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+      List<Region> selectedRegions = CONTROLLER.getSelectedRegions();
       for (Region r : CONTROLLER.getRegions()) {
         Rectangle bounds = r.getBounds();
         bounds = canvas.toScreenSpace(bounds);
         // determine if the region is selected
-        if (mSelectedRegions.contains(r)) {
-          gc.setBackground(selected);
+        if (selectedRegions.contains(r)) {
+          gc.setForeground(selected);
         }
         else {
-          gc.setBackground(unselected);
+          gc.setForeground(unselected);
         }
         switch(r.getShape()) {
           case RECTANGLE:

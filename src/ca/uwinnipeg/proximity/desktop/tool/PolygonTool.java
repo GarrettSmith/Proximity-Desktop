@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
 import ca.uwinnipeg.proximity.desktop.MathUtil;
-import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
@@ -135,7 +134,6 @@ public class PolygonTool extends Tool {
       getController().addRegion(Region.Shape.POLYGON, mPoints);
       mPoints.clear();
       getCanvas().redraw();
-      ProximityDesktop.getApp().updateHistoryActions();
     }
     
     public void mouseUp(Event event) {
