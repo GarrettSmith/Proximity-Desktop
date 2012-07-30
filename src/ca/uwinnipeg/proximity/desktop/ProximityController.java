@@ -143,7 +143,15 @@ public class ProximityController {
   
   public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
     mProbeFuncs.put(func, enabled);
-    // TODO: tell controllers
+    if (enabled) {
+      mImage.addProbeFunc(func);
+    }
+    else {
+      mImage.removeProbeFunc(func);
+    }
+    for (PropertyController pc : mPropertyControllers) {
+      pc.onProbeFuncsChanged();
+    }
   }
   
   /**
