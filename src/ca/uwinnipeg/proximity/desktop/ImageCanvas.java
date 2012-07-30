@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ProgressBar;
 
 /**
  * @author Garrett Smith
@@ -66,15 +67,6 @@ public class ImageCanvas extends Canvas {
         onPaint(e.gc);
       }        
     });
-  }
-  
-  /**
-   * Create a new ImageCanvas without an image.
-   * @param parent
-   * @param style
-   */
-  public ImageCanvas(Composite parent, int style) { 
-    this(parent, style, null);
   }
   
   /**
@@ -477,5 +469,4 @@ public class ImageCanvas extends Canvas {
     
     return ( (0 <= p.x && p.x <= width) && (0 <= p.y && p.y <= height));
   }
-
 }

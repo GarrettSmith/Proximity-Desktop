@@ -34,7 +34,7 @@ public class ComplimentController extends LinearPropertyController {
     else {
       // take the initial compliment
       long startTime = System.currentTimeMillis();
-      if (mRegions.isEmpty()) {
+      if (mRegions.get(0) == region) {
         indices = mImage.hybridCompliment(
             getIndices(region), 
             0.2, //TODO: getEpsilon(), 

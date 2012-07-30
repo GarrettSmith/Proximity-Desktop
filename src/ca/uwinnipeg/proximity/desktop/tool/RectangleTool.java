@@ -16,6 +16,7 @@ import ca.uwinnipeg.proximity.desktop.action.ToolAction;
  * @author Garrett Smith
  *
  */
+// TODO: add shift and ctrl functionality
 public class RectangleTool extends SimpleRegionTool {
   
   public static final Color RECT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);

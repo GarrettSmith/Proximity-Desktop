@@ -66,6 +66,12 @@ import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Spinner;
 
 /**
  * The main window of the application.
@@ -73,6 +79,14 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  *
  */
 public class ProximityDesktop extends ApplicationWindow {
+  private static class ViewerLabelProvider extends LabelProvider {
+    public Image getImage(Object element) {
+      return super.getImage(element);
+    }
+    public String getText(Object element) {
+      return super.getText(element);
+    }
+  }
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
   
@@ -287,14 +301,17 @@ public class ProximityDesktop extends ApplicationWindow {
    */
   private void createFeaturesPane(Composite container) {
     Composite composite = new Composite(container, SWT.NONE);
-    
-    // create the grid layout for the sash
     GridLayout gl_composite = new GridLayout(1, false);
     gl_composite.marginLeft = 5;
     gl_composite.marginWidth = 0;
     composite.setLayout(gl_composite);
     
-    CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER);
+    CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
+    FeaturesContentProvider provider = new FeaturesContentProvider();
+    checkboxTreeViewer.setContentProvider(provider);
+    checkboxTreeViewer.setLabelProvider(new FeaturesLabeLProvider());
+    checkboxTreeViewer.setInput(CONTROLLER.getProbeFuncs());
+    checkboxTreeViewer.setCheckStateProvider(provider);
     Tree tree = checkboxTreeViewer.getTree();
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     
@@ -394,6 +411,17 @@ public class ProximityDesktop extends ApplicationWindow {
       
       Menu menu = menuMgr.createContextMenu(canvas);
       canvas.setMenu(menu);   
+      
+      Composite composite = new Composite(canvasFrame, SWT.NONE);
+      GridLayout gl_composite = new GridLayout(2, false);
+      gl_composite.marginHeight = 1;
+      composite.setLayout(gl_composite);
+      composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+      
+      Label lblNewLabel = new Label(composite, SWT.NONE);
+      lblNewLabel.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel.text_1")); //$NON-NLS-1$
+      
+      Spinner spinner = new Spinner(composite, SWT.BORDER);
       
       // setup first tool
       actnPointer.run();

@@ -1,7 +1,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;

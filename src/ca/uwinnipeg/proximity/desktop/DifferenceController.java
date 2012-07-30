@@ -34,7 +34,7 @@ public class DifferenceController extends LinearPropertyController {
     else {
       // take the initial compliment
       long startTime = System.currentTimeMillis();
-      if (mValue.isEmpty()) {
+      if (mRegions.get(0) == region) {
         indices = region.getIndicesList();
       }
       // take the difference of with the next object

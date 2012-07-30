@@ -17,7 +17,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
-import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
@@ -126,6 +125,13 @@ public class ProximityController {
         e.printStackTrace();
       }
     }
+  }
+  
+  public Map<String, Map<ProbeFunc<Integer>, Boolean>> getProbeFuncs() {
+    HashMap<String, Map<ProbeFunc<Integer>, Boolean>> map = 
+        new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
+    map.put("Colour", mProbeFuncs);
+    return map;
   }
   
   /**
@@ -341,22 +347,6 @@ public class ProximityController {
     HistoryAction action = mRedoStack.pop();
     action.apply();
     mUndoStack.push(action);
-  }
-  
-  public List<Integer> getNeighbourhood(Region reg) {
-    PerceptualSystemSubscriber sub = new PerceptualSystemSubscriber() {
-
-      public void onProgressSet(float progress) {
-        // TODO Auto-generated method stub
-        
-      }
-
-      public boolean isCancelled() {
-        // TODO Auto-generated method stub
-        return false;
-      }
-    };
-    return mImage.hybridNeighbourhood(reg.getCenterIndex(), reg.getIndicesList(), 0.3f, sub);
   }
   
   /**
