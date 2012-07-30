@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -67,6 +68,12 @@ public class ProximityController {
       };
   
   private Map<ProbeFunc<Integer>, Boolean> mProbeFuncs = new HashMap<ProbeFunc<Integer>, Boolean>();
+  
+  private ICheckStateListener mCheckStateListener = new FeaturesCheckedListener(this);
+  
+  public ICheckStateListener getCheckStateListener() {
+    return mCheckStateListener;
+  }
   
   public ProximityController() {
     loadFuncs();
@@ -132,6 +139,11 @@ public class ProximityController {
         new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
     map.put("Colour", mProbeFuncs);
     return map;
+  }
+  
+  public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
+    mProbeFuncs.put(func, enabled);
+    // TODO: tell controllers
   }
   
   /**

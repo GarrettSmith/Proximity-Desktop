@@ -33,8 +33,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
@@ -66,12 +68,6 @@ import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.widgets.Slider;
-import org.eclipse.swt.widgets.Scale;
-import org.eclipse.swt.widgets.Spinner;
 
 /**
  * The main window of the application.
@@ -79,14 +75,7 @@ import org.eclipse.swt.widgets.Spinner;
  *
  */
 public class ProximityDesktop extends ApplicationWindow {
-  private static class ViewerLabelProvider extends LabelProvider {
-    public Image getImage(Object element) {
-      return super.getImage(element);
-    }
-    public String getText(Object element) {
-      return super.getText(element);
-    }
-  }
+  
   private static final ResourceBundle BUNDLE = 
       ResourceBundle.getBundle("ca.uwinnipeg.proximity.desktop.strings.messages");
   
@@ -308,12 +297,20 @@ public class ProximityDesktop extends ApplicationWindow {
     
     CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     FeaturesContentProvider provider = new FeaturesContentProvider();
+    checkboxTreeViewer.setAutoExpandLevel(2);
     checkboxTreeViewer.setContentProvider(provider);
     checkboxTreeViewer.setLabelProvider(new FeaturesLabeLProvider());
     checkboxTreeViewer.setInput(CONTROLLER.getProbeFuncs());
     checkboxTreeViewer.setCheckStateProvider(provider);
+    checkboxTreeViewer.addCheckStateListener(CONTROLLER.getCheckStateListener());
     Tree tree = checkboxTreeViewer.getTree();
+    tree.setHeaderVisible(true);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    
+    TreeColumn trclmnNewColumn = new TreeColumn(tree, 0);
+    trclmnNewColumn.setResizable(false);
+    trclmnNewColumn.setWidth(100);
+    trclmnNewColumn.setText(BUNDLE.getString("ProximityDesktop.trclmnNewColumn.text")); //$NON-NLS-1$
     
     // create the add features button
     ActionContributionItem add = new ActionContributionItem(actnAddFeatures);
