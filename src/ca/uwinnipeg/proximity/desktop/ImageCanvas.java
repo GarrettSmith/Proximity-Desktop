@@ -452,20 +452,23 @@ public class ImageCanvas extends Canvas {
   }
   
   public Rectangle toScreenSpace(Rectangle r) {
-    Rectangle rtn = new Rectangle(r.x, r.y, r.width, r.height);
     
     // un-scale
     float scale = getScale();
-    rtn.x *= scale;
-    rtn.y *= scale;
-    rtn.width *= scale;
-    rtn.height *= scale;
+    float x = r.x * scale;
+    float y = r.y * scale;
+    float width = r.width * scale;
+    float height = r.height * scale;
     
     // un-shift translation
-    rtn.x += getTranslateX();
-    rtn.y += getTranslateY();
+    x += getTranslateX();
+    y += getTranslateY();
     
-    return rtn;
+    return new Rectangle(
+        Math.round(x), 
+        Math.round(y), 
+        Math.round(width),
+        Math.round(height));
   }
   
   public boolean contains(Point p) {
