@@ -51,7 +51,8 @@ public class ProximityController {
   private static final Class<PropertyController>[] PROPERTY_CONTROLLER_CLASSES = 
       (Class<PropertyController>[]) new Class<?>[] {
           NeighbourhoodController.class,
-          IntersectionController.class
+          IntersectionController.class,
+          ComplimentController.class
       };
   
   private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");

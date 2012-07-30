@@ -43,7 +43,7 @@ public class IntersectionController extends LinearPropertyController {
     List<Integer> indices = new ArrayList<Integer>();
 
     // check if this is the only region
-    if (mValue.isEmpty()) {
+    if (mRegions.isEmpty()) {
       indices = getIndices(region);
     }
     // else take the intersection of the region and the current intersection
