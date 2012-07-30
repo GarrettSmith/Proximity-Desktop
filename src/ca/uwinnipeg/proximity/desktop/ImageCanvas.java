@@ -3,7 +3,9 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -11,6 +13,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
@@ -32,15 +35,15 @@ public class ImageCanvas extends Canvas {
   
   private Image mImage;
   
-//  private float mTranslateX = 0;
-//  private float mTranslateY = 0;
-//  private float mScale = 1;
-  
   private Transform mTransform;
   
   private boolean mFitToImage = false;
   
   private Rectangle mOldBounds;
+  
+  private Map<String, Image> mPropertyImages = new HashMap<String, Image>();
+  
+  private String mPropertyKey;
   
   /**
    * Create a canvas with the given image.
@@ -89,9 +92,50 @@ public class ImageCanvas extends Canvas {
   }
   
   /**
+   * Sets the property to be displayed to the given string.
+   * @param key
+   */
+  public void setProperty(String key) {
+    boolean changed = mPropertyKey != key;
+    mPropertyKey = key;
+    if (changed) redraw();
+  }
+  
+  /**
+   * Update the image associated with the given property key.
+   * @param key
+   * @param points
+   */
+  public void updateProperty(String key, int[] points) {
+    ImageData baseData = mImage.getImageData();
+    Image img = new Image(mDisplay, mImage.getBounds());
+    ImageData data = img.getImageData();
+    
+    // fill with transparent
+    data.alphaData = new byte[data.data.length];
+    
+    for (int i = 0; i < points.length; i += 2) {
+      int x = points[i];
+      int y = points[i + 1];
+      int pixel = baseData.getPixel(x , y);
+      pixel = ~pixel; // invert colour
+      data.setPixel(x, y, pixel);
+      data.setAlpha(x, y, 255);
+    }
+    
+    mPropertyImages.put(key, new Image(mDisplay, data));
+    
+    // TODO: redraw if the current key was updated
+    if (key != null && mPropertyKey.equals(key)) {
+      redraw();
+    }
+  }
+  
+  /**
    * Paints the image with the current transform over a background.
    * @param gc
    */
+  // TODO: draw property
   protected void onPaint(GC gc) {   
     Rectangle currentBounds = getBounds();    
     
@@ -112,47 +156,50 @@ public class ImageCanvas extends Canvas {
     // draw the image
     if (mImage != null) {
       updateBounds(currentBounds, mOldBounds);
-//      Rectangle imageBounds = mImage.getBounds();
-//      gc.drawImage(
-//          mImage, 
-//          0, 0, mImage.getBounds().width, mImage.getBounds().height, 
-//          Math.round(mTranslateX), 
-//          Math.round(mTranslateY), 
-//          Math.round(mScale * imageBounds.width), 
-//          Math.round(mScale * imageBounds.height));
       gc.setTransform(mTransform);
       gc.drawImage(mImage, 0, 0);
       gc.setTransform(null);
-    }
+      
+      // draw the property
+      if (mPropertyKey != null) {
+        Image propImg = mPropertyImages.get(mPropertyKey);
+        if (propImg != null) {
+          gc.setTransform(mTransform);
+          gc.drawImage(propImg, 0, 0);
+          gc.setTransform(null);
+        }
+      }
 
-    // TODO: draw regions
-    Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
-    Color selected = new Color(Display.getCurrent(), 0, 255, 255);
-    ProximityController controller = ProximityDesktop.getController();
-    List<Region> selectedRegions = controller.getSelectedRegions();
-    for (Region r : controller.getRegions()) {
-      Rectangle bounds = r.getBounds();
-      bounds = toScreenSpace(bounds);
-      // determine if the region is selected
-      if (selectedRegions.contains(r)) {
-        gc.setForeground(selected);
+      // draw regions
+      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
+      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+      ProximityController controller = ProximityDesktop.getController();
+      List<Region> selectedRegions = controller.getSelectedRegions();
+      for (Region r : controller.getRegions()) {
+        Rectangle bounds = r.getBounds();
+        bounds = toScreenSpace(bounds);
+        // determine if the region is selected
+        if (selectedRegions.contains(r)) {
+          gc.setForeground(selected);
+        }
+        else {
+          gc.setForeground(unselected);
+        }
+        switch(r.getShape()) {
+          case RECTANGLE:
+            gc.drawRectangle(bounds);
+            break;
+          case OVAL:
+            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
+            break;
+          case POLYGON:
+            int[] points = r.getPolygon().toArray();
+            points = toScreenSpace(points);
+            gc.drawPolygon(points);
+            break;
+        }
       }
-      else {
-        gc.setForeground(unselected);
-      }
-      switch(r.getShape()) {
-        case RECTANGLE:
-          gc.drawRectangle(bounds);
-          break;
-        case OVAL:
-          gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-          break;
-        case POLYGON:
-          int[] points = r.getPolygon().toArray();
-          points = toScreenSpace(points);
-          gc.drawPolygon(points);
-          break;
-      }
+
     }
 
     // store the new bounds
@@ -246,21 +293,6 @@ public class ImageCanvas extends Canvas {
   }
   
   public void zoomTo(float scale) {
-//    Rectangle imageBounds = mImage.getBounds();
-//    
-//    //  float oldScale = mScale;    
-//    mScale = scale;    
-//
-//    float oldWidth = imageBounds.width * oldScale;
-//    float oldHeight = imageBounds.height * oldScale;    
-//    
-//    float newWidth = imageBounds.width * mScale;
-//    float newHeight = imageBounds.height * mScale;
-//    
-//    mTranslateX += (oldWidth - newWidth)/2;
-//    mTranslateY += (oldHeight - newHeight)/2;
-//
-//    redraw();
     float dScale = scale / getScale();
     zoomBy(dScale);
   }
@@ -300,10 +332,7 @@ public class ImageCanvas extends Canvas {
     
     System.out.println("dx: " + dx + ", dy: " + dy);
     System.out.println("translate x: " + getTranslateX() + ", translate y: " + getTranslateY());
-//
-//    mTranslateX = -top * mScale;
-//    mTranslateY = -left * mScale;
-//    
+
     redraw();
   }
 
@@ -346,14 +375,9 @@ public class ImageCanvas extends Canvas {
     float dx = getTranslateX() - x;
     float dy = getTranslateY() - y;
     panBy(dx, dy);
-//    mTranslateX = x;
-//    mTranslateY = y;
-//    redraw();
   }
   
   public void panBy(float dx, float dy) {
-//    mTranslateX += dx;
-//    mTranslateY += dy;
     float scale = getScale();
     mTransform.translate(dx / scale, dy / scale);
     redraw();
@@ -373,8 +397,6 @@ public class ImageCanvas extends Canvas {
     float dx = ((float)canvasBounds.width / 2) - ((float)imageBounds.width * scale / 2) ;
     float dy = ((float)canvasBounds.height / 2) - ((float)imageBounds.height * scale / 2);
     mTransform.translate((dx - getTranslateX()) / scale, (dy - getTranslateY()) / scale);
-//    mTranslateX = (float) (canvasBounds.width - imageBounds.width * mScale) / 2; 
-//    mTranslateY = (float) (canvasBounds.height - imageBounds.height * mScale) / 2; 
     
     redraw();
   }

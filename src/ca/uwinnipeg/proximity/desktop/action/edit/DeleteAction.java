@@ -21,7 +21,7 @@ public class DeleteAction extends Action {
   @Override
   public void run() {
     ProximityController controller = ProximityDesktop.getController();
-    controller.removeRegions(controller.getSelectedRegions());
+    controller.removeRegionsAction(controller.getSelectedRegions());
   }
 
 }

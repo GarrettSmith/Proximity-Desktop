@@ -39,11 +39,19 @@ public class ProximityController {
   
   private Image mImage = new Image();
   
-  private List<Region> regions = new ArrayList<Region>();
+  private List<Region> mRegions = new ArrayList<Region>();
   private List<Region> selectedRegions = new ArrayList<Region>();
   
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
+  
+  private List<PropertyController> mPropertyControllers = new ArrayList<PropertyController>();
+  
+  @SuppressWarnings("unchecked")
+  private static final Class<PropertyController>[] PROPERTY_CONTROLLER_CLASSES = 
+      (Class<PropertyController>[]) new Class<?>[] {
+          NeighbourhoodController.class
+      };
   
   private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");
   
@@ -60,6 +68,7 @@ public class ProximityController {
   
   public ProximityController() {
     loadFuncs();
+    createPropertyControllers();
   }
   
   private void loadFuncs() {
@@ -99,6 +108,23 @@ public class ProximityController {
     }
   }
   
+  private void createPropertyControllers() {
+    for (Class<PropertyController> clazz : PROPERTY_CONTROLLER_CLASSES) {
+      try {
+        PropertyController pc = clazz.newInstance();
+        pc.setup(mImage);
+        mPropertyControllers.add(pc);
+        
+      } catch (InstantiationException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (IllegalAccessException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  }
+  
   /**
    * Sets up the image data into the image.
    * @param data
@@ -107,6 +133,17 @@ public class ProximityController {
     int[] pixels = new int[data.width * data.height];
     data.getPixels(0, 0, pixels.length, pixels, 0);
     mImage.set(pixels, data.width, data.height);
+    // clear the region
+    reset();
+  }
+  
+  public void reset() {
+    mUndoStack.clear();
+    mRedoStack.clear();
+    mRegions.clear();
+    for (PropertyController pc : mPropertyControllers) {
+      pc.clearRegions();
+    }
   }
   
   /**
@@ -114,7 +151,7 @@ public class ProximityController {
    * @return
    */
   public List<Region> getRegions() {
-    return new ArrayList<Region>(regions);
+    return new ArrayList<Region>(mRegions);
   }
 
   /**
@@ -122,7 +159,7 @@ public class ProximityController {
    * @param shape
    * @param points
    */
-  public void addRegion(Region.Shape shape, List<Point> points) {
+  public void addRegionAction(Region.Shape shape, List<Point> points) {
     Region reg = new Region(mImage);
     reg.setShape(shape);
     
@@ -146,7 +183,7 @@ public class ProximityController {
     // select the newly added region
     setSelected(reg);
     
-    performAction(new AddRegionAction(regions, reg));
+    performAction(new AddRegionAction(reg, this));
   }
 
   /**
@@ -154,23 +191,39 @@ public class ProximityController {
    * @param shape
    * @param points
    */
-  public void addRegions(List<Region> regs) {    
+  public void addRegionsAction(List<Region> regs) {    
     // select the newly added regions
     setSelected(regs);
     
-    performAction(new AddRegionAction(regions, regs));
+    performAction(new AddRegionAction(regs, this));
+  }
+  
+  public void addRegion(Region region) {
+    mRegions.add(region);
+    // update property controllers
+    for (PropertyController pc : mPropertyControllers) {
+      pc.addRegion(region);
+    }
   }
   
   /**
    * Removes a region from the image.
    * @param region
    */
-  public void removeRegion(Region region) {
-    performAction(new RemoveRegionAction(regions, region));
+  public void removeRegionAction(Region region) {
+    performAction(new RemoveRegionAction(region, this));
   }
   
-  public void removeRegions(List<Region> regions) {
-    performAction(new RemoveRegionAction(this.regions, regions));
+  public void removeRegionsAction(List<Region> regions) {
+    performAction(new RemoveRegionAction(regions, this));
+  }
+  
+  public void removeRegion(Region region) {
+    mRegions.remove(region);
+    // notify property controllers
+    for (PropertyController pc : mPropertyControllers) {
+      pc.removeRegion(region);
+    }
   }
   
   public void setSelected(Region r) {
@@ -216,7 +269,7 @@ public class ProximityController {
     // get rid of regions that have been removed
     List<Region> newSelected = new ArrayList<Region>();
     for (Region r: selectedRegions) {
-      if (regions.contains(r)) {
+      if (mRegions.contains(r)) {
         newSelected.add(r);
       }
     }

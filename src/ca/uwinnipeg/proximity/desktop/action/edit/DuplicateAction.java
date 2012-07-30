@@ -29,7 +29,7 @@ public class DuplicateAction extends Action {
     for (Region r : controller.getSelectedRegions()) {
       newRegions.add(new Region(r));
     }
-    controller.addRegions(newRegions);
+    controller.addRegionsAction(newRegions);
   }
 
 }

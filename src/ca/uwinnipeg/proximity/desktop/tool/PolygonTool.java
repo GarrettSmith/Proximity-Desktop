@@ -131,7 +131,7 @@ public class PolygonTool extends Tool {
     }
     
     protected void complete() {
-      getController().addRegion(Region.Shape.POLYGON, mPoints);
+      getController().addRegionAction(Region.Shape.POLYGON, mPoints);
       mPoints.clear();
       getCanvas().redraw();
     }

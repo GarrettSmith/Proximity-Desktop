@@ -13,6 +13,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
  * @author garrett
  *
  */
+// TODO: confirm if an image is already open
 public class OpenAction extends Action {
   
   public OpenAction() {

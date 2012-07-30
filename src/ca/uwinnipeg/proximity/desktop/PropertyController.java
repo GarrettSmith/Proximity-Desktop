@@ -33,7 +33,7 @@ public abstract class PropertyController {
 //  protected LocalBroadcastManager mBroadcastManager;
   
   // The category used to send broadcasts
-//  protected final String mCategory;
+  protected final String mKey;
   
   // The image system 
   protected Image mImage;
@@ -41,9 +41,9 @@ public abstract class PropertyController {
   // The regions of interest
   protected List<Region> mRegions = new ArrayList<Region>();
   
-//  public PropertyService(String category) {
-//    mCategory = category;
-//  }
+  public PropertyController(String key) {
+    mKey = key;
+  }
   
   /**
    * Sets the given image we are calculating within.
@@ -113,25 +113,14 @@ public abstract class PropertyController {
 
   // broadcasting
   /**
-   * Broadcasts the the value associated with the given region has been changed.
+   * Broadcasts the the value has been changed.
    * @param indices
    * @param region
    */
-  protected void broadcastValueChanged(List<Integer> indices, Region region) {
-//    Intent intent = new Intent(ACTION_VALUE_CHANGED);
-//    intent.addCategory(mCategory);
-//    intent.putExtra(POINTS, indicesToPoints(indices));
-//    intent.putIntegerArrayListExtra(INDICES, new ArrayList<Integer>(indices));
-//    if (region != null) intent.putExtra(REGION, region);
-//    mBroadcastManager.sendBroadcast(intent);
-  }
-  
-  /**
-   * Broadcasts that the general value has been changed.
-   * @param indices
-   */
   protected void broadcastValueChanged(List<Integer> indices) {
-    broadcastValueChanged(indices, null);
+    // TODO: tell canvas the news!
+    ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
+    canvas.updateProperty(mKey, indicesToPoints(indices));
   }
 
   /**
@@ -228,7 +217,10 @@ public abstract class PropertyController {
     
     protected void postRun() {
       mRunning = false;
+      onPostRun(mResult, mRegion);
     }
+    
+    protected void onPostRun(List<Integer> result, Region region) {}
     
     /**
      * Returns the result of running or null if the runnable has not finished yet.

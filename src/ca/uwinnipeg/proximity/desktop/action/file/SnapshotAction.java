@@ -7,6 +7,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
+import ca.uwinnipeg.proximity.desktop.SnapshotDialog;
 
 /**
  * @author garrett
@@ -24,8 +25,9 @@ public class SnapshotAction extends Action {
   
   @Override
   public void run() {
-    ProximityDesktop window = ProximityDesktop.getApp();
-    //TODO:SnapshotDialog dialog = new SnapshotDialog(window.getShell(), mImage, mImageName);
-    //dialog.open();
+    ProximityDesktop app = ProximityDesktop.getApp();
+    SnapshotDialog dialog = 
+        new SnapshotDialog(app.getShell(), app.getImage(), app.getImageName());
+    dialog.open();
   }
 }

@@ -4,7 +4,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -17,17 +16,13 @@ import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -43,6 +38,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
+import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CutAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.DeleteAction;
@@ -191,6 +187,10 @@ public class ProximityDesktop extends ApplicationWindow {
   public Image getImage() {
     return mImage;
   }
+  
+  public String getImageName() {
+    return mImageName;
+  }
 
   public void openFile(String path) {  
   
@@ -294,16 +294,16 @@ public class ProximityDesktop extends ApplicationWindow {
     gl_composite.marginWidth = 0;
     composite.setLayout(gl_composite);
     
-    // create the tree to show features
-    Tree tree = new Tree(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
-    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+    CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER);
+    Tree tree = checkboxTreeViewer.getTree();
+    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     
     // create the add features button
     ActionContributionItem add = new ActionContributionItem(actnAddFeatures);
     add.fill(composite);
     Button btnAdd = (Button) add.getWidget();
     btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-    btnAdd.setText("Add Features");
+    btnAdd.setText(BUNDLE.getString("Actions.EditFeatures.text"));
   }
   
   /**
@@ -362,15 +362,15 @@ public class ProximityDesktop extends ApplicationWindow {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
       ToolBarManager propertyBarManager = new ToolBarManager(propertyBar);
-//      propertyBarManager.add(actnRegions);
-//      propertyBarManager.add(actnNeighbourhoods);
+      propertyBarManager.add(actnRegions);
+      propertyBarManager.add(actnNeighbourhoods);
 //      propertyBarManager.add(actnIntersection);
 //      propertyBarManager.add(actnCompliment);
 //      propertyBarManager.add(actnDifference);
       propertyBarManager.update(false);
       
       // select the first action
-//      actnRegions.setChecked(true);
+      actnRegions.setChecked(true);
     }
     
     // create the image canvas
@@ -457,8 +457,8 @@ public class ProximityDesktop extends ApplicationWindow {
     actnAbout = new AboutAction();
     
     // properties
-    //  actnRegions = new PropertyAction("MainWindow.actnRegions.text");
-    //  actnNeighbourhoods = new PropertyAction("MainWindow.actnNeighbourhoods.text");
+      actnRegions = new PropertyAction("Properties.Regions.text", null);
+      actnNeighbourhoods = new PropertyAction("Properties.Neighbourhoods.text", NeighbourhoodController.KEY);
     //  actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
     //  actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
     //  actnDifference = new PropertyAction("MainWindow.actnDifference.text");

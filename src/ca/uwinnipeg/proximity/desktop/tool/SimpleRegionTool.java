@@ -64,7 +64,7 @@ public abstract class SimpleRegionTool extends Tool {
       List<Point> points = new ArrayList<Point>();
       points.add(imageStart);
       points.add(imageEnd);
-      getController().addRegion(mShape, points);
+      getController().addRegionAction(mShape, points);
     }
     
     @Override
