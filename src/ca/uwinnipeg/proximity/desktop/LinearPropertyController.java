@@ -35,6 +35,18 @@ public abstract class LinearPropertyController extends PropertyController {
     addRunnable(region);
   }
   
+  @Override
+  protected void onRegionRemoved(Region region) {
+    // if the region has yet to be processed remove it from the queue
+    if (mQueue.contains(region)) {
+      mQueue.remove(region);
+    }
+    // else recalculate the intersection
+    else {
+      invalidate();
+    }
+  }
+  
   /**
    * Returns the current list of indices calculated to form the property.
    * @return
@@ -93,6 +105,9 @@ public abstract class LinearPropertyController extends PropertyController {
     }    
     // start running runnables
     runNextRunnable();
+    
+    // broadcast the clear
+    broadcastValueChanged(null);
   }
   
 

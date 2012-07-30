@@ -364,7 +364,7 @@ public class ProximityDesktop extends ApplicationWindow {
       ToolBarManager propertyBarManager = new ToolBarManager(propertyBar);
       propertyBarManager.add(actnRegions);
       propertyBarManager.add(actnNeighbourhoods);
-//      propertyBarManager.add(actnIntersection);
+      propertyBarManager.add(actnIntersection);
 //      propertyBarManager.add(actnCompliment);
 //      propertyBarManager.add(actnDifference);
       propertyBarManager.update(false);
@@ -458,8 +458,10 @@ public class ProximityDesktop extends ApplicationWindow {
     
     // properties
       actnRegions = new PropertyAction("Properties.Regions.text", null);
-      actnNeighbourhoods = new PropertyAction("Properties.Neighbourhoods.text", NeighbourhoodController.KEY);
-    //  actnIntersection = new PropertyAction("MainWindow.actnIntersection.text");
+      actnNeighbourhoods = 
+          new PropertyAction("Properties.Neighbourhoods.text", NeighbourhoodController.KEY);
+      actnIntersection = 
+          new PropertyAction("Properties.Intersection.text", IntersectionController.KEY);
     //  actnCompliment = new PropertyAction("MainWindow.actnCompliment.text");
     //  actnDifference = new PropertyAction("MainWindow.actnDifference.text");
     

@@ -126,7 +126,7 @@ public class ImageCanvas extends Canvas {
     mPropertyImages.put(key, new Image(mDisplay, data));
     
     // TODO: redraw if the current key was updated
-    if (key != null && mPropertyKey.equals(key)) {
+    if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
       redraw();
     }
   }
