@@ -130,6 +130,8 @@ public abstract class LinearPropertyController extends PropertyController {
    * Runs the next runnable in the queue if it is non empty.
    */
   protected void runNextRunnable() {
+    // remove the reference to the previous runnable
+    mCurrentRunnable = null;
     // only run if there are regions in the queue
     if (!mQueue.isEmpty()) {
       

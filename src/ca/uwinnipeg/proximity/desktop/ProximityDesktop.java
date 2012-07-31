@@ -4,6 +4,9 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -49,10 +52,8 @@ import ca.uwinnipeg.proximity.desktop.action.edit.PasteAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.RedoAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.SelectAllAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.UndoAction;
-import ca.uwinnipeg.proximity.desktop.action.file.EmptyAction;
 import ca.uwinnipeg.proximity.desktop.action.file.ExitAction;
 import ca.uwinnipeg.proximity.desktop.action.file.OpenAction;
-import ca.uwinnipeg.proximity.desktop.action.file.RecentlyOpenedAction;
 import ca.uwinnipeg.proximity.desktop.action.file.SnapshotAction;
 import ca.uwinnipeg.proximity.desktop.action.help.AboutAction;
 import ca.uwinnipeg.proximity.desktop.action.help.ManualAction;
@@ -119,7 +120,6 @@ public class ProximityDesktop extends ApplicationWindow {
   private Action actnZoomSelection;
   private Action actnZoomImage;
   private Action actnFeatures;
-  private Action actnEmpty;  
   private Action actnCenter;
 
   IKeyLookup mKeyLookup;
@@ -219,19 +219,42 @@ public class ProximityDesktop extends ApplicationWindow {
   
     // tell the controller about the new image
     CONTROLLER.onImageSelected(mImage.getImageData());
-  
-    // TODO: prevent duplicates
     
-    // shuffle documents down
-    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
-      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
-      if (tmp != null) {
-        mRecentPrefs.put(Integer.toString(i), tmp);
+    try {
+      List<String> files = new ArrayList<String>();
+      // add previous files
+      for (String key: mRecentPrefs.keys()) {
+        String file = mRecentPrefs.get(key, null);
+        if (file != null) {
+          files.add(file);
+        }
       }
+      // prevent duplicates
+      files.remove(path);
+      // add to front
+      files.add(0, path);
+      // trim
+      files = files.subList(0, Math.min(RECENT_DOCUMENTS_LIMIT - 1, files.size()));
+      // store
+      for (int i = 0; i < files.size(); i++) {
+        mRecentPrefs.put(Integer.toString(i), files.get(i));
+      }
+    } 
+    catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
-  
-    // store into recent documents
-    mRecentPrefs.put("0", path);
+    
+//    // shuffle documents down
+//    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
+//      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
+//      if (tmp != null) {
+//        mRecentPrefs.put(Integer.toString(i), tmp);
+//      }
+//    }
+//  
+//    // store into recent documents
+//    mRecentPrefs.put("0", path);
   }
 
   /**
@@ -459,7 +482,6 @@ public class ProximityDesktop extends ApplicationWindow {
     actnOpen = new OpenAction();
     actnSnapshot = new SnapshotAction();
     actnExit = new ExitAction();
-    actnEmpty = new EmptyAction();
     
     // edit
     actnUndo = new UndoAction();
@@ -620,22 +642,8 @@ public class ProximityDesktop extends ApplicationWindow {
   private MenuManager createRecentMenu() {
     MenuManager menuRecent = 
         new MenuManager(BUNDLE.getString("MainWindow.OpenRecent.text"));
-    // add all the recent items to the recent menu
-    try {
-      for (String key : mRecentPrefs.keys()) {
-        String path = mRecentPrefs.get(key, null);
-        if (path != null && new File(path).exists()) {
-          menuRecent.add(new RecentlyOpenedAction(path));
-        }
-      }
-    } catch (BackingStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    // add the empty action if it is empty
-    if (menuRecent.isEmpty()) {
-      menuRecent.add(actnEmpty);
-    }
+    menuRecent.setRemoveAllWhenShown(true);
+    menuRecent.addMenuListener(new RecentMenuListener(mRecentPrefs));
     return menuRecent;
   }
 

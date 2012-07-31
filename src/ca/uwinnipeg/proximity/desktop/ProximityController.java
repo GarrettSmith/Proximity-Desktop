@@ -10,7 +10,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -193,6 +192,7 @@ public class ProximityController {
     }
   }
   
+  // TODO: send message to controllers all at once
   public void setCategoryEnabled(Category<Integer> category, boolean enabled) {
     for (ProbeFunc<Integer> func: category.getProbeFuncs()) {
       setProbeFuncEnabled(func, enabled);
