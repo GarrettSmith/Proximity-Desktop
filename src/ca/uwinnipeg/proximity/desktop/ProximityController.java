@@ -5,6 +5,7 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.desktop.features.Category;
+import ca.uwinnipeg.proximity.desktop.features.FeaturesCheckedListener;
 import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
@@ -57,6 +60,7 @@ public class ProximityController {
       };
   
   private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");
+  private Preferences mCatPrefs = mFuncPrefs.node("categories");
   
   @SuppressWarnings("unchecked")
   private static final Class<ProbeFunc<Integer>>[] DEFAULT_FUNCS = 
@@ -67,7 +71,12 @@ public class ProximityController {
         BlueFunc.class
       };
   
-  private Map<ProbeFunc<Integer>, Boolean> mProbeFuncs = new HashMap<ProbeFunc<Integer>, Boolean>();
+  private static final String COLOR_CATEGORY = "Colours";
+  
+  private List<Category<Integer>> mCategories = new ArrayList<Category<Integer>>();
+  
+  private Map<ProbeFunc<Integer>, Category<Integer>> mfuncsCatMap = 
+      new HashMap<ProbeFunc<Integer>, Category<Integer>>();
   
   private ICheckStateListener mCheckStateListener = new FeaturesCheckedListener(this);
   
@@ -87,12 +96,31 @@ public class ProximityController {
 //        mProbeFuncs.put(clazz.newInstance(), true);
         String className = clazz.getName();
         mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
+        mCatPrefs.put(className, COLOR_CATEGORY);
       }
       // load the previously loaded probe funcs
       for (String classStr : mFuncPrefs.keys()) {
-        Class clazz = Class.forName(classStr);
-        Class<ProbeFunc<Integer>> funcClazz = (Class<ProbeFunc<Integer>>) clazz;
-        mProbeFuncs.put(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
+        // load the probe func
+        Class<ProbeFunc<Integer>> funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(classStr);
+        String categoryStr = mCatPrefs.get(classStr, "Uncategorized");
+        Category<Integer> category = null;
+        
+        // find the matching category
+        for (Category<Integer> cat: mCategories) {
+          if (cat.getName().equals(categoryStr)) {
+            category = cat;
+            break;
+          }
+        }
+        
+        // create the category if it hasn't yet
+        if (category == null) {
+          category = new Category<Integer>(categoryStr);
+          mCategories.add(category);
+        }
+        
+        // add the func to the category
+        category.set(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
       }
     } 
     catch (BackingStoreException e) {
@@ -110,9 +138,9 @@ public class ProximityController {
     }
     
     // add enabled probe funcs
-    for (Entry<ProbeFunc<Integer>, Boolean> entry : mProbeFuncs.entrySet()) {
-      if (entry.getValue()) {
-        mImage.addProbeFunc(entry.getKey());
+    for (Category<Integer> cat: mCategories) {
+      for (ProbeFunc<Integer> func: cat.getEnabledProbeFuncs()) {
+        mImage.addProbeFunc(func);
       }
     }
   }
@@ -134,15 +162,26 @@ public class ProximityController {
     }
   }
   
-  public Map<String, Map<ProbeFunc<Integer>, Boolean>> getProbeFuncs() {
-    HashMap<String, Map<ProbeFunc<Integer>, Boolean>> map = 
-        new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
-    map.put("Colour", mProbeFuncs);
-    return map;
+//  public Map<String, Map<ProbeFunc<Integer>, Boolean>> getProbeFuncs() {
+//    HashMap<String, Map<ProbeFunc<Integer>, Boolean>> map = 
+//        new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
+//    map.put("Colour", mProbeFuncs);
+//    return map;
+//  }
+  
+  public Collection<Category<Integer>> getCategories() {
+    return mCategories;
   }
   
   public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
-    mProbeFuncs.put(func, enabled);
+    // set the probe func's state
+    for (Category<Integer> cat: mCategories) {
+      if (cat.contains(func)) {
+        cat.set(func, enabled);
+      }
+    }
+    // save the status
+    mFuncPrefs.putBoolean(func.getClass().getName(), enabled);
     if (enabled) {
       mImage.addProbeFunc(func);
     }
@@ -151,6 +190,12 @@ public class ProximityController {
     }
     for (PropertyController pc : mPropertyControllers) {
       pc.onProbeFuncsChanged();
+    }
+  }
+  
+  public void setCategoryEnabled(Category<Integer> category, boolean enabled) {
+    for (ProbeFunc<Integer> func: category.getProbeFuncs()) {
+      setProbeFuncEnabled(func, enabled);
     }
   }
   

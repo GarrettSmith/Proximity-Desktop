@@ -99,27 +99,29 @@ public class ImageCanvas extends Canvas {
    * @param points
    */
   public void updateProperty(String key, int[] points) {
-    ImageData baseData = mImage.getImageData();
-    Image img = new Image(mDisplay, mImage.getBounds());
-    ImageData data = img.getImageData();
-    
-    // fill with transparent
-    data.alphaData = new byte[data.data.length];
-    
-    for (int i = 0; i < points.length; i += 2) {
-      int x = points[i];
-      int y = points[i + 1];
-      int pixel = baseData.getPixel(x , y);
-      pixel = ~pixel; // invert colour
-      data.setPixel(x, y, pixel);
-      data.setAlpha(x, y, 255);
-    }
-    
-    mPropertyImages.put(key, new Image(mDisplay, data));
-    
-    // TODO: redraw if the current key was updated
-    if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
-      redraw();
+    if (mImage != null) {
+      ImageData baseData = mImage.getImageData();
+      Image img = new Image(mDisplay, mImage.getBounds());
+      ImageData data = img.getImageData();
+
+      // fill with transparent
+      data.alphaData = new byte[data.data.length];
+
+      for (int i = 0; i < points.length; i += 2) {
+        int x = points[i];
+        int y = points[i + 1];
+        int pixel = baseData.getPixel(x , y);
+        pixel = ~pixel; // invert colour
+        data.setPixel(x, y, pixel);
+        data.setAlpha(x, y, 255);
+      }
+
+      mPropertyImages.put(key, new Image(mDisplay, data));
+
+      // TODO: redraw if the current key was updated
+      if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
+        redraw();
+      }
     }
   }
   
