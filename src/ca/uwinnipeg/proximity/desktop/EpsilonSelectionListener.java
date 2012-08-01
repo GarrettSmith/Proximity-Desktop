@@ -16,9 +16,9 @@ import org.eclipse.swt.widgets.Spinner;
 public class EpsilonSelectionListener implements SelectionListener {
   
   private Preferences mPref  = Preferences.userRoot().node("proximity-system").node("epsilon");
-  private String mKey = null;
+  private Class<? extends PropertyController> mKey = null;
   
-  public void setProperty(String key) {
+  public void setProperty(Class<? extends PropertyController> key) {
     mKey = key;
   }
 
@@ -31,7 +31,9 @@ public class EpsilonSelectionListener implements SelectionListener {
       Spinner spinner = (Spinner) e.getSource();
       int digits = spinner.getDigits();
       int selection = spinner.getSelection();
-      mPref.putFloat(mKey, (float) (selection / Math.pow(10, digits)));
+      float epsilon = (float) (selection / Math.pow(10, digits));
+      mPref.putFloat(mKey.toString(), epsilon);
+      ProximityDesktop.getController().setEpsilon(mKey, epsilon);
     }
   }
 

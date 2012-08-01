@@ -244,7 +244,7 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
   
-  public void setProperty(String key) {
+  public void setProperty(Class<? extends PropertyController> key) {
     canvas.setProperty(key);
     mEpsilonListener.setProperty(key);
     // disable the spinner when the key is null
@@ -397,7 +397,9 @@ public class ProximityDesktop extends ApplicationWindow {
       ToolBar propertyBar = new ToolBar(canvasFrame, SWT.FLAT);
       propertyBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
       ToolBarManager propertyBarManager = new ToolBarManager(propertyBar);
-      propertyBarManager.add(actnRegions);
+      ActionContributionItem item = new ActionContributionItem(actnRegions);
+      item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+      propertyBarManager.add(item);
       propertyBarManager.add(actnNeighbourhoods);
       propertyBarManager.add(actnIntersection);
       propertyBarManager.add(actnCompliment);
@@ -508,13 +510,13 @@ public class ProximityDesktop extends ApplicationWindow {
     // properties
       actnRegions = new PropertyAction("Properties.Regions.text", null);
       actnNeighbourhoods = 
-          new PropertyAction("Properties.Neighbourhoods.text", NeighbourhoodController.KEY);
+          new PropertyAction("Properties.Neighbourhoods.text", NeighbourhoodController.class);
       actnIntersection = 
-          new PropertyAction("Properties.Intersection.text", IntersectionController.KEY);
+          new PropertyAction("Properties.Intersection.text", IntersectionController.class);
       actnCompliment = 
-          new PropertyAction("Properties.Compliment.text", ComplimentController.KEY);
+          new PropertyAction("Properties.Compliment.text", ComplimentController.class);
       actnDifference = 
-          new PropertyAction("Properties.Difference.text", DifferenceController.KEY);
+          new PropertyAction("Properties.Difference.text", DifferenceController.class);
     
     // tools
     actnPointer = new PointerTool.Action();

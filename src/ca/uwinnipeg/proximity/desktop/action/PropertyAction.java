@@ -6,6 +6,7 @@ package ca.uwinnipeg.proximity.desktop.action;
 import org.eclipse.jface.action.Action;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
+import ca.uwinnipeg.proximity.desktop.PropertyController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
@@ -15,16 +16,15 @@ import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
  */
 public class PropertyAction extends Action {
   
-  private String mKey;
+  private Class<? extends PropertyController> mKey;
   
-  public PropertyAction(String textKey, String propertyKey) {
+  public PropertyAction(String textKey, Class<? extends PropertyController> key) {
     super(ProximityDesktop.getBundle().getString(textKey), Action.AS_RADIO_BUTTON);
-    mKey = propertyKey;
+    mKey = key;
   }
   
   @Override
   public void run() {
-    ProximityDesktop.getApp().getCanvas().setProperty(mKey);
     ProximityDesktop.getApp().setProperty(mKey);
   }   
 }

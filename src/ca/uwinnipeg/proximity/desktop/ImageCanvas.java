@@ -3,7 +3,6 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +41,10 @@ public class ImageCanvas extends Canvas {
   
   private Rectangle mOldBounds;
   
-  private Map<String, Image> mPropertyImages = new HashMap<String, Image>();
+  private Map<Class<? extends PropertyController>, Image> mPropertyImages = 
+      new HashMap<Class<? extends PropertyController>, Image>();
   
-  private String mPropertyKey;
+  private Class<? extends PropertyController> mPropertyKey;
   
   /**
    * Create a canvas with the given image.
@@ -87,7 +87,7 @@ public class ImageCanvas extends Canvas {
    * Sets the property to be displayed to the given string.
    * @param key
    */
-  public void setProperty(String key) {
+  public void setProperty(Class<? extends PropertyController> key) {
     boolean changed = mPropertyKey != key;
     mPropertyKey = key;
     if (changed) redraw();
@@ -98,7 +98,7 @@ public class ImageCanvas extends Canvas {
    * @param key
    * @param points
    */
-  public void updateProperty(String key, BitSet mask) {
+  public void updateProperty(Class<? extends PropertyController> key, int[] points) {
     if (mImage != null) {
       ImageData baseData = mImage.getImageData();
       Image img = new Image(mDisplay, mImage.getBounds());
@@ -107,9 +107,9 @@ public class ImageCanvas extends Canvas {
       // fill with transparent
       data.alphaData = new byte[data.data.length];
 
-      for (int i = mask.nextSetBit(0); i != -1; i = mask.nextSetBit(++i)) {
-        int x = i % data.width;
-        int y = i / data.width;
+      for (int i = 0; i < points.length; i += 2) {
+        int x = points[i];
+        int y = points[i + 1];
         int pixel = baseData.getPixel(x , y);
         pixel = ~pixel; // invert colour
         data.setPixel(x, y, pixel);
@@ -118,7 +118,7 @@ public class ImageCanvas extends Canvas {
 
       mPropertyImages.put(key, new Image(mDisplay, data));
 
-      //redraw if the current key was updated
+      // TODO: redraw if the current key was updated
       if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
         redraw();
       }

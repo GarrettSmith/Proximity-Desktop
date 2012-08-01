@@ -47,7 +47,8 @@ public class ProximityController {
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
   
-  private List<PropertyController> mPropertyControllers = new ArrayList<PropertyController>();
+  private Map<Class<? extends PropertyController>, PropertyController> mPropertyControllers = 
+      new HashMap<Class<? extends PropertyController>, PropertyController>();
   
   @SuppressWarnings("unchecked")
   private static final Class<PropertyController>[] PROPERTY_CONTROLLER_CLASSES = 
@@ -149,7 +150,7 @@ public class ProximityController {
       try {
         PropertyController pc = clazz.newInstance();
         pc.setup(mImage);
-        mPropertyControllers.add(pc);
+        mPropertyControllers.put(pc.getClass(), pc);
         
       } catch (InstantiationException e) {
         // TODO Auto-generated catch block
@@ -187,7 +188,7 @@ public class ProximityController {
     else {
       mImage.removeProbeFunc(func);
     }
-    for (PropertyController pc : mPropertyControllers) {
+    for (PropertyController pc : mPropertyControllers.values()) {
       pc.onProbeFuncsChanged();
     }
   }
@@ -215,7 +216,7 @@ public class ProximityController {
     mUndoStack.clear();
     mRedoStack.clear();
     mRegions.clear();
-    for (PropertyController pc : mPropertyControllers) {
+    for (PropertyController pc : mPropertyControllers.values()) {
       pc.clearRegions();
     }
   }
@@ -275,7 +276,7 @@ public class ProximityController {
   public void addRegion(Region region) {
     mRegions.add(region);
     // update property controllers
-    for (PropertyController pc : mPropertyControllers) {
+    for (PropertyController pc : mPropertyControllers.values()) {
       pc.addRegion(region);
     }
   }
@@ -295,7 +296,7 @@ public class ProximityController {
   public void removeRegion(Region region) {
     mRegions.remove(region);
     // notify property controllers
-    for (PropertyController pc : mPropertyControllers) {
+    for (PropertyController pc : mPropertyControllers.values()) {
       pc.removeRegion(region);
     }
   }
@@ -320,6 +321,10 @@ public class ProximityController {
   
   public List<Region> getSelectedRegions() {
     return new ArrayList<Region>(selectedRegions);
+  }
+  
+  public void setEpsilon(Class<? extends PropertyController> key, float epsilon) {
+    mPropertyControllers.get(key).setEpsilon(epsilon);
   }
 
   /**
