@@ -5,6 +5,7 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
@@ -16,6 +17,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.bindings.keys.IKeyLookup;
+import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ApplicationWindow;
@@ -119,6 +122,8 @@ public class ProximityDesktop extends ApplicationWindow {
   private Action actnZoomImage;
   private Action actnFeatures;
   private Action actnCenter;
+
+  IKeyLookup mKeyLookup;
   
   private Action[] mImageDependantActions;
   private Action[] mSelectionDependantActions;
@@ -142,9 +147,6 @@ public class ProximityDesktop extends ApplicationWindow {
   private Composite canvasFrame;
   
   private SashForm sashForm;
-  
-  private EpsilonSelectionListener mEpsilonListener;
-  private Spinner mEpsilonSpinner;
 
   /**
    * Launch the application.
@@ -178,6 +180,7 @@ public class ProximityDesktop extends ApplicationWindow {
   public ProximityDesktop() {
     super(null);
     APP = this;
+    mKeyLookup = KeyLookupFactory.getDefault();
     createActions();
     addToolBar(SWT.FLAT | SWT.WRAP);
     addMenuBar();
@@ -242,13 +245,17 @@ public class ProximityDesktop extends ApplicationWindow {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-  }
-  
-  public void setProperty(String key) {
-    canvas.setProperty(key);
-    mEpsilonListener.setProperty(key);
-    // disable the spinner when the key is null
-    mEpsilonSpinner.setEnabled(key != null);
+    
+//    // shuffle documents down
+//    for (int i = RECENT_DOCUMENTS_LIMIT - 1; i > 0; i-- ) {
+//      String tmp = mRecentPrefs.get(Integer.toString(i - 1), null);
+//      if (tmp != null) {
+//        mRecentPrefs.put(Integer.toString(i), tmp);
+//      }
+//    }
+//  
+//    // store into recent documents
+//    mRecentPrefs.put("0", path);
   }
 
   /**
@@ -439,11 +446,7 @@ public class ProximityDesktop extends ApplicationWindow {
       Label lblNewLabel = new Label(composite, SWT.NONE);
       lblNewLabel.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel.text_1")); //$NON-NLS-1$
       
-      mEpsilonSpinner = new Spinner(composite, SWT.BORDER);
-      mEpsilonSpinner.setDigits(2);
-      mEpsilonSpinner.setMinimum(0);
-      mEpsilonListener = new EpsilonSelectionListener();
-      mEpsilonSpinner.addSelectionListener(mEpsilonListener);
+      Spinner spinner = new Spinner(composite, SWT.BORDER);
       
       // setup first tool
       actnPointer.run();

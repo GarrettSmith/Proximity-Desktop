@@ -3,7 +3,6 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ProgressBar;
 
 /**
  * @author Garrett Smith
@@ -98,7 +98,7 @@ public class ImageCanvas extends Canvas {
    * @param key
    * @param points
    */
-  public void updateProperty(String key, BitSet mask) {
+  public void updateProperty(String key, int[] points) {
     if (mImage != null) {
       ImageData baseData = mImage.getImageData();
       Image img = new Image(mDisplay, mImage.getBounds());
@@ -107,9 +107,9 @@ public class ImageCanvas extends Canvas {
       // fill with transparent
       data.alphaData = new byte[data.data.length];
 
-      for (int i = mask.nextSetBit(0); i != -1; i = mask.nextSetBit(++i)) {
-        int x = i % data.width;
-        int y = i / data.width;
+      for (int i = 0; i < points.length; i += 2) {
+        int x = points[i];
+        int y = points[i + 1];
         int pixel = baseData.getPixel(x , y);
         pixel = ~pixel; // invert colour
         data.setPixel(x, y, pixel);
@@ -118,7 +118,7 @@ public class ImageCanvas extends Canvas {
 
       mPropertyImages.put(key, new Image(mDisplay, data));
 
-      //redraw if the current key was updated
+      // TODO: redraw if the current key was updated
       if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
         redraw();
       }
@@ -129,6 +129,7 @@ public class ImageCanvas extends Canvas {
    * Paints the image with the current transform over a background.
    * @param gc
    */
+  // TODO: draw property
   protected void onPaint(GC gc) {   
     Rectangle currentBounds = getBounds();    
     

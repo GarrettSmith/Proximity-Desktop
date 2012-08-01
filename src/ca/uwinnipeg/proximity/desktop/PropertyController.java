@@ -4,11 +4,7 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
@@ -18,12 +14,23 @@ import ca.uwinnipeg.proximity.image.Image;
  *
  */
 public abstract class PropertyController {
+  
+  public static final String ACTION_PROGRESS_CHANGED = "action.PROGRESS_CHANGED";
+  public static final String ACTION_VALUE_CHANGED = "action.VALUE_CHANGED";  
+
+  public static final String PROGRESS = "Progress";
+  public static final String POINTS = "points";
+  public static final String INDICES = "indices";
+  public static final String REGION = "Region";
 
   // the maximum progress value
   public static final int MAX_PROGRESS = 10000;
   
   // the current progress of calculating
   protected int mProgress = MAX_PROGRESS;
+  
+//  // used to broadcast and receive changes
+//  protected LocalBroadcastManager mBroadcastManager;
   
   // The category used to send broadcasts
   protected final String mKey;
@@ -34,16 +41,8 @@ public abstract class PropertyController {
   // The regions of interest
   protected List<Region> mRegions = new ArrayList<Region>();
   
-  private Preferences mEpsilonPrefs = Preferences.systemRoot().node("proximity-system").node("epsilon");
-  
   public PropertyController(String key) {
     mKey = key;
-    mEpsilonPrefs.addPreferenceChangeListener(new PreferenceChangeListener() {
-      
-      public void preferenceChange(PreferenceChangeEvent e) {
-        System.out.println(e.getNewValue());
-      }
-    });
   }
   
   /**
@@ -118,8 +117,10 @@ public abstract class PropertyController {
    * @param indices
    * @param region
    */
-  protected void broadcastValueChanged(BitSet mask) {
-    ProximityDesktop.getApp().getCanvas().updateProperty(mKey, mask);
+  protected void broadcastValueChanged(List<Integer> indices) {
+    // TODO: tell canvas the news!
+    ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
+    canvas.updateProperty(mKey, indicesToPoints(indices));
   }
 
   /**
@@ -178,7 +179,7 @@ public abstract class PropertyController {
     private boolean mCancelled = false;
     private boolean mRunning = false;
     
-    private BitSet mResult;
+    private List<Integer> mResult;
     
     /**
      * Create a runnable to calculate the property using the given {@link Region}.
@@ -212,20 +213,20 @@ public abstract class PropertyController {
      * @param region
      * @return
      */
-    protected abstract BitSet calculateProperty(Region region);
+    protected abstract List<Integer> calculateProperty(Region region);
     
     protected void postRun() {
       mRunning = false;
       onPostRun(mResult, mRegion);
     }
     
-    protected void onPostRun(BitSet result, Region region) {}
+    protected void onPostRun(List<Integer> result, Region region) {}
     
     /**
      * Returns the result of running or null if the runnable has not finished yet.
      * @return
      */
-    public BitSet getResult() {
+    public List<Integer> getResult() {
       return mResult;
     }
 
