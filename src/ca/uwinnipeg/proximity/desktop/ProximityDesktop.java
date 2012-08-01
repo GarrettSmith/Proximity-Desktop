@@ -17,6 +17,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -322,6 +323,7 @@ public class ProximityDesktop extends ApplicationWindow {
     checkboxTreeViewer.setInput(CONTROLLER.getCategories());
     checkboxTreeViewer.setCheckStateProvider(new FeaturesCheckStateProvider(CONTROLLER.getCategories()));
     checkboxTreeViewer.addCheckStateListener(CONTROLLER.getCheckStateListener());
+    checkboxTreeViewer.setSorter(new ViewerSorter());
     Tree tree = checkboxTreeViewer.getTree();
     tree.setHeaderVisible(true);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
