@@ -2,6 +2,7 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.eclipse.swt.graphics.Point;
@@ -349,6 +350,58 @@ public class Region {
       list.add(indices[i]);
     }
     return list;
+  }
+  
+  public BitSet getMask() {
+    BitSet mask = new BitSet(mImage.getSize());
+    Rectangle bounds = getBounds();
+    switch (mShape) {
+      case POLYGON:
+
+        // find all the points within the poly
+        for (int y = bounds.y; y < bottom(bounds); y++) {
+          for (int x = bounds.x; x < right(bounds); x++) {
+            mask.set(mImage.getIndex(x, y), mPoly.contains(x, y));
+          }
+        }
+        break;
+        
+      case OVAL:
+        // find all the points within the oval
+        int cx = centerX(bounds);
+        int cy = centerY(bounds);
+        int rx2 = right(bounds) - cx;
+        rx2 *= rx2; // square
+        int ry2 = bottom(bounds) - cy;
+        ry2 *= ry2; // square
+        
+        for (int y = bounds.y; y < bottom(bounds); y++) {
+          for (int x = bounds.x; x < right(bounds); x++) {
+            
+            float dx = (float)(x - cx);
+            dx *= dx;
+            dx /= rx2;
+            float dy = (float)(y - cy);
+            dy *= dy;
+            dy /= ry2;
+            
+            // if the point is within the oval
+            if (dx + dy <= 1) {
+              mask.set(mImage.getIndex(x, y));
+            }
+          }
+        }
+        break;
+        
+      default: // RECTANGLE
+        int width = bounds.width;
+        for (int y = bounds.y; y < bottom(bounds); y++) {
+          int index = mImage.getIndex(bounds.x, y);
+          mask.set(index, index + width);
+        }
+        break;
+    }
+    return mask;
   }
   
   /**
