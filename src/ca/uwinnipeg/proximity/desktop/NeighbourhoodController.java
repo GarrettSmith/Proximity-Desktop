@@ -4,7 +4,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ public class NeighbourhoodController extends PropertyController {
   public static final String KEY = "Neighbourhood";
 
   // The map of regions to the indices of the pixels in their neighbourhoods
-  protected Map<Region, BitSet> mNeighbourhoods = new HashMap<Region, BitSet>();
+  protected Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
 
   // Map each region to the runnable generating it's neighbourhood
   protected Map<Region, NeighbourhoodRunnable> mRunnables = new HashMap<Region, NeighbourhoodRunnable>();
@@ -48,7 +47,7 @@ public class NeighbourhoodController extends PropertyController {
 //  public Map<Region, int[]> getNeighbourhoods() {
 //    Map<Region, int[]> nhs = new HashMap<Region, int[]>();
 //    for (Region reg : mNeighbourhoods.keySet()) {
-//      BitSet mask = mNeighbourhoods.get(reg);
+//      List<Integer> mask = mNeighbourhoods.get(reg);
 //      nhs.put(reg, indicesToPoints(indices));
 //    }
 //    return nhs;
@@ -59,21 +58,21 @@ public class NeighbourhoodController extends PropertyController {
    * @param region
    * @param indices
    */
-  protected void setNeighbourhood(Region region, BitSet mask) {
+  protected void setNeighbourhood(Region region, List<Integer> indices) {
     // save the change
-    if (mask != null) {
-      mNeighbourhoods.put(region, mask);
+    if (indices != null) {
+      mNeighbourhoods.put(region, indices);
     }
     else {
       mNeighbourhoods.get(region).clear();
     }
     
     // broadcast
-    mask = new BitSet();
-    for (BitSet nb : mNeighbourhoods.values()) {
-      mask.or(nb);
+    indices = new ArrayList<Integer>();
+    for (List<Integer> nbs : mNeighbourhoods.values()) {
+      indices.addAll(nbs);
     }
-    broadcastValueChanged(mask);
+    broadcastValueChanged(indices);
   }
 
   // Runnableing 
@@ -112,7 +111,7 @@ public class NeighbourhoodController extends PropertyController {
    */
   protected void invalidate(Region region) {
     // clear old points
-    mNeighbourhoods.put(region, new BitSet());
+    mNeighbourhoods.put(region, new ArrayList<Integer>());
     
     // Cancel running runnable
     NeighbourhoodRunnable runnable = mRunnables.get(region);
@@ -138,16 +137,16 @@ public class NeighbourhoodController extends PropertyController {
     }
 
     @Override
-    protected BitSet calculateProperty(Region region) {
+    protected List<Integer> calculateProperty(Region region) {
   
       // check if we should stop because the runnable was cancelled
       if (isCancelled()) return null;
   
       int center = region.getCenterIndex();
-      BitSet regionPixels = region.getMask();
+      List<Integer> regionPixels = region.getIndicesList();
   
       long startTime = System.currentTimeMillis();
-      BitSet rtn = mImage.hybridNeighbourhoodMask(
+      List<Integer> rtn = mImage.hybridNeighbourhood(
           center, 
           regionPixels, 
           0.2, // TODO: use epsilon 
@@ -158,7 +157,7 @@ public class NeighbourhoodController extends PropertyController {
     }
   
     @Override
-    protected void onPostRun(BitSet result, Region region) {      
+    protected void onPostRun(List<Integer> result, Region region) {      
       // save the result
       setNeighbourhood(region, result);
     }

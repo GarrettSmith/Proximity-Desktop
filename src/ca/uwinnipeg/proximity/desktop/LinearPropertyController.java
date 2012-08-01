@@ -4,7 +4,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
@@ -18,7 +17,7 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 public abstract class LinearPropertyController extends PropertyController {
 
   // The indices of the pixels selected by the property
-  protected BitSet mValue = new BitSet();
+  protected List<Integer> mValue = new ArrayList<Integer>();
   
   // The list of operations that will bring us to our desired result 
   protected LinearRunnable mCurrentRunnable = null;
@@ -52,7 +51,7 @@ public abstract class LinearPropertyController extends PropertyController {
    * Returns the current list of indices calculated to form the property.
    * @return
    */
-  protected BitSet getValue() {
+  protected List<Integer> getValue() {
     return mValue;
   }
   
@@ -60,10 +59,10 @@ public abstract class LinearPropertyController extends PropertyController {
    * Sets and broadcasts the current general value calculated for the property.
    * @param indices
    */
-  protected void setValue(BitSet mask) {
+  protected void setValue(List<Integer> indices) {
     // save the new intersection
     mValue.clear();
-    if (mask != null) mValue.or(mask);
+    if (indices != null) mValue.addAll(indices);
     
     // broadcast the change if we are finished calculating
     if (mQueue.isEmpty()) {
@@ -108,7 +107,7 @@ public abstract class LinearPropertyController extends PropertyController {
     runNextRunnable();
     
     // broadcast the clear
-    broadcastValueChanged(new BitSet());
+    broadcastValueChanged(new ArrayList<Integer>());
   }
   
 
@@ -157,12 +156,12 @@ public abstract class LinearPropertyController extends PropertyController {
     }
 
     @Override
-    protected BitSet calculateProperty(Region region) {
+    protected List<Integer> calculateProperty(Region region) {
       return getProperty(region, this);
     }
 
     @Override
-    protected void onPostRun(BitSet result, Region region) {   
+    protected void onPostRun(List<Integer> result, Region region) {   
       setResult(result, region);
       // run the next runnable if there is one
       runNextRunnable();
@@ -175,14 +174,14 @@ public abstract class LinearPropertyController extends PropertyController {
    * @param sub
    * @return
    */
-  protected abstract BitSet getProperty(Region region, PerceptualSystemSubscriber sub);
+  protected abstract List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub);
 
   /**
    * Sets the result of calculating using the given region to the given value.
    * @param result
    * @param region
    */
-  protected void setResult(BitSet result, Region region) {    
+  protected void setResult(List<Integer> result, Region region) {    
     // store result as the new value
     setValue(result);
   }

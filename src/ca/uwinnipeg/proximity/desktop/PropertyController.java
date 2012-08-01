@@ -4,7 +4,6 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -118,8 +117,8 @@ public abstract class PropertyController {
    * @param indices
    * @param region
    */
-  protected void broadcastValueChanged(BitSet mask) {
-    ProximityDesktop.getApp().getCanvas().updateProperty(mKey, mask);
+  protected void broadcastValueChanged(List<Integer> indices) {
+    ProximityDesktop.getApp().getCanvas().updateProperty(mKey, indicesToPoints(indices));
   }
 
   /**
@@ -178,7 +177,7 @@ public abstract class PropertyController {
     private boolean mCancelled = false;
     private boolean mRunning = false;
     
-    private BitSet mResult;
+    private List<Integer> mResult;
     
     /**
      * Create a runnable to calculate the property using the given {@link Region}.
@@ -212,20 +211,20 @@ public abstract class PropertyController {
      * @param region
      * @return
      */
-    protected abstract BitSet calculateProperty(Region region);
+    protected abstract List<Integer> calculateProperty(Region region);
     
     protected void postRun() {
       mRunning = false;
       onPostRun(mResult, mRegion);
     }
     
-    protected void onPostRun(BitSet result, Region region) {}
+    protected void onPostRun(List<Integer> result, Region region) {}
     
     /**
      * Returns the result of running or null if the runnable has not finished yet.
      * @return
      */
-    public BitSet getResult() {
+    public List<Integer> getResult() {
       return mResult;
     }
 
