@@ -28,7 +28,11 @@ public class ComplimentController extends LinearPropertyController {
       if (mRegions.get(0) == region) {
         indices = mImage.hybridCompliment(
             getIndices(region), 
+<<<<<<< HEAD
             getEpsilon(), 
+=======
+            0.2, //TODO: getEpsilon(), 
+>>>>>>> cf01b24764039c7aace348ce8e4d3aeeb25f0102
             sub);
       }
       // take the difference of with the next object
@@ -36,7 +40,11 @@ public class ComplimentController extends LinearPropertyController {
         indices = mImage.hybridDifference(
             mValue, 
             getIndices(region), 
+<<<<<<< HEAD
             getEpsilon(), 
+=======
+            0.2, //TODO: getEpsilon(), 
+>>>>>>> cf01b24764039c7aace348ce8e4d3aeeb25f0102
             sub);
       }
       System.out.println("Compliment took " + (System.currentTimeMillis() - startTime)/1000f + " seconds");

@@ -25,6 +25,7 @@ public class PropertyAction extends Action {
   
   @Override
   public void run() {
+<<<<<<< HEAD
     ProximityDesktop.getApp().setProperty(mKey);
   }   
 }
