@@ -1,0 +1,57 @@
+<project
+    name="Proximity-Desktop"
+    basedir="." >
+
+    <taskdef
+        name="swtjar"
+        classname="org.swtjar.ant.SWTJarTask"
+        classpath="./lib/swtjar.jar" />
+
+    <!-- Package cross platform SWT Jar -->
+
+    <swtjar
+        jarfile="./build/jars/proximity-system.jar"
+        swtversion="4.2"
+        targetmainclass="ca.uwinnipeg.proximity.desktop.ProximityDesktop" >
+
+        <!-- Application Classes -->
+
+        <fileset
+            dir="./bin"
+            includes="**/*.class" />
+        
+        <!-- Application Resources -->
+        
+        <fileset
+            dir="./res"
+            includes="**/*" />
+
+        <!-- Library Classes -->
+
+        <zipfileset
+            excludes="META-INF/*.MF"
+            src="lib/swing2swt.jar" />
+        <zipfileset
+            excludes="META-INF/*.MF"
+            src="lib/org.eclipse.jface_3.8.0.dist.jar" />
+        <zipfileset
+            excludes="META-INF/*.MF"
+            src="lib/org.eclipse.core.runtime_3.8.0.dist.jar" />
+        <zipfileset
+            excludes="META-INF/*.MF"
+            src="lib/org.eclipse.equinox.common_3.6.100.dist.jar" />
+        <zipfileset
+            excludes="META-INF/*.MF"
+            src="lib/org.eclipse.core.commands_3.6.1.dist.jar" />
+      <zipfileset
+          excludes="META-INF/*.MF"
+          src="lib/proximity.jar" />
+        
+        <!-- SWT Jars -->
+
+        <fileset
+            dir="./lib"
+            includes="swt-*-4.2.jar" />
+    </swtjar>
+
+</project>
