@@ -279,7 +279,7 @@ public class ProximityDesktop extends ApplicationWindow {
     super.configureShell(newShell);
     newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
     
-    // set icon
+    // set icons
     String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
     Display display = Display.getCurrent();
     
@@ -293,6 +293,10 @@ public class ProximityDesktop extends ApplicationWindow {
   };
   
     newShell.setImages(imgs);
+    
+    // hide the weird extra seperator
+    getSeperator1().setVisible(false);
+    
   }
 
   /**
@@ -461,7 +465,7 @@ public class ProximityDesktop extends ApplicationWindow {
       lblNewLabel.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel.text_1")); //$NON-NLS-1$
       
       mEpsilonSpinner = new Spinner(composite, SWT.BORDER);
-      mEpsilonSpinner.setDigits(2);
+      mEpsilonSpinner.setDigits(getEpsilonDigits());
       mEpsilonSpinner.setMinimum(0);
       // set max
       updateEpsilonMaximum();
@@ -473,6 +477,10 @@ public class ProximityDesktop extends ApplicationWindow {
       // setup first tool
       actnPointer.run();
     }
+  }
+  
+  protected int getEpsilonDigits() {
+    return 3;
   }
   
   /**
@@ -614,7 +622,7 @@ public class ProximityDesktop extends ApplicationWindow {
    */
   @Override
   protected MenuManager createMenuManager() {
-    MenuManager menuManager = new MenuManager("menu");
+    MenuManager menuManager = new MenuManager();
     MenuManager menuFile = new MenuManager(BUNDLE.getString("MainWindow.File.text"));
     menuManager.add(menuFile);
     menuFile.add(actnOpen);    
