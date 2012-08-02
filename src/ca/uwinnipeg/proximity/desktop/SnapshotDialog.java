@@ -10,16 +10,14 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Transform;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -28,19 +26,54 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-//TODO: get rid of magic numbers
 //TODO: DOCUMENT!
 public class SnapshotDialog extends Dialog {
   
+  public class ThumbnailPaintListener implements PaintListener {
+    
+    // create thumbnail image
+    // minus 2's are to ensure a border
+    public void paintControl(PaintEvent e) {    
+      Rectangle labelBounds = ((Control) e.getSource()).getBounds();
+      
+      float scale = Math.min(1, ((float)labelBounds.height / mImage.getBounds().height));
+      scale = Math.min(scale, ((float)labelBounds.width / mImage.getBounds().width));
+      
+      Rectangle bounds = mImage.getBounds();
+      int scaledWidth = Math.round(bounds.width * scale) - 2;
+      int scaledHeight = Math.round(bounds.height * scale) - 2;
+      
+      int offsetX = Math.round((float)(labelBounds.width - scaledWidth) / 2);
+      int offsetY = Math.round((float)(labelBounds.height - scaledHeight) / 2);
+      
+      // draw black background
+      e.gc.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+      e.gc.fillRectangle(0, 0, labelBounds.width, labelBounds.height);
+      
+      // draw image
+      e.gc.setAntialias(SWT.ON);
+      e.gc.setInterpolation(SWT.HIGH);
+      e.gc.drawImage(
+          mImage, 
+          0, 
+          0, 
+          bounds.width, 
+          bounds.height, 
+          offsetX, 
+          offsetY, 
+          scaledWidth, 
+          scaledHeight);
+    }
+    
+  }
+  
   public final int HEIGHT = 300;
+  public final int WIDTH = 600;
   
   private Text text;
-  private Canvas canvas;
   private Button btnFolder;
   
   private Image mImage;
-  
-  private float mScale;
   
   private String mPath;
   
@@ -57,9 +90,8 @@ public class SnapshotDialog extends Dialog {
    */
   public SnapshotDialog(Shell parentShell, Image image, String fileName) {
     super(parentShell);
-    mImage = image;
     mFileName = fileName;
-    mScale = Math.min(1, ((float)HEIGHT / mImage.getBounds().height));
+    mImage = image;    
     doSetup();
   }
 
@@ -72,35 +104,37 @@ public class SnapshotDialog extends Dialog {
     container = (Composite) super.createDialogArea(parent);
     container.setLayout(new GridLayout(3, false));
     
-    createCanvas(container);
-    createFileNameEntry(container);
-    createDirectoryEntry(container);
+    createImage(container);
+    createOptions(container);
+    
+        Label lblFolder = new Label(container, SWT.NONE);
+        lblFolder.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+        lblFolder.setText("Save in folder: ");
+    
+    btnFolder = new Button(container, SWT.NONE);
+    btnFolder.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+    btnFolder.addSelectionListener(new SelectionListener() {
+      
+      public void widgetSelected(SelectionEvent e) {
+        doBrowse();
+      }
+      
+      public void widgetDefaultSelected(SelectionEvent e) {
+        widgetSelected(e);
+      }
+    });
+    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)+1));
 
     return container;
   }
   
-  protected void draw(GC gc) {
-    Transform transform = new Transform(Display.getCurrent());
-    transform.scale(mScale, mScale);
-        
-    gc.setTransform(transform);
-    gc.drawImage(mImage, 0, 0);
+  private void createImage(Composite container) {    
+    Label lblThumb = new Label(container, SWT.BORDER);
+    lblThumb.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
+    lblThumb.addPaintListener(new ThumbnailPaintListener());
   }
   
-  private void createCanvas(Composite container) {
-    canvas = new Canvas(container, SWT.BORDER);
-    GridData gd_canvas = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 5);
-    gd_canvas.widthHint = 0;
-    canvas.setLayoutData(gd_canvas);
-    canvas.addPaintListener(new PaintListener() {
-      
-      public void paintControl(PaintEvent e) {
-        draw(e.gc);
-      }
-    });
-  }
-  
-  private void createFileNameEntry(Composite container) {
+  private void createOptions(Composite container) {
     Label lblName = new Label(container, SWT.NONE);
     lblName.setText("Name: ");
     
@@ -125,26 +159,6 @@ public class SnapshotDialog extends Dialog {
     }
     return f.getName();
   }
-
-  private void createDirectoryEntry(Composite container) {
-
-    Label lblFolder = new Label(container, SWT.NONE);
-    lblFolder.setText("Save in folder: ");
-    
-    btnFolder = new Button(container, SWT.NONE);
-    btnFolder.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-    btnFolder.addSelectionListener(new SelectionListener() {
-      
-      public void widgetSelected(SelectionEvent e) {
-        doBrowse();
-      }
-      
-      public void widgetDefaultSelected(SelectionEvent e) {
-        widgetSelected(e);
-      }
-    });
-    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)+1));
-  }
   
   /**
    * Create contents of the button bar.
@@ -165,21 +179,26 @@ public class SnapshotDialog extends Dialog {
   // TODO: deal with magic numbers
   protected Point getInitialSize() {
     // find scale
-    mScale = Math.min(1, ((float)220 / mImage.getBounds().height));
-    
-    return new Point((int) (285 + (mImage.getBounds().width * mScale)), HEIGHT);
+//    mScale = Math.min(1, ((float)220 / mImage.getBounds().height));
+//    
+//    return new Point((int) (285 + (mImage.getBounds().width * mScale)), HEIGHT);
+    return new Point(WIDTH, HEIGHT);
   }
   
   @Override
   protected void okPressed() {
     if (doSave()) {
+      System.out.println("Image saved");
       super.okPressed();
+    }
+    else {
+      // TODO: alert of error
     }
   }
   
   public boolean doSave() {
     String fileName = mPath + '/' + text.getText();
-    System.out.println(fileName);
+    System.out.println("Saving " + fileName);
     ImageLoader imgLoader = new ImageLoader();
     imgLoader.data = new ImageData[] {mImage.getImageData()};
     imgLoader.save(fileName, SWT.IMAGE_PNG);

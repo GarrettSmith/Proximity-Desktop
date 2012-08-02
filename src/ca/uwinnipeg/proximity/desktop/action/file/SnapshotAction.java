@@ -27,7 +27,7 @@ public class SnapshotAction extends Action {
   public void run() {
     ProximityDesktop app = ProximityDesktop.getApp();
     SnapshotDialog dialog = 
-        new SnapshotDialog(app.getShell(), app.getImage(), app.getImageName());
+        new SnapshotDialog(app.getShell(), app.getCanvas().getImage(), app.getImageName());
     dialog.open();
   }
 }

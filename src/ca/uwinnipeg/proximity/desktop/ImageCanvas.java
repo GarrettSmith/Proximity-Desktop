@@ -118,13 +118,63 @@ public class ImageCanvas extends Canvas {
 
       mPropertyImages.put(key, new Image(mDisplay, data));
 
-      // TODO: redraw if the current key was updated
+      //redraw if the current key was updated
       if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
         redraw();
       }
     }
   }
-  
+
+  public Image getImage() {
+    Rectangle bounds = mImage.getBounds();
+    Image img = new Image(mDisplay, bounds.width, bounds.height);
+    // draw the image
+    if (mImage != null) {
+      GC gc = new GC(img);
+      gc.drawImage(mImage, 0, 0);
+
+      // draw the property
+      if (mPropertyKey != null) {
+        Image propImg = mPropertyImages.get(mPropertyKey);
+        if (propImg != null) {
+          gc.drawImage(propImg, 0, 0);
+        }
+      }
+
+      // draw regions
+      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
+      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+      gc.setLineWidth(2);
+      ProximityController controller = ProximityDesktop.getController();
+      List<Region> selectedRegions = controller.getSelectedRegions();
+      for (Region r : controller.getRegions()) {
+        bounds = r.getBounds();
+        // determine if the region is selected
+        if (selectedRegions.contains(r)) {
+          gc.setForeground(selected);
+        }
+        else {
+          gc.setForeground(unselected);
+        }
+        switch(r.getShape()) {
+          case RECTANGLE:
+            gc.drawRectangle(bounds);
+            break;
+          case OVAL:
+            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
+            break;
+          case POLYGON:
+            int[] points = r.getPolygon().toArray();
+            points = toScreenSpace(points);
+            gc.drawPolygon(points);
+            break;
+        }
+      }
+      gc.dispose();
+    }
+    return img;
+  }
+
   /**
    * Paints the image with the current transform over a background.
    * @param gc
