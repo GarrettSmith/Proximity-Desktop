@@ -34,6 +34,7 @@ public class DifferenceController extends LinearPropertyController {
             mValue, 
             region.getIndicesList(), 
             getEpsilon(), 
+            sub);
       }
       System.out.println("Difference took " + (System.currentTimeMillis() - startTime)/1000f + " seconds");
     }
