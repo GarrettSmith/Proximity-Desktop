@@ -36,7 +36,6 @@ import ca.uwinnipeg.proximity.image.RedFunc;
  * @author Garrett Smith
  *
  */
-// TODO: update undo and redo to window
 public class ProximityController {
   
   private Image mImage = new Image();
@@ -75,9 +74,6 @@ public class ProximityController {
   
   private List<Category<Integer>> mCategories = new ArrayList<Category<Integer>>();
   
-  private Map<ProbeFunc<Integer>, Category<Integer>> mfuncsCatMap = 
-      new HashMap<ProbeFunc<Integer>, Category<Integer>>();
-  
   private ICheckStateListener mCheckStateListener = new FeaturesCheckedListener(this);
   
   public ICheckStateListener getCheckStateListener() {
@@ -89,53 +85,57 @@ public class ProximityController {
     createPropertyControllers();
   }
   
+  @SuppressWarnings("unchecked")
   private void loadFuncs() {
-    try {
       // load the default probe functions and enable
       for (Class<ProbeFunc<Integer>> clazz : DEFAULT_FUNCS) {
-//        mProbeFuncs.put(clazz.newInstance(), true);
         String className = clazz.getName();
         mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
         mCatPrefs.put(className, COLOR_CATEGORY);
       }
+      
       // load the previously loaded probe funcs
-      for (String classStr : mFuncPrefs.keys()) {
-        // load the probe func
-        Class<ProbeFunc<Integer>> funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(classStr);
-        String categoryStr = mCatPrefs.get(classStr, "Uncategorized");
-        Category<Integer> category = null;
-        
-        // find the matching category
-        for (Category<Integer> cat: mCategories) {
-          if (cat.getName().equals(categoryStr)) {
-            category = cat;
-            break;
+      try {
+        for (String classStr : mFuncPrefs.keys()) {
+          try {
+          // load the probe func
+          Class<ProbeFunc<Integer>> funcClazz;
+            funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(classStr);
+          
+          String categoryStr = mCatPrefs.get(classStr, "Uncategorized");
+          Category<Integer> category = null;
+          
+          // find the matching category
+          for (Category<Integer> cat: mCategories) {
+            if (cat.getName().equals(categoryStr)) {
+              category = cat;
+              break;
+            }
+          }
+          
+          // create the category if we haven't yet
+          if (category == null) {
+            category = new Category<Integer>(categoryStr);
+            mCategories.add(category);
+          }
+          
+          // add the func to the category
+            category.set(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
+          } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (ClassNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
           }
         }
-        
-        // create the category if it hasn't yet
-        if (category == null) {
-          category = new Category<Integer>(categoryStr);
-          mCategories.add(category);
-        }
-        
-        // add the func to the category
-        category.set(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
+      } catch (BackingStoreException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-    } 
-    catch (BackingStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (InstantiationException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
     
     // add enabled probe funcs
     for (Category<Integer> cat: mCategories) {

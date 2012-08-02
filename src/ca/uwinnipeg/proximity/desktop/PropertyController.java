@@ -114,7 +114,6 @@ public abstract class PropertyController {
    * @param region
    */
   protected void broadcastValueChanged(List<Integer> indices) {
-    // TODO: tell canvas the news!
     ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
     canvas.updateProperty(getClass(), indicesToPoints(indices));
   }
