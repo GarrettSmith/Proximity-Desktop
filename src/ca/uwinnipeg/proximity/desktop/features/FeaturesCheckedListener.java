@@ -9,6 +9,7 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.ProximityController;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
  * @author Garrett Smith
@@ -38,6 +39,9 @@ public class FeaturesCheckedListener implements ICheckStateListener {
       mController.setCategoryEnabled(category, enabled);
     }
     viewer.refresh();
+    
+    // tell window to up maximum epsilon
+    ProximityDesktop.getApp().updateEpsilonMaximum();
   }
 
 }

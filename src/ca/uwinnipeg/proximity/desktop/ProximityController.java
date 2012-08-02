@@ -173,6 +173,26 @@ public class ProximityController {
     return mCategories;
   }
   
+  public int probeFuncsSize() {
+    int sum = 0;
+    for (Category<Integer> cat : mCategories) {
+      sum += cat.size();
+    }
+    return sum;
+  }
+
+  public int enabledProbeFuncsSize() {
+    int sum = 0;
+    for (Category<Integer> cat : mCategories) {
+      sum += cat.enabledSize();
+    }
+    return sum;
+  }
+  
+  public float getEpsilonMaximum() {
+    return (float) Math.sqrt(enabledProbeFuncsSize());
+  }
+  
   public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
     // set the probe func's state
     for (Category<Integer> cat: mCategories) {

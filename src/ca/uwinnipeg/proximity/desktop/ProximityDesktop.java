@@ -40,6 +40,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.wb.swt.ResourceManager;
 
+import com.sun.xml.internal.ws.api.model.MEP;
+
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
 import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
@@ -247,11 +249,25 @@ public class ProximityDesktop extends ApplicationWindow {
   public void setProperty(Class<? extends PropertyController> key) {
     canvas.setProperty(key);
     mEpsilonListener.setProperty(key);
-    // disable the spinner when the key is null
-    mEpsilonSpinner.setEnabled(key != null);
+
+    float epsilon = mEpsilonListener.getEpsilon();
+    
     // set the spinner to be the key's saved epsilon
     int digits = mEpsilonSpinner.getDigits();
-    mEpsilonSpinner.setSelection((int) (mEpsilonListener.getEpsilon() * Math.pow(10, digits)));
+    mEpsilonSpinner.setSelection((int) (epsilon * Math.pow(10, digits)));
+    
+    if (key != null) {            
+      // tell the controller the epsilon
+      CONTROLLER.setEpsilon(key, epsilon);
+    } 
+
+    // disable the spinner when the key is null enable otherwise
+    mEpsilonSpinner.setEnabled(key != null);
+  }
+
+  public void updateEpsilonMaximum() {
+    int digits = mEpsilonSpinner.getDigits();
+    mEpsilonSpinner.setMaximum((int) (CONTROLLER.getEpsilonMaximum() * Math.pow(10, digits)));
   }
 
   /**
@@ -447,6 +463,8 @@ public class ProximityDesktop extends ApplicationWindow {
       mEpsilonSpinner = new Spinner(composite, SWT.BORDER);
       mEpsilonSpinner.setDigits(2);
       mEpsilonSpinner.setMinimum(0);
+      // set max
+      updateEpsilonMaximum();
       mEpsilonListener = new EpsilonSelectionListener();
       mEpsilonSpinner.addSelectionListener(mEpsilonListener);
       // disable spinner by default

@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import sun.awt.motif.MPopupMenuPeer;
+
 import ca.uwinnipeg.proximity.ProbeFunc;
 
 /**
@@ -104,5 +106,17 @@ public class Category<T> {
   public boolean isGrayed() {
     boolean rtn = (isDisabled() == false && isEnabled() == false);
     return rtn;
+  }
+  
+  public int size() {
+    return mFuncs.size();
+  }
+  
+  public int enabledSize() {
+    int sum = 0;
+    for (Boolean enabled: mFuncs.values()) {
+      if (enabled) sum++;
+    }
+    return sum;
   }
 }

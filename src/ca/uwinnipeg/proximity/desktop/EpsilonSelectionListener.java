@@ -41,7 +41,11 @@ public class EpsilonSelectionListener implements SelectionListener {
       int digits = spinner.getDigits();
       int selection = spinner.getSelection();
       float epsilon = (float) (selection / Math.pow(10, digits));
+
+      // save the epsilon
       mPref.putFloat(mKey.toString(), epsilon);
+      
+      // set the system's epsilon
       ProximityDesktop.getController().setEpsilon(mKey, epsilon);
     }
   }
