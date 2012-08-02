@@ -21,6 +21,15 @@ public class EpsilonSelectionListener implements SelectionListener {
   public void setProperty(Class<? extends PropertyController> key) {
     mKey = key;
   }
+  
+  public float getEpsilon() {
+    if (mKey == null) {
+      return 0;
+    }
+    else {
+      return mPref.getFloat(mKey.toString(), 0);
+    }
+  }  
 
   public void widgetSelected(SelectionEvent e) {
     widgetDefaultSelected(e);

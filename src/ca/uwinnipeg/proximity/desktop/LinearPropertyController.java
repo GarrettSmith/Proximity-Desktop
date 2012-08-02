@@ -103,7 +103,7 @@ public abstract class LinearPropertyController extends PropertyController {
     runNextRunnable();
     
     // broadcast the clear
-    broadcastValueChanged(null);
+    //broadcastValueChanged(null);
   }
   
 

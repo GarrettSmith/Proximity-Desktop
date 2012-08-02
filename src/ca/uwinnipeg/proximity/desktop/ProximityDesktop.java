@@ -249,6 +249,9 @@ public class ProximityDesktop extends ApplicationWindow {
     mEpsilonListener.setProperty(key);
     // disable the spinner when the key is null
     mEpsilonSpinner.setEnabled(key != null);
+    // set the spinner to be the key's saved epsilon
+    int digits = mEpsilonSpinner.getDigits();
+    mEpsilonSpinner.setSelection((int) (mEpsilonListener.getEpsilon() * Math.pow(10, digits)));
   }
 
   /**
@@ -446,6 +449,8 @@ public class ProximityDesktop extends ApplicationWindow {
       mEpsilonSpinner.setMinimum(0);
       mEpsilonListener = new EpsilonSelectionListener();
       mEpsilonSpinner.addSelectionListener(mEpsilonListener);
+      // disable spinner by default
+      mEpsilonSpinner.setEnabled(false);
       
       // setup first tool
       actnPointer.run();
