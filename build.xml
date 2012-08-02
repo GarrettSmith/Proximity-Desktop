@@ -10,7 +10,7 @@
     <!-- Package cross platform SWT Jar -->
 
     <swtjar
-        jarfile="./build/jars/proximity-system.jar"
+        jarfile="./bin/proximity-system.jar"
         swtversion="4.2"
         targetmainclass="ca.uwinnipeg.proximity.desktop.ProximityDesktop" >
 
