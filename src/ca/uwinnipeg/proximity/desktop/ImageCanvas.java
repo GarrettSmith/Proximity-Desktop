@@ -142,20 +142,10 @@ public class ImageCanvas extends Canvas {
       }
 
       // draw regions
-      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
-      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_CYAN));
       gc.setLineWidth(2);
-      ProximityController controller = ProximityDesktop.getController();
-      List<Region> selectedRegions = controller.getSelectedRegions();
-      for (Region r : controller.getRegions()) {
+      for (Region r : ProximityDesktop.getController().getRegions()) {
         bounds = r.getBounds();
-        // determine if the region is selected
-        if (selectedRegions.contains(r)) {
-          gc.setForeground(selected);
-        }
-        else {
-          gc.setForeground(unselected);
-        }
         switch(r.getShape()) {
           case RECTANGLE:
             gc.drawRectangle(bounds);
@@ -181,6 +171,10 @@ public class ImageCanvas extends Canvas {
    */
   protected void onPaint(GC gc) {   
     Rectangle currentBounds = getBounds();    
+    
+    gc.setInterpolation(SWT.HIGH);
+    gc.setAntialias(SWT.ON);
+    
     
     //draw background
     // fill with black
@@ -213,9 +207,13 @@ public class ImageCanvas extends Canvas {
         }
       }
 
-      // draw regions
-      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
-      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+//      // draw regions
+//      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
+//      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
+
+      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
+      gc.setXORMode(true);
+      gc.setLineWidth(2);
       ProximityController controller = ProximityDesktop.getController();
       List<Region> selectedRegions = controller.getSelectedRegions();
       for (Region r : controller.getRegions()) {
@@ -223,10 +221,12 @@ public class ImageCanvas extends Canvas {
         bounds = toScreenSpace(bounds);
         // determine if the region is selected
         if (selectedRegions.contains(r)) {
-          gc.setForeground(selected);
+          gc.setAlpha(255);
+//          gc.setForeground(selected);
         }
         else {
-          gc.setForeground(unselected);
+          gc.setAlpha(150);
+//          gc.setForeground(unselected);
         }
         switch(r.getShape()) {
           case RECTANGLE:

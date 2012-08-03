@@ -16,6 +16,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ApplicationWindow;
@@ -39,8 +40,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.wb.swt.ResourceManager;
-
-import com.sun.xml.internal.ws.api.model.MEP;
 
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
 import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
@@ -199,50 +198,59 @@ public class ProximityDesktop extends ApplicationWindow {
   }
 
   public void openFile(String path) {  
-  
-    mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
-  
-    // swap frames if this is the first image selected
-    if (stackLayout.topControl == buttonFrame) {
-      stackLayout.topControl = canvasFrame;
-      frameStack.layout();
-    }
-  
-    // load the image
-    mImage = new Image(Display.getCurrent(), path);    
-  
-    // update canvas
-    canvas.setImage(mImage);
-  
-    // enable disabled buttons
-    enableImageActions();
-  
-    // tell the controller about the new image
-    CONTROLLER.onImageSelected(mImage.getImageData());
-    
-    try {
-      List<String> files = new ArrayList<String>();
-      // add previous files
-      for (String key: mRecentPrefs.keys()) {
-        String file = mRecentPrefs.get(key, null);
-        if (file != null) {
-          files.add(file);
+
+    // if there is an image loaded ask for confirmation
+    if (mImage == null || 
+        MessageDialog.openConfirm(
+            getShell(), 
+            BUNDLE.getString("ProximityDesktop.OpenConfirm.title"), 
+            BUNDLE.getString("ProximityDesktop.OpenConfirm.message"))) {
+
+      mImageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
+
+      // swap frames if this is the first image selected
+      if (stackLayout.topControl == buttonFrame) {
+        stackLayout.topControl = canvasFrame;
+        frameStack.layout();
+      }
+
+      // load the image
+      mImage = new Image(Display.getCurrent(), path);    
+
+      // update canvas
+      canvas.setImage(mImage);
+
+      // enable disabled buttons
+      enableImageActions();
+
+      // tell the controller about the new image
+      CONTROLLER.onImageSelected(mImage.getImageData());
+
+      try {
+        List<String> files = new ArrayList<String>();
+        // add previous files
+        for (String key: mRecentPrefs.keys()) {
+          String file = mRecentPrefs.get(key, null);
+          if (file != null) {
+            files.add(file);
+          }
         }
+        // prevent duplicates
+        files.remove(path);
+        // add to front
+        files.add(0, path);
+        // trim
+        files = files.subList(0, Math.min(RECENT_DOCUMENTS_LIMIT - 1, files.size()));
+        // store
+        for (int i = 0; i < files.size(); i++) {
+          mRecentPrefs.put(Integer.toString(i), files.get(i));
+        }
+      } 
+      catch (BackingStoreException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-      // prevent duplicates
-      files.remove(path);
-      // add to front
-      files.add(0, path);
-      // trim
-      files = files.subList(0, Math.min(RECENT_DOCUMENTS_LIMIT - 1, files.size()));
-      // store
-      for (int i = 0; i < files.size(); i++) {
-        mRecentPrefs.put(Integer.toString(i), files.get(i));
-      }
-    } 
-    catch (BackingStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+
     }
   }
   

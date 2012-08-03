@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -27,6 +28,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 //TODO: DOCUMENT!
+//TODO: preserve alpha
+//TODO: externalize strings
 public class SnapshotDialog extends Dialog {
   
   public class ThumbnailPaintListener implements PaintListener {
@@ -103,27 +106,9 @@ public class SnapshotDialog extends Dialog {
   protected Control createDialogArea(Composite parent) {
     container = (Composite) super.createDialogArea(parent);
     container.setLayout(new GridLayout(3, false));
-    
+
     createImage(container);
     createOptions(container);
-    
-        Label lblFolder = new Label(container, SWT.NONE);
-        lblFolder.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
-        lblFolder.setText("Save in folder: ");
-    
-    btnFolder = new Button(container, SWT.NONE);
-    btnFolder.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
-    btnFolder.addSelectionListener(new SelectionListener() {
-      
-      public void widgetSelected(SelectionEvent e) {
-        doBrowse();
-      }
-      
-      public void widgetDefaultSelected(SelectionEvent e) {
-        widgetSelected(e);
-      }
-    });
-    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)+1));
 
     return container;
   }
@@ -136,7 +121,7 @@ public class SnapshotDialog extends Dialog {
   
   private void createOptions(Composite container) {
     Label lblName = new Label(container, SWT.NONE);
-    lblName.setText("Name: ");
+    lblName.setText(ProximityDesktop.getBundle().getString("SnapshotDialog.NameLabel.text"));
     
     text = new Text(container, SWT.BORDER);
     GridData gd_text = new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1);
@@ -147,6 +132,24 @@ public class SnapshotDialog extends Dialog {
     text.setFocus();
     // select everything but the extension
     text.setSelection(0, text.getText().length() - 4);
+    
+    Label lblFolder = new Label(container, SWT.NONE);
+    lblFolder.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+    lblFolder.setText(ProximityDesktop.getBundle().getString("SnapshotDialog.DirectoryLabel.text"));
+
+    btnFolder = new Button(container, SWT.NONE);
+    btnFolder.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+    btnFolder.addSelectionListener(new SelectionListener() {
+
+      public void widgetSelected(SelectionEvent e) {
+        doBrowse();
+      }
+
+      public void widgetDefaultSelected(SelectionEvent e) {
+        widgetSelected(e);
+      }
+    });
+    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)));
   }
 
   public String getDefaultFileName() {
@@ -185,25 +188,54 @@ public class SnapshotDialog extends Dialog {
     return new Point(WIDTH, HEIGHT);
   }
   
+  public static final int SUCCESS = 0;
+  public static final int CANCELLED = 1;
+  public static final int ERROR = 2;
+  
   @Override
   protected void okPressed() {
-    if (doSave()) {
-      System.out.println("Image saved");
-      super.okPressed();
-    }
-    else {
-      // TODO: alert of error
+    switch (doSave()) {
+      case SUCCESS:
+        super.okPressed();
+        break;
+      case ERROR:
+        MessageDialog.openError(
+            getShell(), 
+            ProximityDesktop.getBundle().getString("SnapshotDialog.Error.title"), 
+            ProximityDesktop.getBundle().getString("SnapshotDialog.Error.message"));
+        break;
     }
   }
   
-  public boolean doSave() {
+  public int doSave() {
     String fileName = mPath + '/' + text.getText();
-    System.out.println("Saving " + fileName);
-    ImageLoader imgLoader = new ImageLoader();
-    imgLoader.data = new ImageData[] {mImage.getImageData()};
-    imgLoader.save(fileName, SWT.IMAGE_PNG);
-    // TODO: find if we saved the image
-    return true;
+    File file = new File(fileName);
+    
+    // if we can write to the file
+    if (file.canWrite()) {
+      
+      // confirm overwriting
+      if (file.exists()) {
+        // if the user chooses not to overwrite return
+        if (!MessageDialog.openQuestion(
+            getShell(), 
+            ProximityDesktop.getBundle().getString("SnapshotDialog.Confirm.title"), 
+            ProximityDesktop.getBundle().getString("SnapshotDialog.Confirm.message"))) {
+          return CANCELLED;
+        }
+      }
+      
+      // save the image
+      System.out.println("Saving " + fileName);
+      ImageLoader imgLoader = new ImageLoader();
+      imgLoader.data = new ImageData[] {mImage.getImageData()};
+      imgLoader.save(fileName, SWT.IMAGE_PNG);
+      
+      return SUCCESS;      
+    }
+    else {
+      return ERROR;
+    }
   }
   
   /**
@@ -221,7 +253,7 @@ public class SnapshotDialog extends Dialog {
     String path = dialog.open();
     
     if (path != null) {
-      btnFolder.setText(path.substring(path.lastIndexOf('/')+1));
+      btnFolder.setText(path.substring(path.lastIndexOf(File.separatorChar)));
       mPath = path;
       mPrefs.put(PATH, mPath);
     }
