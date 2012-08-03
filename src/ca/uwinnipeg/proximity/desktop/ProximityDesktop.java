@@ -277,6 +277,9 @@ public class ProximityDesktop extends ApplicationWindow {
       // set current value of neighbourhood check box
       mNeighbourhoodButton.setSelection(CONTROLLER.getPropertyController(key).getUseNeighbourhoods());
     } 
+    else {
+      mNeighbourhoodButton.setSelection(false);
+    }
 
     // disable the spinner when the key is null enable otherwise
     mEpsilonSpinner.setEnabled(key != null);
@@ -497,6 +500,7 @@ public class ProximityDesktop extends ApplicationWindow {
       mNeighbourhoodButton = new Button(composite, SWT.CHECK);
       mNeighbourhoodButton.setText(BUNDLE.getString("ProximityDesktop.btnCheckButton.text"));
       mNeighbourhoodButton.addSelectionListener(mNeighbourhoodsListener);
+      mNeighbourhoodButton.setEnabled(false);
       
       ProgressBar progressBar = new ProgressBar(composite, SWT.NONE);
       progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));

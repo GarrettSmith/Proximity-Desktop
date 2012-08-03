@@ -34,11 +34,8 @@ public abstract class PropertyController {
   protected Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
   
   protected float mEpsilon;
-  protected boolean mUseNeighbourhoods;
-  
-  public PropertyController() {
-    setUseNeighbourhoods(Preferences.systemRoot().node("proximity-system").node("use-neighbourhoods").getBoolean(getClass().toString(), false));
-  }
+  protected boolean mUseNeighbourhoods =
+      Preferences.userRoot().node("proximity-system").node("use-neighbourhoods").getBoolean(getClass().toString(), false);
   
   public void setEpsilon(float epsilon) {
     boolean changed = epsilon != mEpsilon;
