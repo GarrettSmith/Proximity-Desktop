@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
@@ -34,6 +35,10 @@ public abstract class PropertyController {
   
   protected float mEpsilon;
   protected boolean mUseNeighbourhoods;
+  
+  public PropertyController() {
+    setUseNeighbourhoods(Preferences.systemRoot().node("proximity-system").node("use-neighbourhoods").getBoolean(getClass().toString(), false));
+  }
   
   public void setEpsilon(float epsilon) {
     boolean changed = epsilon != mEpsilon;

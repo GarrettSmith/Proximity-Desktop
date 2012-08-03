@@ -273,13 +273,16 @@ public class ProximityDesktop extends ApplicationWindow {
     if (key != null) {            
       // tell the controller the epsilon
       CONTROLLER.setEpsilon(key, epsilon);
+      
+      // set current value of neighbourhood check box
+      mNeighbourhoodButton.setSelection(CONTROLLER.getPropertyController(key).getUseNeighbourhoods());
     } 
 
     // disable the spinner when the key is null enable otherwise
     mEpsilonSpinner.setEnabled(key != null);
     
     // neighbourhoods
-    mNeighbourhoodButton.setEnabled(key != null);
+    mNeighbourhoodButton.setEnabled(key != null && key != NeighbourhoodController.class);
     mNeighbourhoodsListener.setProperty(key);
   }
 

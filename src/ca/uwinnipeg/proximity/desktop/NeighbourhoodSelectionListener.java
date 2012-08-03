@@ -3,6 +3,7 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,6 +31,13 @@ public class NeighbourhoodSelectionListener implements SelectionListener {
     Button btn = (Button) e.getSource();
     boolean checked = btn.getSelection();
     ProximityDesktop.getController().setUseNeighbourhoods(mKey, checked);
+    mPref.putBoolean(mKey.toString(), checked);
+    try {
+      mPref.flush();
+    } catch (BackingStoreException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
   }
 
 }

@@ -164,6 +164,10 @@ public class ProximityController {
     }
   }
   
+  public PropertyController getPropertyController(Class<? extends PropertyController> key) {
+    return mPropertyControllers.get(key);
+  }
+  
 //  public Map<String, Map<ProbeFunc<Integer>, Boolean>> getProbeFuncs() {
 //    HashMap<String, Map<ProbeFunc<Integer>, Boolean>> map = 
 //        new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
