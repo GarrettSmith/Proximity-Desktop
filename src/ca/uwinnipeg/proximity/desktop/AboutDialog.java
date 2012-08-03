@@ -63,7 +63,6 @@ public class AboutDialog extends Dialog {
     
     Label lblCopyright = new Label(mainFrame, SWT.NONE);
     lblCopyright.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
-    lblCopyright.setFont(SWTResourceManager.getFont("Droid Sans", 8, SWT.NORMAL));
     lblCopyright.setText("© 2012 Holder");
     
     Composite licenceFrame = new Composite(frameStack, SWT.NONE);

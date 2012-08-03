@@ -19,7 +19,7 @@ import ca.uwinnipeg.proximity.image.Image;
 public abstract class PropertyController {
 
   // the maximum progress value
-  public static final int MAX_PROGRESS = 10000;
+  public static final int MAX_PROGRESS = 100;
   
   // the current progress of calculating
   protected int mProgress = MAX_PROGRESS;
@@ -158,7 +158,6 @@ public abstract class PropertyController {
    * @param indices
    * @return
    */
-  // TODO: get this off the ui thread and make it cancellable
   protected int[] indicesToPoints(List<Integer> indices) {
     // handle nulls
     if (indices == null) return new int[0];
@@ -189,6 +188,7 @@ public abstract class PropertyController {
     mProgress = value;
 
     // broadcast progress
+    ProximityDesktop.getApp().setProgress(getClass(), mProgress);
 //    Intent intent = new Intent(ACTION_PROGRESS_CHANGED);
 //    intent.putExtra(PROGRESS, getProgress());
 //    intent.addCategory(mCategory);
@@ -247,6 +247,7 @@ public abstract class PropertyController {
     
     protected void postRun() {
       mRunning = false;
+      setProgress(0);
       onPostRun(mResult, mRegion);
     }
     
@@ -266,7 +267,7 @@ public abstract class PropertyController {
     public void onProgressSet(float progress) {
       if (progress - mLastProgress > PROGRESS_THERSHOLD) {
         mLastProgress = progress;
-        // TODO: updateProgress(Integer.valueOf((int) (progress * MAX_PROGRESS)));
+        setProgress(Integer.valueOf((int) (progress * MAX_PROGRESS)));
       }
     }
 

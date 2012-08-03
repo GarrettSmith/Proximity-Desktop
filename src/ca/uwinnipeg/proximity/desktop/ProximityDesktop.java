@@ -5,7 +5,9 @@ package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -151,6 +153,12 @@ public class ProximityDesktop extends ApplicationWindow {
   
   private NeighbourhoodSelectionListener mNeighbourhoodsListener = new NeighbourhoodSelectionListener();
   private Button mNeighbourhoodButton;
+  
+  private Class<? extends PropertyController> mProperty = null;
+  
+  private Map<Class<? extends PropertyController>, Integer> mProgress = 
+      new HashMap<Class<? extends PropertyController>, Integer>();
+  private ProgressBar mProgressBar;
 
   /**
    * Launch the application.
@@ -260,6 +268,8 @@ public class ProximityDesktop extends ApplicationWindow {
   }
   
   public void setProperty(Class<? extends PropertyController> key) {
+    mProperty = key;
+    
     canvas.setProperty(key);
     
     // epsilon
@@ -276,9 +286,16 @@ public class ProximityDesktop extends ApplicationWindow {
       
       // set current value of neighbourhood check box
       mNeighbourhoodButton.setSelection(CONTROLLER.getPropertyController(key).getUseNeighbourhoods());
+      
+      // set current progress
+      Integer progress = mProgress.get(key);
+      if (progress != null) {
+        mProgressBar.setSelection(progress);
+      }
     } 
     else {
       mNeighbourhoodButton.setSelection(false);
+      mProgressBar.setSelection(0);
     }
 
     // disable the spinner when the key is null enable otherwise
@@ -292,6 +309,15 @@ public class ProximityDesktop extends ApplicationWindow {
   public void updateEpsilonMaximum() {
     int digits = mEpsilonSpinner.getDigits();
     mEpsilonSpinner.setMaximum((int) (CONTROLLER.getEpsilonMaximum() * Math.pow(10, digits)));
+  }
+  
+  public void setProgress(Class<? extends PropertyController> key, int value) {
+    mProgress.put(key, value);
+    
+    // update the progress bar if this is the current property
+    if (mProperty == key) {
+      mProgressBar.setSelection(value);
+    }
   }
 
   /**
@@ -493,6 +519,7 @@ public class ProximityDesktop extends ApplicationWindow {
       mEpsilonSpinner.setMinimum(0);
       // set max
       updateEpsilonMaximum();
+      mEpsilonSpinner.setIncrement(10);
       mEpsilonSpinner.addSelectionListener(mEpsilonListener);
       // disable spinner by default
       mEpsilonSpinner.setEnabled(false);
@@ -502,8 +529,8 @@ public class ProximityDesktop extends ApplicationWindow {
       mNeighbourhoodButton.addSelectionListener(mNeighbourhoodsListener);
       mNeighbourhoodButton.setEnabled(false);
       
-      ProgressBar progressBar = new ProgressBar(composite, SWT.NONE);
-      progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+      mProgressBar = new ProgressBar(composite, SWT.NONE);
+      mProgressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
       
       // setup first tool
       actnPointer.run();
