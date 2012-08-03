@@ -21,8 +21,6 @@ import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 public class PolygonTool extends Tool {
-  
-  public static final Color POINT_COLOR = new Color(Display.getCurrent(), 0, 255, 255);
 
   @Override
   protected HashMap<Integer, Listener> createListeners(HashMap<Integer, Listener> map) {
@@ -151,19 +149,21 @@ public class PolygonTool extends Tool {
       GC gc = event.gc;
       ImageCanvas canvas = getCanvas();
       
-      gc.setBackground(POINT_COLOR);
-      gc.setForeground(POINT_COLOR);
+      Color color = Display.getCurrent().getSystemColor(SWT.COLOR_CYAN);
+      gc.setBackground(color);
+      gc.setForeground(color);
       gc.setAlpha(255);
+
+      Path path = new Path(Display.getCurrent());
       
       // draw the current points
       for (Point p : mPoints) {
         p = canvas.toScreenSpace(p);
-        gc.fillRectangle(p.x-4, p.y-4, 8, 8);
+        path.addRectangle(p.x-4, p.y-4, 8, 8);
       }
       
       if (!mPoints.isEmpty()) {
         // create the outline path
-        Path path = new Path(Display.getCurrent());
         Point p = mPoints.get(0);
         p = canvas.toScreenSpace(p);
         path.moveTo(p.x, p.y);
@@ -177,11 +177,13 @@ public class PolygonTool extends Tool {
           path.close();
         }
         else {
-          gc.drawLine(p.x, p.y, currentPoint.x, currentPoint.y);
+          path.lineTo(currentPoint.x, currentPoint.y);
         }
         
-        gc.drawPath(path);  
       }
+
+      gc.drawPath(path);  
+      path.dispose();
     }
     
   }

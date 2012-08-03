@@ -201,7 +201,7 @@ public class ProximityDesktop extends ApplicationWindow {
 
     // if there is an image loaded ask for confirmation
     if (mImage == null || 
-        MessageDialog.openConfirm(
+        MessageDialog.openQuestion(
             getShell(), 
             BUNDLE.getString("ProximityDesktop.OpenConfirm.title"), 
             BUNDLE.getString("ProximityDesktop.OpenConfirm.message"))) {

@@ -142,8 +142,9 @@ public class ImageCanvas extends Canvas {
       }
 
       // draw regions
-      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_CYAN));
+      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
       gc.setLineWidth(2);
+      gc.setXORMode(true);
       for (Region r : ProximityDesktop.getController().getRegions()) {
         bounds = r.getBounds();
         switch(r.getShape()) {
@@ -207,10 +208,7 @@ public class ImageCanvas extends Canvas {
         }
       }
 
-//      // draw regions
-//      Color unselected = new Color(Display.getCurrent(), 255, 255, 255);
-//      Color selected = new Color(Display.getCurrent(), 0, 255, 255);
-
+      // draw regions
       gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
       gc.setXORMode(true);
       gc.setLineWidth(2);
@@ -222,11 +220,9 @@ public class ImageCanvas extends Canvas {
         // determine if the region is selected
         if (selectedRegions.contains(r)) {
           gc.setAlpha(255);
-//          gc.setForeground(selected);
         }
         else {
           gc.setAlpha(150);
-//          gc.setForeground(unselected);
         }
         switch(r.getShape()) {
           case RECTANGLE:

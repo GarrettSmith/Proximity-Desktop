@@ -1,6 +1,7 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -179,12 +180,7 @@ public class SnapshotDialog extends Dialog {
    * Return the initial size of the dialog.
    */
   @Override
-  // TODO: deal with magic numbers
   protected Point getInitialSize() {
-    // find scale
-//    mScale = Math.min(1, ((float)220 / mImage.getBounds().height));
-//    
-//    return new Point((int) (285 + (mImage.getBounds().width * mScale)), HEIGHT);
     return new Point(WIDTH, HEIGHT);
   }
   
@@ -211,11 +207,21 @@ public class SnapshotDialog extends Dialog {
     String fileName = mPath + '/' + text.getText();
     File file = new File(fileName);
     
+    boolean existed = false;
+    
+    // create the empty file iff it does not exist
+    try {
+      existed = !file.createNewFile();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return ERROR;
+    }
+    
     // if we can write to the file
     if (file.canWrite()) {
       
       // confirm overwriting
-      if (file.exists()) {
+      if (existed) {
         // if the user chooses not to overwrite return
         if (!MessageDialog.openQuestion(
             getShell(), 

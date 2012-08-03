@@ -11,6 +11,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -87,8 +88,8 @@ public class PointerTool extends Tool {
         
         int width = screenEnd.x - screenStart.x;
         int height = screenEnd.y - screenStart.y;
-        
-        gc.setForeground(DRAG_COLOR);
+
+        gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_CYAN));
         gc.setLineStyle(SWT.LINE_DOT);
         
         gc.drawRectangle(screenStart.x, screenStart.y, width, height);        
