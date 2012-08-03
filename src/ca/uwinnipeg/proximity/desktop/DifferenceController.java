@@ -26,13 +26,13 @@ public class DifferenceController extends LinearPropertyController {
       // take the initial compliment
       long startTime = System.currentTimeMillis();
       if (mRegions.get(0) == region) {
-        indices = region.getIndicesList();
+        indices = getIndices(region);
       }
       // take the difference of with the next object
       else {  
         indices = mImage.hybridDifference(
             mValue, 
-            region.getIndicesList(), 
+            getIndices(region), 
             getEpsilon(), 
             sub);
       }

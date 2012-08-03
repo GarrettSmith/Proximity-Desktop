@@ -28,7 +28,17 @@ public abstract class LinearPropertyController extends PropertyController {
   @Override
   protected void onRegionAdded(Region region) {
     super.onRegionAdded(region);
-    addRunnable(region);
+    if (!getUseNeighbourhoods()) {
+      addRunnable(region);
+    }
+  }
+  
+  @Override
+  protected void onNeighbourhoodSet(Region region, List<Integer> neighbourhood) {
+    super.onNeighbourhoodSet(region, neighbourhood);
+    if (getUseNeighbourhoods()) {
+      addRunnable(region);
+    }
   }
   
   @Override
@@ -102,8 +112,10 @@ public abstract class LinearPropertyController extends PropertyController {
     // start running runnables
     runNextRunnable();
     
-    // broadcast the clear
-    //broadcastValueChanged(null);
+    // broadcast the clear if we cleared the last value
+    if (mRegions.isEmpty()) {
+      broadcastValueChanged(null);
+    }
   }
   
 
@@ -180,6 +192,22 @@ public abstract class LinearPropertyController extends PropertyController {
   protected void setResult(List<Integer> result, Region region) {    
     // store result as the new value
     setValue(result);
+  }  
+  
+  /**
+   * Returns the indices associated with the given region.
+   * <p>
+   * We use this so we can override it for the other intersection services.
+   * @param region
+   * @return
+   */
+  protected List<Integer> getIndices(Region region) {
+    if (getUseNeighbourhoods()) {
+      return getNeighbourhood(region);
+    }
+    else {
+      return region.getIndicesList();      
+    }
   }
 
 }

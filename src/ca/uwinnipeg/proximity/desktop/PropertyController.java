@@ -4,7 +4,9 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
@@ -27,7 +29,11 @@ public abstract class PropertyController {
   // The regions of interest
   protected List<Region> mRegions = new ArrayList<Region>();
   
+  // the neighbourhoods of the regions
+  protected Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
+  
   protected float mEpsilon;
+  protected boolean mUseNeighbourhoods;
   
   public void setEpsilon(float epsilon) {
     boolean changed = epsilon != mEpsilon;
@@ -40,6 +46,24 @@ public abstract class PropertyController {
   public float getEpsilon() {
     return mEpsilon;
   }
+
+  public void setUseNeighbourhoods(boolean enabled) {
+    boolean changed = enabled != mUseNeighbourhoods;
+    mUseNeighbourhoods = enabled;
+    if (changed) {
+      invalidate();
+    }
+  }
+  
+  public boolean getUseNeighbourhoods() {
+    return mUseNeighbourhoods;
+  }
+  
+  public List<Integer> getNeighbourhood(Region region) {
+    return mNeighbourhoods.get(region);
+  }
+  
+//  public abstract boolean usesNeighbourhoods();
   
   /**
    * Sets the given image we are calculating within.
@@ -64,6 +88,7 @@ public abstract class PropertyController {
    */
   public void removeRegion(Region region) {
     mRegions.remove(region);
+    mNeighbourhoods.remove(region);
     onRegionRemoved(region);
   }
   
@@ -72,7 +97,13 @@ public abstract class PropertyController {
    */
   public void clearRegions() {
     mRegions.clear();
+    mNeighbourhoods.clear();
     onRegionsCleared();
+  }
+  
+  public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
+    mNeighbourhoods.put(region, neighbourhood);
+    onNeighbourhoodSet(region, neighbourhood);
   }
   
   /**
@@ -99,6 +130,8 @@ public abstract class PropertyController {
   protected void onRegionsCleared() { 
     invalidate(); 
   }
+  
+  protected void onNeighbourhoodSet(Region region, List<Integer> neighbourhood) {}
 
   /**
    * Called when the enabled probe functions are changed.

@@ -31,7 +31,7 @@ public class NeighbourhoodController extends PropertyController {
   @Override
   protected void onRegionRemoved(Region region) {
     super.onRegionRemoved(region);
-    setNeighbourhood(region, null);
+    updateNeighbourhood(region, null);
   }
   
   /**
@@ -52,7 +52,7 @@ public class NeighbourhoodController extends PropertyController {
    * @param region
    * @param indices
    */
-  protected void setNeighbourhood(Region region, List<Integer> indices) {
+  protected void updateNeighbourhood(Region region, List<Integer> indices) {
     // save the change
     if (indices != null) {
       mNeighbourhoods.put(region, indices);
@@ -66,7 +66,10 @@ public class NeighbourhoodController extends PropertyController {
     for (List<Integer> nbs : mNeighbourhoods.values()) {
       indices.addAll(nbs);
     }
-    broadcastValueChanged(indices);
+    broadcastValueChanged(indices);    
+
+    // set neighbourhoods of other controllers
+    ProximityDesktop.getController().setNeighbourhood(region, indices);
   }
 
   // Runnableing 
@@ -153,7 +156,7 @@ public class NeighbourhoodController extends PropertyController {
     @Override
     protected void onPostRun(List<Integer> result, Region region) {      
       // save the result
-      setNeighbourhood(region, result);
+      updateNeighbourhood(region, result);
     }
   
   }

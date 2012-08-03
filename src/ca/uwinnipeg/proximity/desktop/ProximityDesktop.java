@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.ToolBar;
@@ -77,6 +78,7 @@ import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
  * @author Garrett Smith
  *
  */
+//TODO: handle deleting all regions
 public class ProximityDesktop extends ApplicationWindow {
   
   private static final ResourceBundle BUNDLE = 
@@ -144,8 +146,11 @@ public class ProximityDesktop extends ApplicationWindow {
   
   private SashForm sashForm;
   
-  private EpsilonSelectionListener mEpsilonListener;
+  private EpsilonSelectionListener mEpsilonListener = new EpsilonSelectionListener();
   private Spinner mEpsilonSpinner;
+  
+  private NeighbourhoodSelectionListener mNeighbourhoodsListener = new NeighbourhoodSelectionListener();
+  private Button mNeighbourhoodButton;
 
   /**
    * Launch the application.
@@ -256,8 +261,9 @@ public class ProximityDesktop extends ApplicationWindow {
   
   public void setProperty(Class<? extends PropertyController> key) {
     canvas.setProperty(key);
+    
+    // epsilon
     mEpsilonListener.setProperty(key);
-
     float epsilon = mEpsilonListener.getEpsilon();
     
     // set the spinner to be the key's saved epsilon
@@ -271,6 +277,10 @@ public class ProximityDesktop extends ApplicationWindow {
 
     // disable the spinner when the key is null enable otherwise
     mEpsilonSpinner.setEnabled(key != null);
+    
+    // neighbourhoods
+    mNeighbourhoodButton.setEnabled(key != null);
+    mNeighbourhoodsListener.setProperty(key);
   }
 
   public void updateEpsilonMaximum() {
@@ -360,8 +370,8 @@ public class ProximityDesktop extends ApplicationWindow {
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     
     TreeColumn trclmnNewColumn = new TreeColumn(tree, 0);
+    trclmnNewColumn.setWidth(120);
     trclmnNewColumn.setResizable(false);
-    trclmnNewColumn.setWidth(100);
     trclmnNewColumn.setText(BUNDLE.getString("ProximityDesktop.trclmnNewColumn.text")); //$NON-NLS-1$
     
     // create the add features button
@@ -464,7 +474,7 @@ public class ProximityDesktop extends ApplicationWindow {
       canvas.setMenu(menu);   
       
       Composite composite = new Composite(canvasFrame, SWT.NONE);
-      GridLayout gl_composite = new GridLayout(2, false);
+      GridLayout gl_composite = new GridLayout(4, false);
       gl_composite.marginHeight = 1;
       composite.setLayout(gl_composite);
       composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -477,10 +487,16 @@ public class ProximityDesktop extends ApplicationWindow {
       mEpsilonSpinner.setMinimum(0);
       // set max
       updateEpsilonMaximum();
-      mEpsilonListener = new EpsilonSelectionListener();
       mEpsilonSpinner.addSelectionListener(mEpsilonListener);
       // disable spinner by default
       mEpsilonSpinner.setEnabled(false);
+      
+      mNeighbourhoodButton = new Button(composite, SWT.CHECK);
+      mNeighbourhoodButton.setText(BUNDLE.getString("ProximityDesktop.btnCheckButton.text"));
+      mNeighbourhoodButton.addSelectionListener(mNeighbourhoodsListener);
+      
+      ProgressBar progressBar = new ProgressBar(composite, SWT.NONE);
+      progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
       
       // setup first tool
       actnPointer.run();

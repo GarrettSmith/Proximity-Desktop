@@ -41,7 +41,9 @@ public class ProximityController {
   private Image mImage = new Image();
   
   private List<Region> mRegions = new ArrayList<Region>();
-  private List<Region> selectedRegions = new ArrayList<Region>();
+  private List<Region> mSelectedRegions = new ArrayList<Region>();
+  
+  private Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
   
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
@@ -315,36 +317,49 @@ public class ProximityController {
   
   public void removeRegion(Region region) {
     mRegions.remove(region);
+    mNeighbourhoods.remove(region);
     // notify property controllers
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.removeRegion(region);
     }
   }
   
+  public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
+    mNeighbourhoods.put(region, neighbourhood);
+    // notify property controllers
+    for (PropertyController pc : mPropertyControllers.values()) {
+      pc.setNeighbourhood(region, neighbourhood);
+    }
+  }
+  
   public void setSelected(Region r) {
-    selectedRegions.clear();
+    mSelectedRegions.clear();
     if (r != null) {
-      selectedRegions.add(r);
+      mSelectedRegions.add(r);
     }
     ProximityDesktop.getApp().updateSelectionActions();
     ProximityDesktop.getApp().getCanvas().redraw();
   }
   
   public void setSelected(List<Region> regs) {
-    selectedRegions.clear();
+    mSelectedRegions.clear();
     if (regs != null) {
-      selectedRegions.addAll(regs);
+      mSelectedRegions.addAll(regs);
     }
     ProximityDesktop.getApp().updateSelectionActions();
     ProximityDesktop.getApp().getCanvas().redraw();
   }
   
   public List<Region> getSelectedRegions() {
-    return new ArrayList<Region>(selectedRegions);
+    return new ArrayList<Region>(mSelectedRegions);
   }
   
   public void setEpsilon(Class<? extends PropertyController> key, float epsilon) {
     mPropertyControllers.get(key).setEpsilon(epsilon);
+  }
+  
+  public void setUseNeighbourhoods(Class<? extends PropertyController> key, boolean enabled) {
+    mPropertyControllers.get(key).setUseNeighbourhoods(enabled);
   }
 
   /**
@@ -367,12 +382,12 @@ public class ProximityController {
   private void updateSelectedRegions() {
     // get rid of regions that have been removed
     List<Region> newSelected = new ArrayList<Region>();
-    for (Region r: selectedRegions) {
+    for (Region r: mSelectedRegions) {
       if (mRegions.contains(r)) {
         newSelected.add(r);
       }
     }
-    selectedRegions = newSelected;
+    mSelectedRegions = newSelected;
   }
   
   /**

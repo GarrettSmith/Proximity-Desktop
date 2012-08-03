@@ -13,17 +13,7 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
  *
  */
 public class IntersectionController extends LinearPropertyController {
-  
-  /**
-   * Returns the indices associated with the given region.
-   * <p>
-   * We use this so we can override it for the other intersection services.
-   * @param region
-   * @return
-   */
-  protected List<Integer> getIndices(Region region) {
-    return region.getIndicesList();
-  }
+
 
 
   @Override
