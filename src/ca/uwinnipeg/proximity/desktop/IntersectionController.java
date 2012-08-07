@@ -14,7 +14,7 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
  */
 public class IntersectionController extends LinearPropertyController {
 
-
+  private float mDegree;
 
   @Override
   protected List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub) {
@@ -39,6 +39,52 @@ public class IntersectionController extends LinearPropertyController {
     System.out.println("Intersection took " + (System.currentTimeMillis() - startTime)/1000f + " seconds");
 
     return indices;
+  }
+  
+  /**
+   * Returns the degree of nearness of the current intersection.
+   * @return
+   */
+  public float getDegree() {
+    return mDegree;
+  }
+  
+  /**
+   * Updates and broadcasts the current degree of nearness.
+   * @param degree
+   */
+  protected void setDegree(float degree) {
+    mDegree = degree;
+    
+    // broadcast the change if we are finished calculating
+    if (mQueue.isEmpty()) {
+//      Intent intent = new Intent(ACTION_DEGREE_CHANGED);
+//      intent.addCategory(CATEGORY);
+//      intent.putExtra(DEGREE, degree);
+//      mBroadcastManager.sendBroadcast(intent);
+      System.out.println(mDegree);
+    }
+  }
+  
+  @Override
+  protected void setResult(List<Integer> intersection, Region region) {    
+    setDegree(calculateDegree(intersection, getIndices(region)));    
+    setValue(intersection);
+  }
+  
+  /**
+   * Calculates the degree of nearness.
+   * @param intersection
+   * @param regionIndices
+   * @return
+   */
+  protected float calculateDegree(List<Integer> intersection, List<Integer> regionIndices) {
+    // size of the intersection
+    float intSize = intersection.size();    
+    // union of indices in the current intersection and in the added region
+    float unionSize = MathUtil.union(mValue, regionIndices).size();
+    float degree = 1 - (intSize / unionSize);
+    return degree;
   }
 
 }

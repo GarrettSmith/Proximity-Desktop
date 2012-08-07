@@ -116,7 +116,12 @@ public class ImageCanvas extends Canvas {
         data.setAlpha(x, y, 255);
       }
 
-      mPropertyImages.put(key, new Image(mDisplay, data));
+      Image previousImage = mPropertyImages.put(key, new Image(mDisplay, data));
+      
+      // dispose the previous image
+      if (previousImage != null) {
+        previousImage.dispose();
+      }
 
       //redraw if the current key was updated
       if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
