@@ -156,7 +156,6 @@ public class ImageCanvas extends Canvas {
             break;
           case POLYGON:
             int[] points = r.getPolygon().toArray();
-            points = toScreenSpace(points);
             gc.drawPolygon(points);
             break;
         }
