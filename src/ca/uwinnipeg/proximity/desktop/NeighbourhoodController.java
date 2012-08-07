@@ -96,10 +96,17 @@ public class NeighbourhoodController extends PropertyController {
   protected void invalidate() {
     //clear all neighbourhoods
     mNeighbourhoods.clear();
-    // update all neighbourhoods
-    for (Region r : mRegions) {
-      invalidate(r);
-    } 
+    
+    if (!mRegions.isEmpty()) {
+      // update all neighbourhoods
+      for (Region r : mRegions) {
+        invalidate(r);
+      } 
+    }
+    else {
+      // broadcast that the neighbourhoods are empty
+      broadcastValueChanged(null);
+    }
   }
   
   /**

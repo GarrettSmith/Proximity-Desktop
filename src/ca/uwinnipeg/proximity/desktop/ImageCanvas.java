@@ -375,10 +375,31 @@ public class ImageCanvas extends Canvas {
     redraw();
   }
 
-  public void zoomBy(float dScale) {
-//    float dScale = mScale * scale;
-//    zoomTo(dScale);
-    
+  public void zoomBy(float dScale) {    
+//    Rectangle imageBounds = mImage.getBounds();
+//    float scale = getScale();
+//    
+//    float oldWidth = imageBounds.width * scale;
+//    float oldHeight = imageBounds.height * scale;
+//    
+//    float newWidth = oldWidth * dScale;
+//    float newHeight = oldHeight * dScale;
+//    
+//    float dx = (oldWidth - newWidth) / 2;
+//    float dy = (oldHeight - newHeight) / 2;
+//    
+//    mTransform.scale(dScale, dScale);
+//    
+//    scale = getScale();
+//    
+//    mTransform.translate(dx / scale, dy / scale);
+//    redraw();
+    float scale = getScale();
+    Rectangle bounds = mImage.getBounds();
+    zoomBy(dScale, bounds.width / 2, bounds.height / 2);
+  }
+  
+  public void zoomBy(float dScale, float x, float y) {
     Rectangle imageBounds = mImage.getBounds();
     float scale = getScale();
     
@@ -388,8 +409,8 @@ public class ImageCanvas extends Canvas {
     float newWidth = oldWidth * dScale;
     float newHeight = oldHeight * dScale;
     
-    float dx = (oldWidth - newWidth) / 2;
-    float dy = (oldHeight - newHeight) / 2;
+    float dx = -x - (newWidth / 2);
+    float dy = -y - (newHeight / 2);
     
     mTransform.scale(dScale, dScale);
     
