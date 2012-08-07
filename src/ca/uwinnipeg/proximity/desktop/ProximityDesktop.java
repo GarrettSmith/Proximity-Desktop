@@ -74,6 +74,7 @@ import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
+import org.eclipse.swt.widgets.Text;
 
 /**
  * The main window of the application.
@@ -159,6 +160,8 @@ public class ProximityDesktop extends ApplicationWindow {
   private Map<Class<? extends PropertyController>, Integer> mProgress = 
       new HashMap<Class<? extends PropertyController>, Integer>();
   private ProgressBar mProgressBar;
+  
+  private Text mDegreeText;
 
   /**
    * Launch the application.
@@ -297,6 +300,9 @@ public class ProximityDesktop extends ApplicationWindow {
       mNeighbourhoodButton.setSelection(false);
       mProgressBar.setSelection(0);
     }
+    
+    // disable degree field when we are not showing intersection
+    mDegreeText.setEnabled(key == IntersectionController.class);
 
     // disable the spinner when the key is null enable otherwise
     mEpsilonSpinner.setEnabled(key != null);
@@ -318,6 +324,10 @@ public class ProximityDesktop extends ApplicationWindow {
     if (mProperty == key) {
       mProgressBar.setSelection(value);
     }
+  }
+  
+  public void setDegree(float degree) {
+    mDegreeText.setText(Float.toString(degree));
   }
 
   /**
@@ -506,7 +516,7 @@ public class ProximityDesktop extends ApplicationWindow {
       canvas.setMenu(menu);   
       
       Composite composite = new Composite(canvasFrame, SWT.NONE);
-      GridLayout gl_composite = new GridLayout(4, false);
+      GridLayout gl_composite = new GridLayout(6, false);
       gl_composite.marginHeight = 1;
       composite.setLayout(gl_composite);
       composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -523,6 +533,17 @@ public class ProximityDesktop extends ApplicationWindow {
       mEpsilonSpinner.addSelectionListener(mEpsilonListener);
       // disable spinner by default
       mEpsilonSpinner.setEnabled(false);
+      
+      Label lblNewLabel_1 = new Label(composite, SWT.NONE);
+      lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+      lblNewLabel_1.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel_1.text_3"));
+      
+      mDegreeText = new Text(composite, SWT.BORDER);
+      mDegreeText.setEditable(false);
+      GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+      gd_text.widthHint = 50;
+      mDegreeText.setLayoutData(gd_text);
+      mDegreeText.setEnabled(false);
       
       mNeighbourhoodButton = new Button(composite, SWT.CHECK);
       mNeighbourhoodButton.setText(BUNDLE.getString("ProximityDesktop.btnCheckButton.text"));
