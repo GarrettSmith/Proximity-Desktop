@@ -341,6 +341,9 @@ public class ProximityController {
     if (r != null) {
       mSelectedRegions.add(r);
     }
+    else {
+      mSelectedRegions.clear();
+    }
     ProximityDesktop.getApp().updateSelectionActions();
     ProximityDesktop.getApp().getCanvas().redraw();
   }
@@ -349,6 +352,9 @@ public class ProximityController {
     mSelectedRegions.clear();
     if (regs != null) {
       mSelectedRegions.addAll(regs);
+    }
+    else {
+      mSelectedRegions.clear();
     }
     ProximityDesktop.getApp().updateSelectionActions();
     ProximityDesktop.getApp().getCanvas().redraw();

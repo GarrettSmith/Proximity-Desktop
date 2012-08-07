@@ -6,6 +6,7 @@ package ca.uwinnipeg.proximity.desktop.tool;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -35,23 +36,61 @@ public class PointerTool extends Tool {
   }
   
   class PointerListener extends DragToolListener {
+    
+    private boolean mMultiSelect = false;
 
     public PointerListener(Tool tool) {
       super(tool);
     }
+    
+    @Override
+    public void register(Map<Integer, Listener> map) {
+      map.put(SWT.KeyUp, this);
+      super.register(map);
+    }
+    
+    @Override
+    public void handleEvent(Event event) {
+      switch (event.type) {
+        case SWT.KeyUp:
+          keyUp(event);
+        default:
+          super.handleEvent(event);
+      }
+    }
+    
+    @Override
+    public void keyDown(Event event) {
+      switch (event.keyCode) {
+        case SWT.SHIFT:
+        case SWT.CTRL:
+          mMultiSelect = true;
+          break;
+        default:
+          super.keyDown(event);
+      }
+    }
+    
+    public void keyUp(Event event) {
+      switch (event.keyCode) {
+        case SWT.SHIFT:
+        case SWT.CTRL:
+          mMultiSelect = false;
+          break;
+      }      
+    }
 
     @Override
-    public void onClick(Event event, Point imagePoint, Point screenPoint) {
-      // select the region under the cursor
+    public void onClick(Event event, Point imagePoint, Point screenPoint, Region region) {
       ProximityController controller = getController();
-      List<Region> regions = controller.getRegions();
-      Region selected = null;
-      for (Region r : regions) {
-        if (r.contains(imagePoint)) {
-          selected = r;
-        }
+      if (mMultiSelect) {
+        List<Region> regions = controller.getSelectedRegions();
+        regions.add(region);
+        controller.setSelected(regions);
       }
-      controller.setSelected(selected);
+      else {
+        controller.setSelected(region);
+      }
       getCanvas().redraw();
     }
 
@@ -61,7 +100,8 @@ public class PointerTool extends Tool {
         Point imageStart, 
         Point imageEnd, 
         Point screenStart, 
-        Point screenEnd) {
+        Point screenEnd,
+        Region region) {
       ProximityController controller = getController();
       List<Region> regions = controller.getRegions();
       List<Region> selection = new ArrayList<Region>();
@@ -72,7 +112,14 @@ public class PointerTool extends Tool {
           selection.add(r);
         }
       }
-      controller.setSelected(selection);
+      if (mMultiSelect) {
+        regions = controller.getSelectedRegions();
+        regions.addAll(selection);
+        controller.setSelected(regions);
+      }
+      else {
+        controller.setSelected(selection);
+      }
       getCanvas().redraw();
     }
     
@@ -82,7 +129,8 @@ public class PointerTool extends Tool {
         Point imageStart, 
         Point imageEnd, 
         Point screenStart,
-        Point screenEnd) {
+        Point screenEnd, 
+        Region region) {
       if (screenStart != null) {
         GC gc = event.gc;
         

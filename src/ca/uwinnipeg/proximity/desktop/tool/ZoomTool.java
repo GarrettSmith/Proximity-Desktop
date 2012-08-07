@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
@@ -37,7 +38,7 @@ public class ZoomTool extends Tool {
     }
 
     @Override
-    public void onClick(Event event, Point image, Point screen) {
+    public void onClick(Event event, Point image, Point screen, Region region) {
       if ((event.stateMask & SWT.CTRL) == 0) {
         getCanvas().zoomIn();
       }
@@ -52,7 +53,8 @@ public class ZoomTool extends Tool {
         Point imageStart, 
         Point imageEnd,
         Point screenStart,
-        Point screenEnd) {
+        Point screenEnd,
+        Region region) {
       getCanvas().zoomTo(imageStart, imageEnd);
     }
     
@@ -62,7 +64,8 @@ public class ZoomTool extends Tool {
         Point imageStart, 
         Point imageEnd,
         Point screenStart, 
-        Point screenEnd) {
+        Point screenEnd,
+        Region region) {
       GC gc = event.gc;
       gc.setForeground(ZOOM_COLOR);
       int width = screenEnd.x - screenStart.x;

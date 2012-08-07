@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
+import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
+import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
  * @author garrett
@@ -56,7 +58,8 @@ public abstract class DragToolListener implements Listener {
               mImageStartPoint, 
               mImageCurrentPoint, 
               mScreenStartPoint, 
-              mScreenCurrentPoint);
+              mScreenCurrentPoint,
+              mClickedRegion);
         }
         break;
     }
@@ -67,6 +70,8 @@ public abstract class DragToolListener implements Listener {
 
   private Point mScreenStartPoint;
   private Point mScreenCurrentPoint;
+  
+  private Region mClickedRegion = null;
   
   public void keyDown(Event event) {
     switch(event.keyCode) {
@@ -83,6 +88,12 @@ public abstract class DragToolListener implements Listener {
     if (event.button == 1 && tool.getCanvas().contains(mImageCurrentPoint)) {
       mScreenStartPoint = mScreenCurrentPoint;
       mImageStartPoint = mImageCurrentPoint;
+      
+      for (Region r : ProximityDesktop.getController().getRegions()) {
+        if (r.contains(mImageStartPoint)) {
+          mClickedRegion = r;
+        }
+      }
     }
   }
   
@@ -92,12 +103,15 @@ public abstract class DragToolListener implements Listener {
       
       if (mImageStartPoint.equals(mImageCurrentPoint)) {
         // perform the click action
-        onClick(event, mImageCurrentPoint, mScreenCurrentPoint);
+        onClick(event, mImageCurrentPoint, mScreenCurrentPoint, mClickedRegion);
       }
       else {
         // perform the drag action
-        onDrag(event, mImageStartPoint, mImageCurrentPoint, mImageStartPoint, mScreenCurrentPoint);
+        onDrag(event, mImageStartPoint, mImageCurrentPoint, mImageStartPoint, mScreenCurrentPoint, mClickedRegion);
       }
+      
+      // clear the clicked region
+      mClickedRegion = null;
 
       // redraw to clear box
       tool.getCanvas().redraw();
@@ -138,18 +152,21 @@ public abstract class DragToolListener implements Listener {
       Point imageStart, 
       Point imageEnd,
       Point screenStart, 
-      Point screenEnd);
+      Point screenEnd, 
+      Region region);
   
   public abstract void onClick(
       Event event, 
       Point image, 
-      Point screen);
+      Point screen, 
+      Region region);
   
   public abstract void onDrag(
       Event event, 
       Point imageStart, 
       Point imageEnd, 
       Point screenStart, 
-      Point screenEnd);
+      Point screenEnd, 
+      Region region);
   
 }

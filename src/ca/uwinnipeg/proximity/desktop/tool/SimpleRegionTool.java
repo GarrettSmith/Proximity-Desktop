@@ -49,7 +49,7 @@ public abstract class SimpleRegionTool extends Tool {
     }
 
     @Override
-    public void onClick(Event event, Point image, Point screen) {
+    public void onClick(Event event, Point image, Point screen, Region region) {
       // Do nothing
     }
 
@@ -59,7 +59,8 @@ public abstract class SimpleRegionTool extends Tool {
         Point imageStart, 
         Point imageEnd,
         Point screenStart, 
-        Point screenEnd) {
+        Point screenEnd,
+        Region region) {
       // add a rectangular region
       List<Point> points = new ArrayList<Point>();
       points.add(imageStart);
@@ -73,7 +74,8 @@ public abstract class SimpleRegionTool extends Tool {
         Point imageStart, 
         Point imageEnd,
         Point screenStart, 
-        Point screenEnd) {
+        Point screenEnd,
+        Region region) {
       paintProgress(event, imageStart, imageEnd, screenStart, screenEnd);   
     }
     
