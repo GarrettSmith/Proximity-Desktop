@@ -25,7 +25,6 @@ import ca.uwinnipeg.proximity.desktop.action.ToolAction;
  * @author Garrett Smith
  *
  */
-// TODO: add shift and ctrl
 public class PointerTool extends Tool {
 
   @Override
