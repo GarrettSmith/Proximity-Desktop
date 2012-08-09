@@ -148,23 +148,8 @@ public class ImageCanvas extends Canvas {
       }
 
       // draw regions
-      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
-      gc.setLineWidth(2);
-      gc.setXORMode(true);
       for (Region r : ProximityDesktop.getController().getRegions()) {
-        bounds = r.getBounds();
-        switch(r.getShape()) {
-          case RECTANGLE:
-            gc.drawRectangle(bounds);
-            break;
-          case OVAL:
-            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-            break;
-          case POLYGON:
-            int[] points = r.getPolygon().toArray();
-            gc.drawPolygon(points);
-            break;
-        }
+        drawRegion(gc, r, true, true, false);
       }
       gc.dispose();
     }
@@ -214,35 +199,10 @@ public class ImageCanvas extends Canvas {
       }
 
       // draw regions
-      gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
-      gc.setXORMode(true);
-      gc.setLineWidth(2);
       ProximityController controller = ProximityDesktop.getController();
       List<Region> selectedRegions = controller.getSelectedRegions();
       for (Region r : controller.getRegions()) {
-        drawRegion(gc, r, selectedRegions.contains(r), true);
-//        Rectangle bounds = r.getBounds();
-//        bounds = toScreenSpace(bounds);
-//        // determine if the region is selected
-//        if (selectedRegions.contains(r)) {
-//          gc.setAlpha(255);
-//        }
-//        else {
-//          gc.setAlpha(150);
-//        }
-//        switch(r.getShape()) {
-//          case RECTANGLE:
-//            gc.drawRectangle(bounds);
-//            break;
-//          case OVAL:
-//            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-//            break;
-//          case POLYGON:
-//            int[] points = r.getPolygon().toArray();
-//            points = toScreenSpace(points);
-//            gc.drawPolygon(points);
-//            break;
-//        }
+        drawRegion(gc, r, selectedRegions.contains(r), true, true);
       }
 
     }
@@ -251,8 +211,8 @@ public class ImageCanvas extends Canvas {
     mOldBounds = currentBounds;
   }
   
-  public void drawRegion(GC gc, Region region, boolean selected, boolean drawCenter) {
-    drawRegion(gc, region.getShape(), region.toArray(), selected, drawCenter);
+  public void drawRegion(GC gc, Region region, boolean selected, boolean drawCenter, boolean scale) {
+    drawRegion(gc, region.getShape(), region.toArray(), selected, drawCenter, scale);
   }
   
   public void drawRegion(
@@ -260,13 +220,23 @@ public class ImageCanvas extends Canvas {
       Region.Shape shape, 
       int[] points, 
       boolean selected, 
-      boolean drawCenter) {
+      boolean drawCenter,
+      boolean scale) {
+    
+    gc.setLineWidth(2);
     
     gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
     gc.setXORMode(true);
     
     // translate to screen space
-    int[] screenPoints = toScreenSpace(points);
+    int[] usedPoints;
+    
+    if (scale) {
+      usedPoints = toScreenSpace(points);
+    }
+    else {
+      usedPoints = points;
+    }
     
     // fade out if not selected
     if (selected) {
@@ -280,20 +250,20 @@ public class ImageCanvas extends Canvas {
     switch(shape) {
       case RECTANGLE:
         gc.drawRectangle(
-            screenPoints[0],
-            screenPoints[1],
-            screenPoints[2] - screenPoints[0], 
-            screenPoints[3] - screenPoints[1]);
+            usedPoints[0],
+            usedPoints[1],
+            usedPoints[2] - usedPoints[0], 
+            usedPoints[3] - usedPoints[1]);
         break;
       case OVAL:
         gc.drawOval(
-            screenPoints[0], 
-            screenPoints[1], 
-            screenPoints[2] - screenPoints[0], 
-            screenPoints[3] - screenPoints[1]);
+            usedPoints[0], 
+            usedPoints[1], 
+            usedPoints[2] - usedPoints[0], 
+            usedPoints[3] - usedPoints[1]);
         break;
       case POLYGON:
-        gc.drawPolygon(screenPoints);
+        gc.drawPolygon(usedPoints);
         break;
     }
     
@@ -317,21 +287,26 @@ public class ImageCanvas extends Canvas {
       }
       
       // draw pivot
+      gc.setAlpha(255);
+      
       int imageCenterx = imageBounds.x + (imageBounds.width / 2);
       int imageCentery = imageBounds.y + (imageBounds.height / 2);
 
-      Point screenCenter = toScreenSpace(new Point(imageCenterx, imageCentery));
+      Point center = new Point(imageCenterx, imageCentery);
       
-      int pxl = getImage().getImageData().getPixel(imageCenterx, imageCentery);
-      pxl = ~pxl;
+      if (scale) {
+        center = toScreenSpace(center);
+      }
+      
+      int pxl = mImage.getImageData().getPixel(imageCenterx, imageCentery);
       Color color = 
           new Color(Display.getCurrent(), (pxl >> 16) & 0xFF, (pxl >> 8) & 0xFF, pxl & 0xFF);
       
       gc.setBackground(color);
       gc.setXORMode(false);
       gc.fillRectangle(
-          screenCenter.x - (PIVOT_SIZE / 2), 
-          screenCenter.y - (PIVOT_SIZE / 2), 
+          center.x - (PIVOT_SIZE / 2), 
+          center.y - (PIVOT_SIZE / 2), 
           PIVOT_SIZE, 
           PIVOT_SIZE);
       
@@ -339,10 +314,10 @@ public class ImageCanvas extends Canvas {
       gc.setXORMode(true);
       gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
       gc.drawRectangle(
-          screenCenter.x - (PIVOT_SIZE / 2), 
-          screenCenter.y - (PIVOT_SIZE / 2), 
-          PIVOT_SIZE + 1, 
-          PIVOT_SIZE + 1);
+          center.x - (PIVOT_SIZE / 2) - 1, 
+          center.y - (PIVOT_SIZE / 2) - 1, 
+          PIVOT_SIZE + 2, 
+          PIVOT_SIZE + 2);
       
       color.dispose();
     }
@@ -480,27 +455,27 @@ public class ImageCanvas extends Canvas {
   }
 
   public void zoomBy(float dScale) {    
-//    Rectangle imageBounds = mImage.getBounds();
-//    float scale = getScale();
-//    
-//    float oldWidth = imageBounds.width * scale;
-//    float oldHeight = imageBounds.height * scale;
-//    
-//    float newWidth = oldWidth * dScale;
-//    float newHeight = oldHeight * dScale;
-//    
-//    float dx = (oldWidth - newWidth) / 2;
-//    float dy = (oldHeight - newHeight) / 2;
-//    
-//    mTransform.scale(dScale, dScale);
-//    
-//    scale = getScale();
-//    
-//    mTransform.translate(dx / scale, dy / scale);
-//    redraw();
+    Rectangle imageBounds = mImage.getBounds();
     float scale = getScale();
-    Rectangle bounds = mImage.getBounds();
-    zoomBy(dScale, bounds.width / 2, bounds.height / 2);
+    
+    float oldWidth = imageBounds.width * scale;
+    float oldHeight = imageBounds.height * scale;
+    
+    float newWidth = oldWidth * dScale;
+    float newHeight = oldHeight * dScale;
+    
+    float dx = (oldWidth - newWidth) / 2;
+    float dy = (oldHeight - newHeight) / 2;
+    
+    mTransform.scale(dScale, dScale);
+    
+    scale = getScale();
+    
+    mTransform.translate(dx / scale, dy / scale);
+    redraw();
+//    float scale = getScale();
+//    Rectangle bounds = mImage.getBounds();
+//    zoomBy(dScale, bounds.width / 2, bounds.height / 2);
   }
   
   public void zoomBy(float dScale, float x, float y) {

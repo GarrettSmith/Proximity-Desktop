@@ -29,7 +29,7 @@ public class RectangleTool extends SimpleRegionTool {
       Point screenStart, 
       Point screenEnd) {
     int[] points = {imageStart.x, imageStart.y, imageEnd.x, imageEnd.y};
-    getCanvas().drawRegion(event.gc, Region.Shape.RECTANGLE, points, true, true);
+    getCanvas().drawRegion(event.gc, Region.Shape.RECTANGLE, points, true, true, true);
   }
   
   public static class Action extends ToolAction {
