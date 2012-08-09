@@ -35,54 +35,16 @@ public class PointerTool extends Tool {
   }
   
   class PointerListener extends DragToolListener {
-    
-    private boolean mMultiSelect = false;
 
     public PointerListener(Tool tool) {
       super(tool);
-    }
-    
-    @Override
-    public void register(Map<Integer, Listener> map) {
-      map.put(SWT.KeyUp, this);
-      super.register(map);
-    }
-    
-    @Override
-    public void handleEvent(Event event) {
-      switch (event.type) {
-        case SWT.KeyUp:
-          keyUp(event);
-        default:
-          super.handleEvent(event);
-      }
-    }
-    
-    @Override
-    public void keyDown(Event event) {
-      switch (event.keyCode) {
-        case SWT.SHIFT:
-        case SWT.CTRL:
-          mMultiSelect = true;
-          break;
-        default:
-          super.keyDown(event);
-      }
-    }
-    
-    public void keyUp(Event event) {
-      switch (event.keyCode) {
-        case SWT.SHIFT:
-        case SWT.CTRL:
-          mMultiSelect = false;
-          break;
-      }      
     }
 
     @Override
     public void onClick(Event event, Point imagePoint, Point screenPoint, Region region) {
       ProximityController controller = getController();
-      if (mMultiSelect) {
+      // if shift or ctrl is held
+      if ((event.keyCode & SWT.SHIFT) != 0 || (event.keyCode & SWT.CTRL) != 0) {
         List<Region> regions = controller.getSelectedRegions();
         regions.add(region);
         controller.setSelected(regions);
@@ -111,7 +73,8 @@ public class PointerTool extends Tool {
           selection.add(r);
         }
       }
-      if (mMultiSelect) {
+      // if shift or ctrl is held
+      if ((event.keyCode & SWT.SHIFT) != 0 || (event.keyCode & SWT.CTRL) != 0) {
         regions = controller.getSelectedRegions();
         regions.addAll(selection);
         controller.setSelected(regions);
