@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+// TODO: add credits and license
 public class AboutDialog extends Dialog {  
 
   private StackLayout stackLayout;

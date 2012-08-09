@@ -82,6 +82,14 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 //TODO: handle deleting all regions
+//TODO: Implement cut, copy, paste
+//TODO: Implement modifying added regions
+//TODO: Implement adding external probe functions
+//TODO: Implement zooming properly
+//TODO: Implement manual?
+//TODO: Implement save?
+//TODO: Make properties calculate on separate thread
+//TODO: Add all desired shortcuts
 public class ProximityDesktop extends ApplicationWindow {
   
   private static final ResourceBundle BUNDLE = 
@@ -162,6 +170,8 @@ public class ProximityDesktop extends ApplicationWindow {
   private ProgressBar mProgressBar;
   
   private Text mDegreeText;
+  
+  private CheckboxTreeViewer checkboxTreeViewer;
 
   /**
    * Launch the application.
@@ -358,6 +368,10 @@ public class ProximityDesktop extends ApplicationWindow {
     getSeperator1().setVisible(false);
     
   }
+  
+  public void refreshFeaturesTree() {
+    checkboxTreeViewer.refresh();
+  }
 
   /**
    * Return the initial size of the window.
@@ -398,10 +412,9 @@ public class ProximityDesktop extends ApplicationWindow {
     gl_composite.marginWidth = 0;
     composite.setLayout(gl_composite);
     
-    CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
-    FeaturesContentProvider provider = new FeaturesContentProvider();
+    checkboxTreeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.CHECK | SWT.MULTI);
     checkboxTreeViewer.setAutoExpandLevel(2);
-    checkboxTreeViewer.setContentProvider(provider);
+    checkboxTreeViewer.setContentProvider(new FeaturesContentProvider());
     checkboxTreeViewer.setLabelProvider(new FeaturesLabelProvider());
     checkboxTreeViewer.setInput(CONTROLLER.getCategories());
     checkboxTreeViewer.setCheckStateProvider(new FeaturesCheckStateProvider(CONTROLLER.getCategories()));

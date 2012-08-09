@@ -1,5 +1,14 @@
 package ca.uwinnipeg.proximity.desktop;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -18,6 +27,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 
+import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.desktop.features.AddFeaturesContentProvider;
+import ca.uwinnipeg.proximity.desktop.features.FeaturesLabelProvider;
+
+//TODO: preserve path?
 public class AddFeaturesDialog extends Dialog {
   private Composite container;
   
@@ -65,8 +79,10 @@ public class AddFeaturesDialog extends Dialog {
     btnFolder.setText("Browse");
     
     treeViewer = new CheckboxTreeViewer(container, SWT.BORDER);
+    treeViewer.setContentProvider(new AddFeaturesContentProvider());
+    treeViewer.setLabelProvider(new FeaturesLabelProvider());
     Tree tree = treeViewer.getTree();
-    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+    tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));    
 
     addSelectionButtons(container);
 
@@ -130,12 +146,110 @@ public class AddFeaturesDialog extends Dialog {
 
   public void doBrowse() {
     DirectoryDialog dialog = new DirectoryDialog(getShell());
+    dialog.setFilterPath(mPath); // start from current directory
     String path = dialog.open();
     
     if (path != null) {
       btnFolder.setText(path.substring(path.lastIndexOf('/')+1));
       mPath = path;
+      onPathSelected(path);
     }
   }
+  
+  protected void onPathSelected(String path) {
+    File dir = new File(path);
+    
+    // clear the current funcs
+    List<ProbeFunc<Integer>> funcs = new ArrayList<ProbeFunc<Integer>>();
+    
+    // if we can read the directory
+    if (dir.canRead()) {
+      try {
+        // create the class loader for the selected directory
+        URL[] urls = {dir.toURI().toURL()};
+        URLClassLoader loader = new URLClassLoader(urls);
+        
+        // try to load a class from each file that ends with .class
+        for (File f : dir.listFiles(mClassFileNameFilter)) {
+          if (f.canRead()) {
+            try {
+              String className = f.getName().substring(0, f.getName().lastIndexOf(".class"));            
+              Class<?> clazz = Class.forName(className, true, loader);
+
+              // if the class has a default constructor
+              if (clazz.getConstructor() != null) {
+                Object o = clazz.newInstance();
+
+                // if the object is a probe func
+                if (o instanceof ProbeFunc<?>) {
+                  System.out.println("Loaded succesfully: " + className);
+                  funcs.add((ProbeFunc<Integer>) o);
+                }
+                else {
+                  System.out.println("Does not extend ProbeFunc: " + className);
+                }
+              }
+              else {
+                System.out.println("No default constructor found in: " + className);
+              }
+            } catch (ClassNotFoundException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (InstantiationException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (IllegalAccessException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (SecurityException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+          }
+        }
+      } catch (MalformedURLException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+      }
+
+    }
+    
+    // set the tree's content
+    treeViewer.setInput(funcs);
+  }
+  
+  protected FilenameFilter mClassFileNameFilter = new FilenameFilter() {
+    
+    public boolean accept(File dir, String name) {
+      return name.endsWith(".class");
+    }
+  };
+  
+  protected ProbeFunc<Integer> mExampleFunc = new ProbeFunc<Integer>(0, 1) {
+    
+    @Override
+    protected double map(Integer t) {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+  };
+  
+  @Override
+  protected void okPressed() {
+    @SuppressWarnings("unchecked")
+    Object[] funcsArray = treeViewer.getCheckedElements();
+    List<ProbeFunc<Integer>> funcs = new ArrayList<ProbeFunc<Integer>>();
+    for (int i = 0; i < funcsArray.length; i++) {
+      funcs.add((ProbeFunc<Integer>) funcsArray[i]);
+    }
+    ProximityDesktop.getController().addProbeFuncs(funcs);
+    super.okPressed();
+  };
 
 }

@@ -147,6 +147,16 @@ public class ProximityController {
     }
   }
   
+  public void addProbeFuncs(List<ProbeFunc<Integer>> funcs) {
+    Category<Integer> cat = new Category("Uncategorized");
+    mCategories.add(cat);
+    for (ProbeFunc<Integer> f: funcs) {
+      cat.set(f, false);
+    }
+    // update the tree in the window
+    ProximityDesktop.getApp().refreshFeaturesTree();
+  }
+  
   private void createPropertyControllers() {
     for (Class<PropertyController> clazz : PROPERTY_CONTROLLER_CLASSES) {
       try {
@@ -167,13 +177,6 @@ public class ProximityController {
   public PropertyController getPropertyController(Class<? extends PropertyController> key) {
     return mPropertyControllers.get(key);
   }
-  
-//  public Map<String, Map<ProbeFunc<Integer>, Boolean>> getProbeFuncs() {
-//    HashMap<String, Map<ProbeFunc<Integer>, Boolean>> map = 
-//        new HashMap<String, Map<ProbeFunc<Integer>, Boolean>>();
-//    map.put("Colour", mProbeFuncs);
-//    return map;
-//  }
   
   public Collection<Category<Integer>> getCategories() {
     return mCategories;
@@ -219,7 +222,6 @@ public class ProximityController {
     }
   }
   
-  // TODO: send message to controllers all at once
   public void setCategoryEnabled(Category<Integer> category, boolean enabled) {
     for (ProbeFunc<Integer> func: category.getProbeFuncs()) {
       setProbeFuncEnabled(func, enabled);
