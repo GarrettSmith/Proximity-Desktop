@@ -3,10 +3,7 @@
  */
 package ca.uwinnipeg.proximity.desktop.tool;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
 import ca.uwinnipeg.proximity.desktop.Region;
@@ -29,15 +26,8 @@ public class OvalTool extends SimpleRegionTool {
       Point imageEnd,
       Point screenStart, 
       Point screenEnd) {
-    GC gc = event.gc;
-    gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_CYAN));
-    int width = screenEnd.x - screenStart.x;
-    int height = screenEnd.y - screenStart.y;
-    gc.drawOval(
-        screenStart.x, 
-        screenStart.y, 
-        width, 
-        height);
+    int[] points = {imageStart.x, imageStart.y, imageEnd.x, imageEnd.y};
+    getCanvas().drawRegion(event.gc, Region.Shape.OVAL, points, true, true);
   }
   
   public static class Action extends ToolAction {

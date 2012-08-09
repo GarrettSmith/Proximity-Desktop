@@ -323,7 +323,9 @@ public class ImageCanvas extends Canvas {
       Point screenCenter = toScreenSpace(new Point(imageCenterx, imageCentery));
       
       int pxl = getImage().getImageData().getPixel(imageCenterx, imageCentery);
-      Color color = new Color(Display.getCurrent(), (pxl >> 16) & 0xFF, (pxl >> 8) & 0xFF, pxl & 0xFF);
+      pxl = ~pxl;
+      Color color = 
+          new Color(Display.getCurrent(), (pxl >> 16) & 0xFF, (pxl >> 8) & 0xFF, pxl & 0xFF);
       
       gc.setBackground(color);
       gc.setXORMode(false);
