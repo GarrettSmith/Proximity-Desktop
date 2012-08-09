@@ -27,7 +27,8 @@ import org.eclipse.swt.widgets.Display;
  */
 public class ImageCanvas extends Canvas {
   
-  protected final static int PADDING = 10;
+  protected static final int PADDING = 10;
+  protected static final int PIVOT_SIZE = 16;
   
   protected float mMinScale;
   
@@ -219,34 +220,131 @@ public class ImageCanvas extends Canvas {
       ProximityController controller = ProximityDesktop.getController();
       List<Region> selectedRegions = controller.getSelectedRegions();
       for (Region r : controller.getRegions()) {
-        Rectangle bounds = r.getBounds();
-        bounds = toScreenSpace(bounds);
-        // determine if the region is selected
-        if (selectedRegions.contains(r)) {
-          gc.setAlpha(255);
-        }
-        else {
-          gc.setAlpha(150);
-        }
-        switch(r.getShape()) {
-          case RECTANGLE:
-            gc.drawRectangle(bounds);
-            break;
-          case OVAL:
-            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
-            break;
-          case POLYGON:
-            int[] points = r.getPolygon().toArray();
-            points = toScreenSpace(points);
-            gc.drawPolygon(points);
-            break;
-        }
+        drawRegion(gc, r, selectedRegions.contains(r), true);
+//        Rectangle bounds = r.getBounds();
+//        bounds = toScreenSpace(bounds);
+//        // determine if the region is selected
+//        if (selectedRegions.contains(r)) {
+//          gc.setAlpha(255);
+//        }
+//        else {
+//          gc.setAlpha(150);
+//        }
+//        switch(r.getShape()) {
+//          case RECTANGLE:
+//            gc.drawRectangle(bounds);
+//            break;
+//          case OVAL:
+//            gc.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
+//            break;
+//          case POLYGON:
+//            int[] points = r.getPolygon().toArray();
+//            points = toScreenSpace(points);
+//            gc.drawPolygon(points);
+//            break;
+//        }
       }
 
     }
 
     // store the new bounds
     mOldBounds = currentBounds;
+  }
+  
+  public void drawRegion(GC gc, Region region, boolean selected, boolean drawCenter) {
+    drawRegion(gc, region.getShape(), region.toArray(), selected, drawCenter);
+  }
+  
+  public void drawRegion(
+      GC gc, 
+      Region.Shape shape, 
+      int[] points, 
+      boolean selected, 
+      boolean drawCenter) {
+    
+    gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
+    gc.setXORMode(true);
+    
+    // translate to screen space
+    int[] screenPoints = toScreenSpace(points);
+    
+    // fade out if not selected
+    if (selected) {
+      gc.setAlpha(255);
+    }
+    else {
+      gc.setAlpha(150);
+    }
+    
+    // draw the shape border
+    switch(shape) {
+      case RECTANGLE:
+        gc.drawRectangle(
+            screenPoints[0],
+            screenPoints[1],
+            screenPoints[2] - screenPoints[0], 
+            screenPoints[3] - screenPoints[1]);
+        break;
+      case OVAL:
+        gc.drawOval(
+            screenPoints[0], 
+            screenPoints[1], 
+            screenPoints[2] - screenPoints[0], 
+            screenPoints[3] - screenPoints[1]);
+        break;
+      case POLYGON:
+        gc.drawPolygon(screenPoints);
+        break;
+    }
+    
+    // draw the center pixel blow up
+    if (drawCenter) {
+      
+      Rectangle imageBounds = new Rectangle(0, 0, 0, 0);
+      if (points.length > 0) {
+
+        // create an initial bounds from the first point
+        imageBounds.x = points[0];
+        imageBounds.y = points[1];
+
+        Rectangle tmp = new Rectangle(0, 0, 0, 0);
+        // Get the union of each point to get the final bounds
+        for (int i = 2; i < points.length; i += 2) {
+          tmp.x = points[i];
+          tmp.y = points[i + 1];
+          imageBounds = imageBounds.union(tmp);
+        }
+      }
+      
+      // draw pivot
+      int imageCenterx = imageBounds.x + (imageBounds.width / 2);
+      int imageCentery = imageBounds.y + (imageBounds.height / 2);
+
+      Point screenCenter = toScreenSpace(new Point(imageCenterx, imageCentery));
+      
+      int pxl = getImage().getImageData().getPixel(imageCenterx, imageCentery);
+      Color color = new Color(Display.getCurrent(), (pxl >> 16) & 0xFF, (pxl >> 8) & 0xFF, pxl & 0xFF);
+      
+      gc.setBackground(color);
+      gc.setXORMode(false);
+      gc.fillRectangle(
+          screenCenter.x - (PIVOT_SIZE / 2), 
+          screenCenter.y - (PIVOT_SIZE / 2), 
+          PIVOT_SIZE, 
+          PIVOT_SIZE);
+      
+      // draw pivot outline
+      gc.setXORMode(true);
+      gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+      gc.drawRectangle(
+          screenCenter.x - (PIVOT_SIZE / 2), 
+          screenCenter.y - (PIVOT_SIZE / 2), 
+          PIVOT_SIZE + 1, 
+          PIVOT_SIZE + 1);
+      
+      color.dispose();
+    }
+    
   }
 
   /**

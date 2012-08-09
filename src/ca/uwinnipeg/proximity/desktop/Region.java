@@ -239,6 +239,17 @@ public class Region {
     }
   }
   
+  public int[] toArray() {
+    Point[] points = getPoints();
+    int[] rtn = new int[points.length * 2];
+    for (int i = 0; i < points.length; i++) {
+      Point p = points[i];
+      rtn[i * 2] = p.x;
+      rtn[i * 2 + 1] = p.y;
+    }
+    return rtn;
+  }
+  
   public boolean contains(Point point) {
     Rectangle bounds = getBounds();
     boolean contains = false;
