@@ -372,6 +372,19 @@ public class ProximityController {
     return new ArrayList<Region>(mSelectedRegions);
   }
   
+  public Rectangle getSelectionBounds() {
+    Rectangle bounds = null;
+    for (Region r: mSelectedRegions) {
+      if (bounds == null) {
+        bounds = r.getBounds();
+      }
+      else {
+        bounds = bounds.union(r.getBounds());
+      }
+    }
+    return bounds;
+  }
+  
   public void setEpsilon(Class<? extends PropertyController> key, float epsilon) {
     mPropertyControllers.get(key).setEpsilon(epsilon);
   }

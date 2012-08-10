@@ -34,6 +34,13 @@ public class NeighbourhoodController extends PropertyController {
     updateNeighbourhood(region, null);
   }
   
+  @Override
+  protected void onRegionsModified(List<Region> regions) {
+    for (Region r: regions) {
+      invalidate(r);
+    }
+  }
+  
   /**
    * Returns a map of regions to the points within their neighbourhoods.
    * @return

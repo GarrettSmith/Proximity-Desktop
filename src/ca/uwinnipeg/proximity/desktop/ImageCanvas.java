@@ -204,6 +204,16 @@ public class ImageCanvas extends Canvas {
       for (Region r : controller.getRegions()) {
         drawRegion(gc, r, selectedRegions.contains(r), true, true);
       }
+      
+      // draw the selection bounds
+      gc.setLineStyle(SWT.LINE_DASH);
+      gc.setLineWidth(1);
+      Rectangle bounds = toScreenSpace(controller.getSelectionBounds());
+      bounds.x -= 4;
+      bounds.y -= 3;
+      bounds.width += 5;
+      bounds.height += 5;
+      gc.drawRectangle(bounds);
 
     }
 
