@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
@@ -89,7 +90,8 @@ public class PointerTool extends Tool {
 
   class PointerListener extends DragToolListener {
     
-    private Map<Region, Point> mOffset = new HashMap<Region, Point>();
+    private Map<Region, Point> mOffsets = new HashMap<Region, Point>();
+    private Point mSelectionOffset;
     
     private Map<Region, Rectangle> mOldBounds = new HashMap<Region, Rectangle>();
     
@@ -113,11 +115,13 @@ public class PointerTool extends Tool {
     @Override
     public void onMouseUp(Event event, Point imageCurrent, Point screenCurrent) {
       // clear offset
-      mOffset.clear();
+      mOffsets.clear();
       // clear clicked region
       mClickedRegion = null;
       // clear old bounds
       mOldBounds.clear();
+      // clear the selection offset
+      mSelectionOffset = null;
     }
 
     @Override
@@ -149,23 +153,36 @@ public class PointerTool extends Tool {
           boolean add = (event.stateMask & SWT.SHIFT) != 0 || (event.stateMask & SWT.CTRL) != 0;
           select(mClickedRegion, add);   
         }
+
+        Rectangle selectionBounds = getController().getSelectionBounds();
+        Image image = getImage();
+        Rectangle imageBounds = image.getBounds();
         
         // calculate offsets once
-        if (mOffset.isEmpty()) {
-          // calculate the offset for each region and record original bounds
+        if (mSelectionOffset == null) {
+          // offset of main selection
+          mSelectionOffset = 
+              new Point(imageStart.x - selectionBounds.x, imageStart.y - selectionBounds.y);
+          // calculate the offset for each region from selection bounds and record original bounds
           for (Region r: getController().getSelectedRegions()) {
             Rectangle bounds = r.getBounds();
             mOldBounds.put(r, bounds);
-            mOffset.put(r, new Point(imageStart.x - bounds.x, imageStart.y - bounds.y));
+            mOffsets.put(r, new Point(bounds.x - selectionBounds.x, bounds.y - selectionBounds.y));
           }
         }
         
         // move selected regions
+        selectionBounds.x = imageCurrent.x - mSelectionOffset.x;
+        selectionBounds.x = Math.max(0, selectionBounds.x);
+        selectionBounds.x = Math.min(imageBounds.width - selectionBounds.width, selectionBounds.x);
+        selectionBounds.y = imageCurrent.y - mSelectionOffset.y;
+        selectionBounds.y = Math.max(0, selectionBounds.y);
+        selectionBounds.y = Math.min(imageBounds.height - selectionBounds.height, selectionBounds.y);
         for (Region r: getController().getSelectedRegions()) {
           Rectangle bounds = r.getBounds();
-          Point offset = mOffset.get(r);
-          bounds.x = imageCurrent.x - offset.x;
-          bounds.y = imageCurrent.y - offset.y;
+          Point offset = mOffsets.get(r);
+          bounds.x = selectionBounds.x + offset.x;
+          bounds.y = selectionBounds.y + offset.y;
           r.setBounds(bounds);
         }
       }
