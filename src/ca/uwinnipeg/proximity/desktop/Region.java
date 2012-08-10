@@ -61,8 +61,13 @@ public class Region {
   public Region(Region source) {
     if (source != null) {
       mShape = source.mShape;
-      mBounds = source.mBounds;
-      mPoly = source.mPoly;
+      mBounds = 
+          new Rectangle(
+              source.mBounds.x, 
+              source.mBounds.y, 
+              source.mBounds.width, 
+              source.mBounds.height);
+      mPoly = new Polygon(source.mPoly);
       mImage = source.mImage;
     }
   }  
