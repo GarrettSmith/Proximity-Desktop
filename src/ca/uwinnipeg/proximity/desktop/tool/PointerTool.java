@@ -124,8 +124,13 @@ public class PointerTool extends Tool {
     public void onClick(Event event, Point imagePoint, Point screenPoint) {
       // if shift or ctrl is held
       boolean add = (event.stateMask & SWT.SHIFT) != 0 || (event.stateMask & SWT.CTRL) != 0;
-      toggleSelect(mClickedRegion, add);
-      getCanvas().redraw();
+      if (mClickedRegion != null) {
+        toggleSelect(mClickedRegion, add);
+        getCanvas().redraw();
+      }
+      else {
+        select(new ArrayList<Region>(), add);
+      }
     }
     
     @Override
@@ -226,6 +231,7 @@ public class PointerTool extends Tool {
 
           gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_CYAN));
           gc.setLineStyle(SWT.LINE_DOT);
+          gc.setLineWidth(2);
 
           gc.drawRectangle(screenStart.x, screenStart.y, width, height);      
         }

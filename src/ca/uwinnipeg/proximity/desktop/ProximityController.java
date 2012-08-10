@@ -40,6 +40,10 @@ public class ProximityController {
   
   private Image mImage = new Image();
   
+  public Image getImage() {
+    return mImage;
+  }
+  
   private List<Region> mRegions = new ArrayList<Region>();
   private List<Region> mSelectedRegions = new ArrayList<Region>();
   
@@ -254,50 +258,6 @@ public class ProximityController {
   public List<Region> getRegions() {
     return new ArrayList<Region>(mRegions);
   }
-
-  /**
-   * Adds a region to the image.
-   * @param shape
-   * @param points
-   */
-  public void addRegionAction(Region.Shape shape, List<Point> points) {
-    Region reg = new Region(mImage);
-    reg.setShape(shape);
-    
-    if (shape == Region.Shape.POLYGON) {
-      for (Point p : points) {
-        reg.addPoint(p.x, p.y);
-      }
-    }
-    // add non-polygon shape
-    else {
-      Point p1 = points.get(0);
-      Point p2 = points.get(1);
-      reg.setBounds(
-          new Rectangle(
-          Math.min(p1.x, p2.x),
-          Math.min(p1.y, p2.y),
-          Math.abs(p1.x - p2.x),
-          Math.abs(p1.y - p2.y)));
-    }
-    
-    // select the newly added region
-    setSelected(reg);
-    
-    performAction(new AddRegionAction(reg, this));
-  }
-
-  /**
-   * Adds a region to the image.
-   * @param shape
-   * @param points
-   */
-  public void addRegionsAction(List<Region> regs) {    
-    // select the newly added regions
-    setSelected(regs);
-    
-    performAction(new AddRegionAction(regs, this));
-  }
   
   public void addRegion(Region region) {
     mRegions.add(region);
@@ -305,18 +265,6 @@ public class ProximityController {
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.addRegion(region);
     }
-  }
-  
-  /**
-   * Removes a region from the image.
-   * @param region
-   */
-  public void removeRegionAction(Region region) {
-    performAction(new RemoveRegionAction(region, this));
-  }
-  
-  public void removeRegionsAction(List<Region> regions) {
-    performAction(new RemoveRegionAction(regions, this));
   }
   
   public void removeRegion(Region region) {

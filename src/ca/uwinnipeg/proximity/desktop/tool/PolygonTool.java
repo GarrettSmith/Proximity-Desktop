@@ -17,8 +17,13 @@ import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
 import ca.uwinnipeg.proximity.desktop.MathUtil;
+import ca.uwinnipeg.proximity.desktop.Polygon;
+import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.Region;
+import ca.uwinnipeg.proximity.desktop.Region.Shape;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
+import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
+import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 
 public class PolygonTool extends Tool {
 
@@ -129,7 +134,12 @@ public class PolygonTool extends Tool {
     }
     
     protected void complete() {
-      getController().addRegionAction(Region.Shape.POLYGON, mPoints);
+      ProximityController controller = getController();
+      Region region = new Region(controller.getImage());
+      region.setShape(Shape.POLYGON);
+      region.setPolygon(new Polygon(mPoints));
+      HistoryAction action = new AddRegionAction(region, controller);
+      getController().performAction(action);
       mPoints.clear();
       getCanvas().redraw();
     }
@@ -182,6 +192,8 @@ public class PolygonTool extends Tool {
         
       }
 
+      gc.setLineWidth(2);
+      gc.setXORMode(true);
       gc.drawPath(path);  
       path.dispose();
     }

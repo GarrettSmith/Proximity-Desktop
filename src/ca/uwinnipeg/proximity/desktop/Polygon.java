@@ -1,6 +1,7 @@
 package ca.uwinnipeg.proximity.desktop;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;
@@ -36,6 +37,10 @@ public class Polygon {
    * @param points an array where every two integers represent a point
    */
   public Polygon(int[] points) {
+    set(points);
+  }
+  
+  public Polygon(List<Point> points) {
     set(points);
   }
   
@@ -132,6 +137,13 @@ public class Polygon {
     mPoints.clear();
     for (int i = 0; i < points.length; i += 2) {
       addPoint(points[i], points[i+1]);
+    }
+  }
+  
+  public void set(List<Point> points) {
+    mPoints.clear();
+    for (Point p: points) {
+      addPoint(p);
     }
   }
   

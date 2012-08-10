@@ -7,6 +7,8 @@ import org.eclipse.jface.action.Action;
 
 import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
+import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
+import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
 
 /**
  * @author garrett
@@ -21,7 +23,8 @@ public class DeleteAction extends Action {
   @Override
   public void run() {
     ProximityController controller = ProximityDesktop.getController();
-    controller.removeRegionsAction(controller.getSelectedRegions());
+    HistoryAction action = new RemoveRegionAction(controller.getSelectedRegions(), controller);
+    controller.performAction(action);
   }
 
 }

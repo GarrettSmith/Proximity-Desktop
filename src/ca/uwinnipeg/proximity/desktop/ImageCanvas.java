@@ -206,14 +206,18 @@ public class ImageCanvas extends Canvas {
       }
       
       // draw the selection bounds
-      gc.setLineStyle(SWT.LINE_DASH);
-      gc.setLineWidth(1);
-      Rectangle bounds = toScreenSpace(controller.getSelectionBounds());
-      bounds.x -= 4;
-      bounds.y -= 3;
-      bounds.width += 5;
-      bounds.height += 5;
-      gc.drawRectangle(bounds);
+      if (!selectedRegions.isEmpty()) {
+        gc.setLineStyle(SWT.LINE_DASH);
+        gc.setLineWidth(1);
+        Rectangle bounds = controller.getSelectionBounds();
+        bounds.x -= 6;
+        bounds.y -= 6;
+        bounds.width += 8;
+        bounds.height += 8;
+        bounds = toScreenSpace(bounds);
+        gc.drawRectangle(bounds);
+        gc.setLineStyle(SWT.LINE_SOLID);
+      }
 
     }
 

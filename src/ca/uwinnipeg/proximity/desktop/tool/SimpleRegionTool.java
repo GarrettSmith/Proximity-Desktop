@@ -5,10 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.Region;
+import ca.uwinnipeg.proximity.desktop.Util;
+import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
+import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 
 /**
 package ca.uwinnipeg.proximity.desktop.tool;
@@ -55,11 +60,14 @@ public abstract class SimpleRegionTool extends Tool {
         Point imageEnd,
         Point screenStart, 
         Point screenEnd) {
-      // add a rectangular region
-      List<Point> points = new ArrayList<Point>();
-      points.add(imageStart);
-      points.add(imageEnd);
-      getController().addRegionAction(mShape, points);
+      // add a region
+      ProximityController controller = getController();
+      Region region = new Region(controller.getImage());
+      region.setShape(mShape);
+      Rectangle bounds = Util.createRectangle(imageStart, imageEnd);
+      region.setBounds(bounds);
+      HistoryAction action = new AddRegionAction(region, controller);
+      controller.performAction(action);
     }
     
     @Override
