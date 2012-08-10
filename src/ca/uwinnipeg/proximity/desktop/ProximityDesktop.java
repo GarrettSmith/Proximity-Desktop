@@ -14,12 +14,15 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
@@ -39,6 +42,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
@@ -46,6 +50,7 @@ import org.eclipse.wb.swt.ResourceManager;
 
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
 import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
+import ca.uwinnipeg.proximity.desktop.action.RemoveFeatureAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.CutAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.DeleteAction;
@@ -75,7 +80,6 @@ import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
 import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * The main window of the application.
@@ -85,7 +89,6 @@ import org.eclipse.swt.widgets.Text;
 //TODO: handle deleting all regions
 //TODO: Implement cut, copy, paste
 //TODO: Implement modifying added regions
-//TODO: Implement adding external probe functions
 //TODO: Implement zooming properly
 //TODO: Implement manual?
 //TODO: Implement save?
@@ -369,6 +372,9 @@ public class ProximityDesktop extends ApplicationWindow {
     // hide the weird extra seperator
     getSeperator1().setVisible(false);
     
+    // set minimum size
+    newShell.setMinimumSize(600, 450);
+    
   }
   
   public void refreshFeaturesTree() {
@@ -425,6 +431,24 @@ public class ProximityDesktop extends ApplicationWindow {
     Tree tree = checkboxTreeViewer.getTree();
     tree.setHeaderVisible(true);
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    
+    // tree context menu
+    final MenuManager menuMgr = new MenuManager();
+    Menu menu = menuMgr.createContextMenu(tree);
+    menuMgr.addMenuListener(new IMenuListener() {
+      
+      public void menuAboutToShow(IMenuManager manager) {
+        ITreeSelection selection = (ITreeSelection) checkboxTreeViewer.getSelection();
+        if (selection.isEmpty()) {
+          return;
+        }
+        else {
+          menuMgr.add(new RemoveFeatureAction(selection.toList()));
+        }
+      }
+    });
+    menuMgr.setRemoveAllWhenShown(true);
+    tree.setMenu(menu);
     
     TreeColumn trclmnNewColumn = new TreeColumn(tree, 0);
     trclmnNewColumn.setWidth(120);

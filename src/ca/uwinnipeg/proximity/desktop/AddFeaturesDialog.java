@@ -36,6 +36,7 @@ import ca.uwinnipeg.proximity.desktop.features.FeaturesLabelProvider;
 import org.eclipse.swt.widgets.Text;
 
 //TODO: preserve path?
+//TODO: prevent duplicates
 public class AddFeaturesDialog extends Dialog {
   private Composite container;
   
