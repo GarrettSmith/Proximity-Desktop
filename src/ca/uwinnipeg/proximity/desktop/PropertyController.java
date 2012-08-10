@@ -108,6 +108,10 @@ public abstract class PropertyController {
     onNeighbourhoodSet(region, neighbourhood);
   }
   
+  public void regionsModified(List<Region> regions) {
+    onRegionsModified(regions);
+  }
+  
   /**
    * Causes the property to be recalculated.
    */
@@ -140,6 +144,10 @@ public abstract class PropertyController {
    */
   protected void onProbeFuncsChanged() { 
     invalidate(); 
+  }
+  
+  protected void onRegionsModified(List<Region> regions) {
+    invalidate();
   }
 
   // broadcasting

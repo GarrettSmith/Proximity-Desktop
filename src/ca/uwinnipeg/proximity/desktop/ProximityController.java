@@ -43,8 +43,6 @@ public class ProximityController {
   private List<Region> mRegions = new ArrayList<Region>();
   private List<Region> mSelectedRegions = new ArrayList<Region>();
   
-  private Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
-  
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
   
@@ -323,15 +321,23 @@ public class ProximityController {
   
   public void removeRegion(Region region) {
     mRegions.remove(region);
-    mNeighbourhoods.remove(region);
     // notify property controllers
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.removeRegion(region);
     }
   }
   
+  /**
+   * 
+   * @param regions
+   */
+  public void regionsModified(List<Region> regions) {
+    for (PropertyController pc: mPropertyControllers.values()) {
+      pc.regionsModified(regions);
+    }
+  }
+  
   public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
-    mNeighbourhoods.put(region, neighbourhood);
     // notify property controllers
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.setNeighbourhood(region, neighbourhood);
@@ -378,7 +384,7 @@ public class ProximityController {
    * Applies a {@link HistoryAction} adds it to the undo stack and clears the redo stack.
    * @param action
    */
-  protected void performAction(HistoryAction action) {
+  public void performAction(HistoryAction action) {
     action.apply();
     mUndoStack.push(action);
     mRedoStack.clear();

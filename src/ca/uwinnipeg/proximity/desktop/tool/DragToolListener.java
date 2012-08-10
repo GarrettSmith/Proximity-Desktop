@@ -13,8 +13,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
-import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
-import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
  * @author garrett
@@ -53,13 +51,12 @@ public abstract class DragToolListener implements Listener {
         break;
       case SWT.Paint:
         if (mImageStartPoint != null) {
-          paint(
+          onPaint(
               event, 
               mImageStartPoint, 
               mImageCurrentPoint, 
               mScreenStartPoint, 
-              mScreenCurrentPoint,
-              mClickedRegion);
+              mScreenCurrentPoint);
         }
         break;
     }
@@ -70,8 +67,6 @@ public abstract class DragToolListener implements Listener {
 
   private Point mScreenStartPoint;
   private Point mScreenCurrentPoint;
-  
-  private Region mClickedRegion = null;
   
   public void keyDown(Event event) {
     switch(event.keyCode) {
@@ -88,13 +83,10 @@ public abstract class DragToolListener implements Listener {
     if (event.button == 1 && tool.getCanvas().contains(mImageCurrentPoint)) {
       mScreenStartPoint = mScreenCurrentPoint;
       mImageStartPoint = mImageCurrentPoint;
-      
-      for (Region r : ProximityDesktop.getController().getRegions()) {
-        if (r.contains(mImageStartPoint)) {
-          mClickedRegion = r;
-        }
-      }
     }
+    
+    // callback
+    onMouseDown(event, mImageStartPoint, mScreenStartPoint);
   }
   
   public void mouseUp(Event event) {    
@@ -103,21 +95,21 @@ public abstract class DragToolListener implements Listener {
       
       if (mImageStartPoint.equals(mImageCurrentPoint)) {
         // perform the click action
-        onClick(event, mImageCurrentPoint, mScreenCurrentPoint, mClickedRegion);
+        onClick(event, mImageCurrentPoint, mScreenCurrentPoint);
       }
       else {
         // perform the drag action
-        onDrag(event, mImageStartPoint, mImageCurrentPoint, mImageStartPoint, mScreenCurrentPoint, mClickedRegion);
+        onDrag(event, mImageStartPoint, mImageCurrentPoint, mImageStartPoint, mScreenCurrentPoint);
       }
-      
-      // clear the clicked region
-      mClickedRegion = null;
 
       // redraw to clear box
       tool.getCanvas().redraw();
     }
     // clear the start point
     mImageStartPoint = mScreenStartPoint = null;
+    
+    // callback
+    onMouseUp(event, mImageCurrentPoint, mScreenCurrentPoint);
   }
   
   public void mouseMove(Event event) {
@@ -142,31 +134,39 @@ public abstract class DragToolListener implements Listener {
       mScreenCurrentPoint.x = Math.min(imageScreenBounds.x + imageScreenBounds.width, mScreenCurrentPoint.x);        
       mScreenCurrentPoint.y = Math.max(imageScreenBounds.y, mScreenCurrentPoint.y);
       mScreenCurrentPoint.y = Math.min(imageScreenBounds.y + imageScreenBounds.height, mScreenCurrentPoint.y);
+      
+      // perform the during drag action
+      duringDrag(event, mImageStartPoint, mImageCurrentPoint, mScreenStartPoint, mScreenCurrentPoint);
 
       canvas.redraw();
     }
   }
   
-  public abstract void paint(
+  public void onMouseDown(Event event, Point imageStart, Point screenStart) {};  
+
+  public void onMouseUp(Event event, Point imageCurrent, Point screenCurrent) {};
+  
+  public void onPaint(
       Event event, 
       Point imageStart, 
       Point imageEnd,
       Point screenStart, 
-      Point screenEnd, 
-      Region region);
+      Point screenEnd) {};
   
-  public abstract void onClick(
+  public void onClick(Event event, Point image, Point screen) {};
+  
+  public void duringDrag(
       Event event, 
-      Point image, 
-      Point screen, 
-      Region region);
+      Point imageStart, 
+      Point imageCurrent, 
+      Point screenStart, 
+      Point screenCurrent) {};
   
-  public abstract void onDrag(
+  public void onDrag(
       Event event, 
       Point imageStart, 
       Point imageEnd, 
       Point screenStart, 
-      Point screenEnd, 
-      Region region);
+      Point screenEnd) {};
   
 }
