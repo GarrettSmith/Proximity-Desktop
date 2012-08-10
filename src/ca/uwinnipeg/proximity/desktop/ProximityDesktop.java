@@ -61,6 +61,7 @@ import ca.uwinnipeg.proximity.desktop.action.help.AboutAction;
 import ca.uwinnipeg.proximity.desktop.action.help.ManualAction;
 import ca.uwinnipeg.proximity.desktop.action.view.CenterAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ToggleFeaturesAction;
+import ca.uwinnipeg.proximity.desktop.action.view.TogglePivotAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomImageAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomInAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomOutAction;
@@ -133,6 +134,7 @@ public class ProximityDesktop extends ApplicationWindow {
   private Action actnZoomImage;
   private Action actnFeatures;
   private Action actnCenter;
+  private Action actnPivots;
   
   private Action[] mImageDependantActions;
   private Action[] mSelectionDependantActions;
@@ -625,6 +627,7 @@ public class ProximityDesktop extends ApplicationWindow {
     actnZoomImage = new ZoomImageAction();
     actnFeatures = new ToggleFeaturesAction();
     actnCenter = new CenterAction();
+    actnPivots = new TogglePivotAction();
     
     // help
     actnManual = new ManualAction();
@@ -664,7 +667,8 @@ public class ProximityDesktop extends ApplicationWindow {
         actnOval,
         actnPolygon,
         actnZoom,
-        actnCenter
+        actnCenter,
+        actnPivots
     };
     
     for (Action a : mImageDependantActions) {
@@ -754,6 +758,7 @@ public class ProximityDesktop extends ApplicationWindow {
     menuZoom.add(actnZoomImage);
     menuView.add(new Separator());
     menuView.add(actnFeatures);
+    menuView.add(actnPivots);
     
     MenuManager menuHelp = new MenuManager(BUNDLE.getString("MainWindow.Help.text"));
     menuManager.add(menuHelp);

@@ -47,6 +47,8 @@ public class ImageCanvas extends Canvas {
   
   private Class<? extends PropertyController> mPropertyKey;
   
+  private boolean mShowPivots = true;
+  
   /**
    * Create a canvas with the given image.
    * @param parent
@@ -131,6 +133,16 @@ public class ImageCanvas extends Canvas {
     }
   }
 
+  /**
+   * Sets whether the pivot pixels should be drawn or not
+   * @param show
+   */
+  public void showPivots(boolean show) {
+    boolean changed = show != mShowPivots;
+    mShowPivots = show;
+    if (changed) redraw();
+  }
+
   public Image getImage() {
     Rectangle bounds = mImage.getBounds();
     Image img = new Image(mDisplay, bounds.width, bounds.height);
@@ -202,7 +214,7 @@ public class ImageCanvas extends Canvas {
       ProximityController controller = ProximityDesktop.getController();
       List<Region> selectedRegions = controller.getSelectedRegions();
       for (Region r : controller.getRegions()) {
-        drawRegion(gc, r, selectedRegions.contains(r), true, true);
+        drawRegion(gc, r, selectedRegions.contains(r), mShowPivots, true);
       }
       
       // draw the selection bounds
