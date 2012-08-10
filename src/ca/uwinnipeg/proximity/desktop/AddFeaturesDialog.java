@@ -10,8 +10,12 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -29,6 +33,7 @@ import org.eclipse.swt.widgets.Tree;
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.features.AddFeaturesContentProvider;
 import ca.uwinnipeg.proximity.desktop.features.FeaturesLabelProvider;
+import org.eclipse.swt.widgets.Text;
 
 //TODO: preserve path?
 public class AddFeaturesDialog extends Dialog {
@@ -39,6 +44,38 @@ public class AddFeaturesDialog extends Dialog {
   private Button btnFolder;
 
   private String mPath;
+  
+  protected FilenameFilter mClassFileNameFilter = new FilenameFilter() {
+    
+    public boolean accept(File dir, String name) {
+      return name.endsWith(".class");
+    }
+  };
+  
+  private Text text;
+  
+  boolean mTextValid = false;
+  
+  private ModifyListener mTextListener = new ModifyListener() {
+    
+    public void modifyText(ModifyEvent e) {
+      Text text = (Text) e.getSource();
+      String str = text.getText();
+      mTextValid = !str.trim().isEmpty();
+      updateOkEnabled();
+    }
+  };
+  
+  boolean mFuncsValid = false;
+  
+  private ICheckStateListener mFuncsListeners = new ICheckStateListener() {
+    
+    public void checkStateChanged(CheckStateChangedEvent event) {
+      CheckboxTreeViewer viewer = (CheckboxTreeViewer) event.getSource();
+      mFuncsValid = viewer.getCheckedElements().length != 0;
+      updateOkEnabled();
+    }
+  };
 
   /**
    * Create the dialog.
@@ -59,6 +96,14 @@ public class AddFeaturesDialog extends Dialog {
     GridLayout gl_container = new GridLayout(2, false);
     gl_container.marginWidth = 11;
     container.setLayout(gl_container);
+    
+    Label lblNewLabel = new Label(container, SWT.NONE);
+    lblNewLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+    lblNewLabel.setText("Category: ");
+    
+    text = new Text(container, SWT.BORDER);
+    text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+    text.addModifyListener(mTextListener);
 
     Label lblFolder = new Label(container, SWT.NONE);
     lblFolder.setText("Source folder: ");
@@ -80,6 +125,7 @@ public class AddFeaturesDialog extends Dialog {
     treeViewer = new CheckboxTreeViewer(container, SWT.BORDER);
     treeViewer.setContentProvider(new AddFeaturesContentProvider());
     treeViewer.setLabelProvider(new FeaturesLabelProvider());
+    treeViewer.addCheckStateListener(mFuncsListeners);
     Tree tree = treeViewer.getTree();
     tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));    
 
@@ -133,6 +179,8 @@ public class AddFeaturesDialog extends Dialog {
         true);
     createButton(parent, IDialogConstants.CANCEL_ID,
         IDialogConstants.CANCEL_LABEL, false);
+
+    updateOkEnabled();
   }
 
   /**
@@ -223,22 +271,6 @@ public class AddFeaturesDialog extends Dialog {
     treeViewer.setInput(funcs);
   }
   
-  protected FilenameFilter mClassFileNameFilter = new FilenameFilter() {
-    
-    public boolean accept(File dir, String name) {
-      return name.endsWith(".class");
-    }
-  };
-  
-  protected ProbeFunc<Integer> mExampleFunc = new ProbeFunc<Integer>(0, 1) {
-    
-    @Override
-    protected double map(Integer t) {
-      // TODO Auto-generated method stub
-      return 0;
-    }
-  };
-  
   @Override
   protected void okPressed() {
     @SuppressWarnings("unchecked")
@@ -247,8 +279,12 @@ public class AddFeaturesDialog extends Dialog {
     for (int i = 0; i < funcsArray.length; i++) {
       funcs.add((ProbeFunc<Integer>) funcsArray[i]);
     }
-    ProximityDesktop.getController().addProbeFuncs(funcs);
+    ProximityDesktop.getController().addProbeFuncs(text.getText().trim(), funcs, mPath);
     super.okPressed();
   };
+  
+  protected void updateOkEnabled() {
+    getOKButton().setEnabled(mFuncsValid && mTextValid);
+  }
 
 }

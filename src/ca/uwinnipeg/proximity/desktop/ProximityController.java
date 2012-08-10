@@ -3,27 +3,30 @@
  */
 package ca.uwinnipeg.proximity.desktop;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.features.Category;
 import ca.uwinnipeg.proximity.desktop.features.FeaturesCheckedListener;
-import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
-import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
 import ca.uwinnipeg.proximity.image.AlphaFunc;
 import ca.uwinnipeg.proximity.image.BlueFunc;
 import ca.uwinnipeg.proximity.image.GreenFunc;
@@ -64,6 +67,7 @@ public class ProximityController {
   
   private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");
   private Preferences mCatPrefs = mFuncPrefs.node("categories");
+  private Preferences mClassPrefs = mFuncPrefs.node("class-files");
   
   @SuppressWarnings("unchecked")
   private static final Class<ProbeFunc<Integer>>[] DEFAULT_FUNCS = 
@@ -76,7 +80,7 @@ public class ProximityController {
   
   private static final String COLOR_CATEGORY = "Colours";
   
-  private List<Category<Integer>> mCategories = new ArrayList<Category<Integer>>();
+  private Map<String, Category<Integer>> mCategories = new HashMap<String, Category<Integer>>();
   
   private ICheckStateListener mCheckStateListener = new FeaturesCheckedListener(this);
   
@@ -89,76 +93,86 @@ public class ProximityController {
     createPropertyControllers();
   }
   
+  //TODO: load external funcs
   @SuppressWarnings("unchecked")
   private void loadFuncs() {
-      // load the default probe functions and enable
-      for (Class<ProbeFunc<Integer>> clazz : DEFAULT_FUNCS) {
-        String className = clazz.getName();
-        mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
-        mCatPrefs.put(className, COLOR_CATEGORY);
-      }
+    // load the default probe functions and enable
+    for (Class<ProbeFunc<Integer>> clazz : DEFAULT_FUNCS) {
+      String className = clazz.getName();
+      mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
+      mCatPrefs.put(className, COLOR_CATEGORY);
+    }
+
+    // load the previously loaded probe funcs
+    try {
       
-      // load the previously loaded probe funcs
-      try {
-        for (String classStr : mFuncPrefs.keys()) {
+      Set<URL> classURLs = new HashSet<URL>();
+      for (String clazz: mClassPrefs.keys()) {
+        String path = mClassPrefs.get(clazz, null);
+        if (path != null) {
+          File f = new File(path);
+          URL url = null;
           try {
+            url = f.toURI().toURL();
+          } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+          if (url != null) classURLs.add(url);
+        }
+      }
+
+      // get the correct class loader
+      ClassLoader loader = 
+          new URLClassLoader(
+              classURLs.toArray(new URL[classURLs.size()]), 
+              ClassLoader.getSystemClassLoader());
+      
+      for (String className : mFuncPrefs.keys()) {
+        try {
+
           // load the probe func
           Class<ProbeFunc<Integer>> funcClazz;
-            funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(classStr);
-          
-          String categoryStr = mCatPrefs.get(classStr, "Uncategorized");
+          funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(className, true, loader);
+
+          String categoryStr = mCatPrefs.get(className, "Uncategorized");
           Category<Integer> category = null;
-          
+
           // find the matching category
-          for (Category<Integer> cat: mCategories) {
-            if (cat.getName().equals(categoryStr)) {
-              category = cat;
-              break;
-            }
-          }
-          
+          category = mCategories.get(categoryStr);
+
           // create the category if we haven't yet
           if (category == null) {
             category = new Category<Integer>(categoryStr);
-            mCategories.add(category);
+            mCategories.put(categoryStr, category);
           }
-          
+
           // add the func to the category
-            category.set(funcClazz.newInstance(), mFuncPrefs.getBoolean(classStr, false));
-          } catch (InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          } catch (ClassNotFoundException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-          }
+          category.set(funcClazz.newInstance(), mFuncPrefs.getBoolean(className, false));
+        } catch (InstantiationException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IllegalAccessException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (ClassNotFoundException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
         }
-      } catch (BackingStoreException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
       }
-    
+    } catch (BackingStoreException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
     // add enabled probe funcs
-    for (Category<Integer> cat: mCategories) {
+    for (Category<Integer> cat: mCategories.values()) {
       for (ProbeFunc<Integer> func: cat.getEnabledProbeFuncs()) {
         mImage.addProbeFunc(func);
       }
     }
   }
-  
-  public void addProbeFuncs(List<ProbeFunc<Integer>> funcs) {
-    Category<Integer> cat = new Category("Uncategorized");
-    mCategories.add(cat);
-    for (ProbeFunc<Integer> f: funcs) {
-      cat.set(f, false);
-    }
-    // update the tree in the window
-    ProximityDesktop.getApp().refreshFeaturesTree();
-  }
-  
+
   private void createPropertyControllers() {
     for (Class<PropertyController> clazz : PROPERTY_CONTROLLER_CLASSES) {
       try {
@@ -181,12 +195,34 @@ public class ProximityController {
   }
   
   public Collection<Category<Integer>> getCategories() {
-    return mCategories;
+    return mCategories.values();
   }
   
+  // TODO: prevent duplicates
+  public void addProbeFuncs(String categoryName, List<ProbeFunc<Integer>> funcs, String path) {
+    // find the given category
+    Category<Integer> cat = mCategories.get(categoryName);
+    // create the category if it is new
+    if (cat == null) {
+      cat = new Category<Integer>(categoryName);
+      mCategories.put(categoryName, cat);
+    }
+    // add the funcs to the category
+    for (ProbeFunc<Integer> f: funcs) {
+      cat.set(f, false);
+      // save the funcs to the prefs
+      String className = f.getClass().getName();
+      mFuncPrefs.putBoolean(className, false);
+      mCatPrefs.put(className, categoryName);
+      mClassPrefs.put(className, path);
+    }
+    // update the tree in the window
+    ProximityDesktop.getApp().refreshFeaturesTree();
+  }
+
   public int probeFuncsSize() {
     int sum = 0;
-    for (Category<Integer> cat : mCategories) {
+    for (Category<Integer> cat : mCategories.values()) {
       sum += cat.size();
     }
     return sum;
@@ -194,19 +230,15 @@ public class ProximityController {
 
   public int enabledProbeFuncsSize() {
     int sum = 0;
-    for (Category<Integer> cat : mCategories) {
+    for (Category<Integer> cat : mCategories.values()) {
       sum += cat.enabledSize();
     }
     return sum;
   }
   
-  public float getEpsilonMaximum() {
-    return (float) Math.sqrt(enabledProbeFuncsSize());
-  }
-  
   public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
     // set the probe func's state
-    for (Category<Integer> cat: mCategories) {
+    for (Category<Integer> cat: mCategories.values()) {
       if (cat.contains(func)) {
         cat.set(func, enabled);
       }
@@ -222,6 +254,10 @@ public class ProximityController {
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.onProbeFuncsChanged();
     }
+  }
+
+  public float getEpsilonMaximum() {
+    return (float) Math.sqrt(enabledProbeFuncsSize());
   }
   
   public void setCategoryEnabled(Category<Integer> category, boolean enabled) {

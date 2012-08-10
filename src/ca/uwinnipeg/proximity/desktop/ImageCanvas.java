@@ -161,7 +161,7 @@ public class ImageCanvas extends Canvas {
 
       // draw regions
       for (Region r : ProximityDesktop.getController().getRegions()) {
-        drawRegion(gc, r, true, true, false);
+        drawRegion(gc, r, true, mShowPivots, false);
       }
       gc.dispose();
     }
@@ -224,8 +224,8 @@ public class ImageCanvas extends Canvas {
         Rectangle bounds = controller.getSelectionBounds();
         bounds.x -= 6;
         bounds.y -= 6;
-        bounds.width += 8;
-        bounds.height += 8;
+        bounds.width += 10;
+        bounds.height += 10;
         bounds = toScreenSpace(bounds);
         gc.drawRectangle(bounds);
         gc.setLineStyle(SWT.LINE_SOLID);
