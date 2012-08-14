@@ -8,6 +8,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Centers the image in the canvas.
  * @author garrett
  *
  */

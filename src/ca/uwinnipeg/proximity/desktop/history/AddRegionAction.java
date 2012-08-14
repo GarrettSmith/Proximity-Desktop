@@ -11,6 +11,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
+ * An action that adds one for many regions to the controller.
  * @author Garrett Smith
  *
  */
@@ -21,7 +22,7 @@ public class AddRegionAction implements HistoryAction {
   private ProximityController mController;
   
   /**
-   * 
+   * Creates a new {@link HistoryAction} that adds the list of regions to the given controller.
    */
   public AddRegionAction(List<Region> regions, ProximityController controller) {
     mRegions = regions;
@@ -29,7 +30,7 @@ public class AddRegionAction implements HistoryAction {
   }
   
   /**
-   * 
+   * Creates a new {@link HistoryAction} that adds a region to the given controller.
    */
   public AddRegionAction(Region region, ProximityController controller) {
     mRegions = new ArrayList<Region>(1);

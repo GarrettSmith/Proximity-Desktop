@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ca.uwinnipeg.proximity.desktop.ProximityController;
+import ca.uwinnipeg.proximity.desktop.RectangleUtil;
 import ca.uwinnipeg.proximity.desktop.Region;
-import ca.uwinnipeg.proximity.desktop.Util;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.desktop.history.MoveRegionAction;
@@ -214,11 +214,11 @@ public class PointerTool extends Tool {
         // select regions we dragged the box around
         List<Region> regions = controller.getRegions();
         List<Region> selection = new ArrayList<Region>();
-        Rectangle drag = Util.createRectangle(imageStart, imageEnd);
+        Rectangle drag = RectangleUtil.create(imageStart, imageEnd);
         // get all the surrounded regions
         for (Region r : regions) {
           Rectangle bounds = r.getBounds();
-          if (Util.rectangleContains(drag, bounds)) {
+          if (RectangleUtil.contains(drag, bounds)) {
             selection.add(r);
           }
         }

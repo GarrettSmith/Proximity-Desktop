@@ -16,6 +16,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 // TODO: add credits and license
+// TODO: use external strings
+/**
+ * The about dialog that displays credits and a description.
+ * @author Garrett Smith
+ *
+ */
 public class AboutDialog extends Dialog {  
 
   private StackLayout stackLayout;
@@ -37,31 +43,38 @@ public class AboutDialog extends Dialog {
     Composite container = (Composite) super.createDialogArea(parent);
     container.setLayout(new GridLayout(1, false));
     
+    // the application icon
     Label lblIcon = new Label(container, SWT.NONE);
     lblIcon.setImage(SWTResourceManager.getImage(AboutDialog.class, "/ca/uwinnipeg/proximity/desktop/icons/launcher_48.png"));
     lblIcon.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
     
+    // the application name
     Label lblName = new Label(container, SWT.NONE);
     lblName.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
     lblName.setFont(SWTResourceManager.getFont("Sans", 10, SWT.BOLD));
     lblName.setText("Proximity System");
     
+    // stacks to display information
     Composite frameStack = new Composite(container, SWT.NONE);
     stackLayout = new StackLayout();
     frameStack.setLayout(stackLayout);
     frameStack.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         
+    // the main frame for the about info
     Composite mainFrame = new Composite(frameStack, SWT.NONE);
     mainFrame.setLayout(new GridLayout(1, false));
     
+    // the version
     Label lblVersion = new Label(mainFrame, SWT.NONE);
     lblVersion.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
     lblVersion.setText("1.0");
     
+    // the description sentence for the program
     Label lblDescription = new Label(mainFrame, SWT.NONE);
     lblDescription.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
     lblDescription.setText("The Proximity System desktop application.");
     
+    // the copyright string
     Label lblCopyright = new Label(mainFrame, SWT.NONE);
     lblCopyright.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
     lblCopyright.setText("© 2012 Holder");
@@ -117,13 +130,5 @@ public class AboutDialog extends Dialog {
   @Override
   protected Point getInitialSize() {
     return new Point(450, 300);
-  }
-  
-  @Override
-  protected void buttonPressed(int buttonId) {
-    switch (buttonId) {
-      default:
-        super.buttonPressed(buttonId);
-    }
   }
 }

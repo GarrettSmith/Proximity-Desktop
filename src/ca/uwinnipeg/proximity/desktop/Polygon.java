@@ -40,6 +40,10 @@ public class Polygon {
     set(points);
   }
   
+  /**
+   * Creates a new polygon from the given list of points.
+   * @param points
+   */
   public Polygon(List<Point> points) {
     set(points);
   }
@@ -140,6 +144,10 @@ public class Polygon {
     }
   }
   
+  /**
+   * Sets the points of this polygon to be the given list of points.
+   * @param points
+   */
   public void set(List<Point> points) {
     mPoints.clear();
     for (Point p: points) {

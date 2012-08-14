@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.ICheckStateProvider;
 import ca.uwinnipeg.proximity.ProbeFunc;
 
 /**
+ * Sets the checked state in the features pane for {@link ProbeFunc} and {@link Category}.
  * @author Garrett Smith
  *
  */

@@ -15,6 +15,7 @@ import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 
 /**
+ * Creates duplicates of the selected regions.
  * @author garrett
  *
  */

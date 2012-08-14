@@ -9,6 +9,7 @@ import ca.uwinnipeg.proximity.desktop.AboutDialog;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Creates the {@link AboutDialog}.
  * @author garrett
  *
  */

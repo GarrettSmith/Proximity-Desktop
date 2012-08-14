@@ -9,6 +9,8 @@ import java.util.List;
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 
 /**
+ * A {@link PropertyController} used to calculate the difference from the initial region of each
+ * subsequent region.
  * @author Garrett Smith
  *
  */

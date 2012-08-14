@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.Viewer;
 import ca.uwinnipeg.proximity.ProbeFunc;
 
 /**
+ * Provides the features and categories for the features pane.
  * @author Garrett Smith
  *
  */

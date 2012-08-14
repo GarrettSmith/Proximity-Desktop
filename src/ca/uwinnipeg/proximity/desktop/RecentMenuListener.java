@@ -14,6 +14,7 @@ import ca.uwinnipeg.proximity.desktop.action.file.EmptyAction;
 import ca.uwinnipeg.proximity.desktop.action.file.RecentlyOpenedAction;
 
 /**
+ * Populates the recently opened files menu.
  * @author Garrett Smith
  *
  */
@@ -28,6 +29,9 @@ public class RecentMenuListener implements IMenuListener {
     mRecentPrefs = prefs;
   }
 
+  /**
+   * Populates the menu when it is about to be shown.
+   */
   public void menuAboutToShow(IMenuManager manager) {
     // add all the recent items to the recent menu
     try {

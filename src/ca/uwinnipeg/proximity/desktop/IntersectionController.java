@@ -9,6 +9,7 @@ import java.util.List;
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 
 /**
+ * A {@link PropertyController} that calculates the intersection of the regions.
  * @author Garrett Smith
  *
  */

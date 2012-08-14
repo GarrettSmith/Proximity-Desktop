@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Listener;
 import ca.uwinnipeg.proximity.desktop.ImageCanvas;
 
 /**
+ * An abstract tool that handles clicks and dragging boxes on the canvas.
  * @author garrett
  *
  */

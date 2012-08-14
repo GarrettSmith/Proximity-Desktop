@@ -16,9 +16,12 @@ import org.eclipse.swt.widgets.Listener;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
+ * A tool that zooms so the canvas is zoomed into the box dragged by the user. The tool also zooms
+ * in and out by clicking (while holding a modifier to zoom out).
  * @author Garrett Smith
  *
  */
+//TODO: implement zoom tool
 public class ZoomTool extends Tool {
   
   public static final Color ZOOM_COLOR = new Color(Display.getCurrent(), 0, 0, 0);

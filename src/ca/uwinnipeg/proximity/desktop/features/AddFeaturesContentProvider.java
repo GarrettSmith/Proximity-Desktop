@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.Viewer;
 import ca.uwinnipeg.proximity.ProbeFunc;
 
 /**
+ * Provides the probe funcs when adding probe funcs.
  * @author Garrett Smith
  *
  */

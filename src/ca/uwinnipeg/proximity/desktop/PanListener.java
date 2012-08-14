@@ -8,6 +8,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 
 /**
+ * Listens to the middle mouse button being held while the mouse is dragged and pans the canvas 
+ * accordingly.
  * @author Garrett Smith
  *
  */
@@ -19,12 +21,15 @@ public class PanListener implements MouseMoveListener {
   private int mPrevY = -1;
 
   /**
-   * 
+   * Creates a new pan listener to operate on the given canvas.
    */
   public PanListener(ImageCanvas canvas) {
     mCanvas = canvas;
   }
   
+  /**
+   * Respons to the mouse being moved and pan if the correct condition are met.
+   */
   public void mouseMove(MouseEvent e) {
     // check if the middle mouse button is pressed
     if ((e.stateMask & SWT.BUTTON2) != 0) {

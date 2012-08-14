@@ -7,8 +7,10 @@ import org.eclipse.jface.action.Action;
 
 import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
+import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 
 /**
+ * Redo the last undone {@link HistoryAction}.
  * @author garrett
  *
  */

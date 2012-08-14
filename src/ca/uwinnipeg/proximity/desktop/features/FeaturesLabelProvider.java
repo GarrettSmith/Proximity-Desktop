@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import ca.uwinnipeg.proximity.ProbeFunc;
 
 /**
+ * Returns the name of the {@link Category} or the toString method of the {@link ProbeFunc}.
  * @author Garrett Smith
  *
  */

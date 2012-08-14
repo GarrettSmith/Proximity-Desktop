@@ -13,6 +13,8 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 import ca.uwinnipeg.proximity.image.Image;
 
 /**
+ * An object used to calculate a propery of an image given the perceptual system, regions, and
+ * other settings.
  * @author Garrett Smith
  *
  */
@@ -37,6 +39,10 @@ public abstract class PropertyController {
   protected boolean mUseNeighbourhoods =
       Preferences.userRoot().node("proximity-system").node("use-neighbourhoods").getBoolean(getClass().toString(), false);
   
+  /**
+   * Sets the epsilon value to be used to calculate the property.
+   * @param epsilon
+   */
   public void setEpsilon(float epsilon) {
     boolean changed = epsilon != mEpsilon;
     mEpsilon = epsilon;
@@ -45,10 +51,19 @@ public abstract class PropertyController {
     }
   }
   
+  /**
+   * Gets the epsilon value sued to calculate the property.
+   * @return
+   */
   public float getEpsilon() {
     return mEpsilon;
   }
 
+  /**
+   * Sets whether or not the neighbourhoods of regions should be used instead of the all the pixels
+   * within the regions.
+   * @param enabled
+   */
   public void setUseNeighbourhoods(boolean enabled) {
     boolean changed = enabled != mUseNeighbourhoods;
     mUseNeighbourhoods = enabled;
@@ -57,15 +72,32 @@ public abstract class PropertyController {
     }
   }
   
+  /**
+   * Gets whether the neighbourhoods are being used to calculate the property. 
+   * @return
+   */
   public boolean getUseNeighbourhoods() {
     return mUseNeighbourhoods;
   }
   
+  /**
+   * Sets the currently calculated neighbourhood for the given region.
+   * @param region
+   * @param neighbourhood
+   */
+  public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
+    mNeighbourhoods.put(region, neighbourhood);
+    onNeighbourhoodSet(region, neighbourhood);
+  }
+  
+  /**
+   * Returns the currently calculated neighbourhood for the given region.
+   * @param region
+   * @return
+   */
   public List<Integer> getNeighbourhood(Region region) {
     return mNeighbourhoods.get(region);
   }
-  
-//  public abstract boolean usesNeighbourhoods();
   
   /**
    * Sets the given image we are calculating within.
@@ -103,11 +135,6 @@ public abstract class PropertyController {
     onRegionsCleared();
   }
   
-  public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
-    mNeighbourhoods.put(region, neighbourhood);
-    onNeighbourhoodSet(region, neighbourhood);
-  }
-  
   public void regionsModified(List<Region> regions) {
     onRegionsModified(regions);
   }
@@ -118,6 +145,7 @@ public abstract class PropertyController {
   protected abstract void invalidate();
 
   // Callbacks
+  
   /**
    * Called when a region is added.
    * @param region
@@ -137,6 +165,11 @@ public abstract class PropertyController {
     invalidate(); 
   }
   
+  /**
+   * Called when the neighbourhood of a region is updated.
+   * @param region
+   * @param neighbourhood
+   */
   protected void onNeighbourhoodSet(Region region, List<Integer> neighbourhood) {}
 
   /**
@@ -146,6 +179,10 @@ public abstract class PropertyController {
     invalidate(); 
   }
   
+  /**
+   * Called when a region has been modified.
+   * @param regions
+   */
   protected void onRegionsModified(List<Region> regions) {
     invalidate();
   }
@@ -197,10 +234,6 @@ public abstract class PropertyController {
 
     // broadcast progress
     ProximityDesktop.getApp().setProgress(getClass(), mProgress);
-//    Intent intent = new Intent(ACTION_PROGRESS_CHANGED);
-//    intent.putExtra(PROGRESS, getProgress());
-//    intent.addCategory(mCategory);
-//    mBroadcastManager.sendBroadcast(intent);    
   }
   
   /**
@@ -259,6 +292,11 @@ public abstract class PropertyController {
       onPostRun(mResult, mRegion);
     }
     
+    /**
+     * Called once the property has been calculated.
+     * @param result
+     * @param region
+     */
     protected void onPostRun(List<Integer> result, Region region) {}
     
     /**

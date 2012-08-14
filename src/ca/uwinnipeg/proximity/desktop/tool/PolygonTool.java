@@ -25,6 +25,11 @@ import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 import ca.uwinnipeg.proximity.desktop.history.AddRegionAction;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 
+/**
+ * A tool that adds polygon regions by clicking the individual points that make up the polygon.
+ * @author Garrett Smith
+ *
+ */
 public class PolygonTool extends Tool {
 
   @Override
@@ -46,6 +51,11 @@ public class PolygonTool extends Tool {
     
     protected static final int SNAP_TOLLERANCE = 20;
     
+    /**
+     * Test if the mouse is near the first placed point
+     * @param point
+     * @return
+     */
     protected boolean nearStart(Point point) {
       // we can only check if we are near the first point if there is a first point
       if (!mPoints.isEmpty()) {
@@ -117,6 +127,9 @@ public class PolygonTool extends Tool {
       }
     }
     
+    /**
+     * Adds a point to current list.
+     */
     protected void addPoint() {
       ImageCanvas canvas = getCanvas();
       Point p = canvas.toImageSpace(currentPoint);
@@ -133,6 +146,9 @@ public class PolygonTool extends Tool {
       }
     }
     
+    /**
+     * Completes creating the region and adds it to the controller.
+     */
     protected void complete() {
       ProximityController controller = getController();
       Region region = new Region(controller.getImage());

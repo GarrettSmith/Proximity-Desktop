@@ -11,6 +11,8 @@ import java.util.Map;
 import org.eclipse.swt.widgets.Display;
 
 /**
+ * A {@link PropertyController} that calculates the neighbourhood of each region. Each region is
+ * calculated independently so multiple can be calculated at once.
  * @author Garrett Smith
  *
  */
@@ -78,8 +80,6 @@ public class NeighbourhoodController extends PropertyController {
     // set neighbourhoods of other controllers
     ProximityDesktop.getController().setNeighbourhood(region, indices);
   }
-
-  // Runnableing 
   
   @Override
   public int getProgress() {
@@ -91,6 +91,7 @@ public class NeighbourhoodController extends PropertyController {
       }
     }
     
+    // update progress depending on what is running
     if (runningRunnables != 0) {
       return super.getProgress() / runningRunnables;
     }

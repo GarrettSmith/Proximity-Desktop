@@ -8,6 +8,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that zooms out of the canvas.
  * @author garrett
  *
  */

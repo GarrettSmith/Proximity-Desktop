@@ -51,11 +51,8 @@ import org.eclipse.wb.swt.ResourceManager;
 import ca.uwinnipeg.proximity.desktop.action.EditFeaturesAction;
 import ca.uwinnipeg.proximity.desktop.action.PropertyAction;
 import ca.uwinnipeg.proximity.desktop.action.RemoveFeatureAction;
-import ca.uwinnipeg.proximity.desktop.action.edit.CopyAction;
-import ca.uwinnipeg.proximity.desktop.action.edit.CutAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.DeleteAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.DuplicateAction;
-import ca.uwinnipeg.proximity.desktop.action.edit.PasteAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.RedoAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.SelectAllAction;
 import ca.uwinnipeg.proximity.desktop.action.edit.UndoAction;
@@ -63,7 +60,6 @@ import ca.uwinnipeg.proximity.desktop.action.file.ExitAction;
 import ca.uwinnipeg.proximity.desktop.action.file.OpenAction;
 import ca.uwinnipeg.proximity.desktop.action.file.SnapshotAction;
 import ca.uwinnipeg.proximity.desktop.action.help.AboutAction;
-import ca.uwinnipeg.proximity.desktop.action.help.ManualAction;
 import ca.uwinnipeg.proximity.desktop.action.view.CenterAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ToggleFeaturesAction;
 import ca.uwinnipeg.proximity.desktop.action.view.TogglePivotAction;
@@ -79,7 +75,6 @@ import ca.uwinnipeg.proximity.desktop.tool.OvalTool;
 import ca.uwinnipeg.proximity.desktop.tool.PointerTool;
 import ca.uwinnipeg.proximity.desktop.tool.PolygonTool;
 import ca.uwinnipeg.proximity.desktop.tool.RectangleTool;
-import ca.uwinnipeg.proximity.desktop.tool.ZoomTool;
 
 /**
  * The main window of the application.
@@ -102,6 +97,8 @@ public class ProximityDesktop extends ApplicationWindow {
   private static ProximityDesktop APP;
   
   private static ProximityController CONTROLLER = new ProximityController();
+  
+  private static final int RECENT_DOCUMENTS_LIMIT = 10;
     
   private Action actnOpen;
   private Action actnSnapshot;
@@ -120,20 +117,21 @@ public class ProximityDesktop extends ApplicationWindow {
   private Action actnRectangle;
   private Action actnOval;
   private Action actnPolygon;
-  private Action actnZoom;
+  //private Action actnZoom;
+  
   private Action actnUndo;
   private Action actnRedo;
-  private Action actnCut;
-  private Action actnCopy;
-  private Action actnPaste;
+  //private Action actnCut;
+  //private Action actnCopy;
+  //private Action actnPaste;
   private Action actnDuplicate;
   private Action actnDelete;
   private Action actnSelectAll;
-  private Action actnManual;
+  //private Action actnManual;
   private Action actnZoomIn;
   private Action actnZoomOut;
   private Action actnZoom1to1;
-  private Action actnZoomSelection;
+  //private Action actnZoomSelection;
   private Action actnZoomImage;
   private Action actnFeatures;
   private Action actnCenter;
@@ -150,8 +148,6 @@ public class ProximityDesktop extends ApplicationWindow {
   
   private Preferences mPrefs = Preferences.userRoot().node("proximity-system");  
   private Preferences mRecentPrefs = mPrefs.node("recent");
-  
-  private static final int RECENT_DOCUMENTS_LIMIT = 10;
   
   // frames
   private Composite frameStack;
@@ -193,17 +189,6 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
 
-  public static ProximityDesktop getApp() {
-    return APP;
-  }
-
-  public static ProximityController getController() {
-    return CONTROLLER;
-  }
-
-  public static ResourceBundle getBundle() {
-  return BUNDLE;  }
-
   /**
    * Create the application window.
    */
@@ -215,19 +200,99 @@ public class ProximityDesktop extends ApplicationWindow {
     addMenuBar();
     //addStatusLine();
   }
+
+  /**
+   * Configure the shell.
+   * @param newShell
+   */
+  @Override
+  protected void configureShell(Shell newShell) {
+    super.configureShell(newShell);
+    newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
+    
+    // set icons
+    String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
+    Display display = Display.getCurrent();
+    
+    Image[] imgs = new Image[] {
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_16.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_24.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_36.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_48.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_64.png").createImage(display),
+      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_128.png").createImage(display)
+  };
   
+    newShell.setImages(imgs);
+    
+    // hide the weird extra seperator
+    getSeperator1().setVisible(false);
+    
+    // set minimum size
+    newShell.setMinimumSize(600, 450);
+    
+  }
+
+  /**
+   * Return the initial size of the window.
+   */
+  @Override
+  protected Point getInitialSize() {
+    return new Point(580, 190);
+  }
+
+  /**
+   * Get the global instance of the application.
+   * @return
+   */
+  public static ProximityDesktop getApp() {
+    return APP;
+  }
+
+  /**
+   * Get the global instance of the {@link ProximityController}.
+   * @return
+   */
+  public static ProximityController getController() {
+    return CONTROLLER;
+  }
+
+  /**
+   * Get the global instance of the message bundle. Use this to get localised strings.
+   * @return
+   */
+  public static ResourceBundle getBundle() {
+    return BUNDLE;  
+  }
+  
+  /**
+   * Get the main image canvas of the application.
+   * @return
+   */
   public ImageCanvas getCanvas() {
     return canvas;
   }
 
+  /**
+   * Get the image currently loaded.
+   * @return
+   */
   public Image getImage() {
     return mImage;
   }
   
+  /**
+   * Get the name of the currently loaded image.
+   * @return
+   */
   public String getImageName() {
     return mImageName;
   }
 
+  /**
+   * Open a file and confirm if there is already an open file.
+   * @param path the path of the file we want to open
+   */
   public void openFile(String path) {  
 
     // if there is an image loaded ask for confirmation
@@ -285,6 +350,11 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
   
+  /**
+   * Sets the property currently being shown. This is the property selected in the bar above the 
+   * canvas.
+   * @param key
+   */
   public void setProperty(Class<? extends PropertyController> key) {
     mProperty = key;
     
@@ -327,11 +397,19 @@ public class ProximityDesktop extends ApplicationWindow {
     mNeighbourhoodsListener.setProperty(key);
   }
 
+  /**
+   * Updates the largest value the epsilon can be set to.
+   */
   public void updateEpsilonMaximum() {
     int digits = mEpsilonSpinner.getDigits();
     mEpsilonSpinner.setMaximum((int) (CONTROLLER.getEpsilonMaximum() * Math.pow(10, digits)));
   }
   
+  /**
+   * Sets the progress of calculating the current property.
+   * @param key
+   * @param value
+   */
   public void setProgress(Class<? extends PropertyController> key, int value) {
     mProgress.put(key, value);
     
@@ -341,52 +419,61 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
   
+  /**
+   * Sets the degree of nearness of the intersection.
+   * @param degree
+   */
   public void setDegree(float degree) {
     mDegreeText.setText(Float.toString(degree));
   }
 
   /**
-   * Configure the shell.
-   * @param newShell
+   * Refreshes the features tree.
    */
-  @Override
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setText(BUNDLE.getString("MainWindow.Shell.text"));
-    
-    // set icons
-    String dir = "/ca/uwinnipeg/proximity/desktop/icons/";
-    Display display = Display.getCurrent();
-    
-    Image[] imgs = new Image[] {
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_16.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_24.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_36.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_48.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_64.png").createImage(display),
-      ResourceManager.getImageDescriptor(ProximityDesktop.class, dir + "launcher_128.png").createImage(display)
-  };
-  
-    newShell.setImages(imgs);
-    
-    // hide the weird extra seperator
-    getSeperator1().setVisible(false);
-    
-    // set minimum size
-    newShell.setMinimumSize(600, 450);
-    
-  }
-  
   public void refreshFeaturesTree() {
     checkboxTreeViewer.refresh();
   }
 
   /**
-   * Return the initial size of the window.
+   * Toggle displaying the features pane.
+   * @param show
    */
-  @Override
-  protected Point getInitialSize() {
-    return new Point(580, 190);
+  public void toggleFeatures(boolean show) {
+    if (show) {
+      //sashForm.setWeights(new int[]{1, 3});
+      sashForm.setMaximizedControl(null);
+      GridLayout gl_canvasFrame = new GridLayout(1, false);
+      gl_canvasFrame.marginRight = 5;
+      gl_canvasFrame.marginWidth = 0;
+      canvasFrame.setLayout(gl_canvasFrame);
+      canvasFrame.layout();
+    }
+    else {
+      //sashForm.setWeights(new int[]{0, 1});
+      sashForm.setMaximizedControl(frameStack);
+      GridLayout gl_canvasFrame = new GridLayout(1, false);
+      gl_canvasFrame.marginRight = 5;
+      gl_canvasFrame.marginWidth = 5;
+      canvasFrame.setLayout(gl_canvasFrame);
+      canvasFrame.layout();
+    }
+  }
+
+  /**
+   * Swaps the currently displayed frame to the given composite.
+   * @param frame
+   */
+  public void swapFrame(Composite frame) {
+    stackLayout.topControl = frame;
+    frameStack.layout();
+  }
+
+  /**
+   * The number of digits used by the epsilon spinner.
+   * @return
+   */
+  protected int getEpsilonDigits() {
+    return 3;
   }
 
   /**
@@ -410,7 +497,7 @@ public class ProximityDesktop extends ApplicationWindow {
   }
   
   /**
-   * Create the right-hand sash to display features.
+   * Create the left-hand sash to display features.
    * @param container
    */
   private void createFeaturesPane(Composite container) {
@@ -437,6 +524,9 @@ public class ProximityDesktop extends ApplicationWindow {
     Menu menu = menuMgr.createContextMenu(tree);
     menuMgr.addMenuListener(new IMenuListener() {
       
+      /**
+       * Create a remove feature action if something is selected.
+       */
       public void menuAboutToShow(IMenuManager manager) {
         ITreeSelection selection = (ITreeSelection) checkboxTreeViewer.getSelection();
         if (selection.isEmpty()) {
@@ -450,10 +540,11 @@ public class ProximityDesktop extends ApplicationWindow {
     menuMgr.setRemoveAllWhenShown(true);
     tree.setMenu(menu);
     
+    // create the title column of the feature tree
     TreeColumn trclmnNewColumn = new TreeColumn(tree, 0);
     trclmnNewColumn.setWidth(120);
     trclmnNewColumn.setResizable(false);
-    trclmnNewColumn.setText(BUNDLE.getString("ProximityDesktop.trclmnNewColumn.text")); //$NON-NLS-1$
+    trclmnNewColumn.setText(BUNDLE.getString("ProximityDesktop.trclmnNewColumn.text"));
     
     // create the add features button
     ActionContributionItem add = new ActionContributionItem(actnAddFeatures);
@@ -463,19 +554,6 @@ public class ProximityDesktop extends ApplicationWindow {
     btnAdd.setText(BUNDLE.getString("Actions.EditFeatures.text"));
   }
   
-  /**
-   * Toggle displaying the features pane.
-   * @param show
-   */
-  public void toggleFeatures(boolean show) {
-    if (show) {
-      sashForm.setWeights(new int[]{1, 3});
-    }
-    else {
-      sashForm.setWeights(new int[]{0, 1});
-    }
-  }
-
   /**
    * Create the sash to display the image and select image panes.
    * @param container
@@ -494,15 +572,6 @@ public class ProximityDesktop extends ApplicationWindow {
     frameStack.layout();
   }
   
-  /**
-   * Swaps the currently displayed frame to the given composite.
-   * @param frame
-   */
-  public void swapFrame(Composite frame) {
-    stackLayout.topControl = frame;
-    frameStack.layout();
-  }
-
   /**
    * Creates the frame with the canvas and property selection.
    * @param container
@@ -543,10 +612,10 @@ public class ProximityDesktop extends ApplicationWindow {
       MenuManager menuMgr = new MenuManager();
       menuMgr.add(actnUndo);
       menuMgr.add(actnRedo);
-      menuMgr.add(new Separator());
-      menuMgr.add(actnCut);
-      menuMgr.add(actnCopy);
-      menuMgr.add(actnPaste);
+//      menuMgr.add(new Separator());
+//      menuMgr.add(actnCut);
+//      menuMgr.add(actnCopy);
+//      menuMgr.add(actnPaste);
       menuMgr.add(new Separator());
       menuMgr.add(actnDuplicate);
       menuMgr.add(actnDelete);
@@ -597,10 +666,6 @@ public class ProximityDesktop extends ApplicationWindow {
     }
   }
   
-  protected int getEpsilonDigits() {
-    return 3;
-  }
-  
   /**
    * Create the frame with the button requesting to select the first image.
    * @param container
@@ -636,9 +701,9 @@ public class ProximityDesktop extends ApplicationWindow {
     // edit
     actnUndo = new UndoAction();
     actnRedo = new RedoAction();
-    actnCut = new CopyAction();
-    actnCopy = new CutAction();
-    actnPaste = new PasteAction();
+//    actnCut = new CopyAction();
+//    actnCopy = new CutAction();
+//    actnPaste = new PasteAction();
     actnDuplicate = new DuplicateAction();
     actnDelete = new DeleteAction();
     actnSelectAll = new SelectAllAction();
@@ -647,14 +712,14 @@ public class ProximityDesktop extends ApplicationWindow {
     actnZoomIn = new ZoomInAction();
     actnZoomOut = new ZoomOutAction();
     actnZoom1to1 = new ZoomTo1Action();
-    actnZoomSelection = new ZoomSelectionAction();
+    //actnZoomSelection = new ZoomSelectionAction();
     actnZoomImage = new ZoomImageAction();
     actnFeatures = new ToggleFeaturesAction();
     actnCenter = new CenterAction();
     actnPivots = new TogglePivotAction();
     
     // help
-    actnManual = new ManualAction();
+    //actnManual = new ManualAction();
     actnAbout = new AboutAction();
     
     // properties
@@ -673,7 +738,7 @@ public class ProximityDesktop extends ApplicationWindow {
     actnRectangle = new RectangleTool.Action();
     actnOval = new OvalTool.Action();
     actnPolygon = new PolygonTool.Action();
-    actnZoom = new ZoomTool.Action();
+    //actnZoom = new ZoomTool.Action();
     
     // features
     actnAddFeatures = new EditFeaturesAction();
@@ -690,7 +755,7 @@ public class ProximityDesktop extends ApplicationWindow {
         actnRectangle,
         actnOval,
         actnPolygon,
-        actnZoom,
+        //actnZoom,
         actnCenter,
         actnPivots
     };
@@ -701,11 +766,11 @@ public class ProximityDesktop extends ApplicationWindow {
     
     // record all actions that need a selection
     mSelectionDependantActions = new Action[] {
-        actnCut,
-        actnCopy,
+//        actnCut,
+//        actnCopy,
         actnDuplicate,
         actnDelete,
-        actnZoomSelection
+//        actnZoomSelection
     };
     
     for (Action a : mSelectionDependantActions) {
@@ -756,10 +821,10 @@ public class ProximityDesktop extends ApplicationWindow {
     menuManager.add(menuEdit);
     menuEdit.add(actnUndo);
     menuEdit.add(actnRedo);
-    menuEdit.add(new Separator());
-    menuEdit.add(actnCut);
-    menuEdit.add(actnCopy);
-    menuEdit.add(actnPaste);
+//    menuEdit.add(new Separator());
+//    menuEdit.add(actnCut);
+//    menuEdit.add(actnCopy);
+//    menuEdit.add(actnPaste);
     menuEdit.add(new Separator());
     menuEdit.add(actnDuplicate);
     menuEdit.add(new Separator());
@@ -778,7 +843,7 @@ public class ProximityDesktop extends ApplicationWindow {
     menuZoom.add(actnZoomOut);
     menuZoom.add(new Separator());
     menuZoom.add(actnZoom1to1);
-    menuZoom.add(actnZoomSelection);
+//    menuZoom.add(actnZoomSelection);
     menuZoom.add(actnZoomImage);
     menuView.add(new Separator());
     menuView.add(actnFeatures);
@@ -786,7 +851,7 @@ public class ProximityDesktop extends ApplicationWindow {
     
     MenuManager menuHelp = new MenuManager(BUNDLE.getString("MainWindow.Help.text"));
     menuManager.add(menuHelp);
-    menuHelp.add(actnManual);
+    //menuHelp.add(actnManual);
     menuHelp.add(new Separator());
     menuHelp.add(actnAbout);
     return menuManager;
@@ -801,8 +866,8 @@ public class ProximityDesktop extends ApplicationWindow {
   }
 
   /**
-   * Create the toolbar manager.
-   * @return the toolbar manager
+   * Create the tool bar manager.
+   * @return the tool bar manager
    */
   @Override
   protected ToolBarManager createToolBarManager(int style) {
@@ -812,7 +877,7 @@ public class ProximityDesktop extends ApplicationWindow {
     toolBarManager.add(actnRectangle);
     toolBarManager.add(actnOval);
     toolBarManager.add(actnPolygon);
-    toolBarManager.add(actnZoom);
+    //toolBarManager.add(actnZoom);
     toolBarManager.add(actnSnapshot);
     return toolBarManager;
   }
@@ -828,7 +893,7 @@ public class ProximityDesktop extends ApplicationWindow {
   }
 
   /**
-   * Enable all actions that only make ssense when we have an image.
+   * Enable all actions that only make sense only when we have an image.
    */
   private void enableImageActions() {
     for (Action a : mImageDependantActions) {

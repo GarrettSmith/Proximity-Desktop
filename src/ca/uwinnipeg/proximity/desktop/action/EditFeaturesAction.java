@@ -9,6 +9,7 @@ import ca.uwinnipeg.proximity.desktop.AddFeaturesDialog;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Creates an {@link AddFeaturesDialog} when ran.
  * @author garrett
  *
  */

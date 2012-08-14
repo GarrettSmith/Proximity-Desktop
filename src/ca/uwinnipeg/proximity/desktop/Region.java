@@ -96,10 +96,6 @@ public class Region {
     return bounds;
   }
 
-//  public RectF getBoundsF() {
-//    return new RectF(mBounds.left, mBounds.top, mBounds.right, mBounds.bottom);
-//  }
-
   /**
    * Sets bounds of region.
    * @param r
@@ -109,7 +105,7 @@ public class Region {
     Rectangle bounds = getBounds();
     Rectangle dirty = new Rectangle(bounds.x, bounds.y, bounds.width, bounds.height);
     mPoly.setBounds(r);
-    copyRectangle(r, mBounds);
+    RectangleUtil.copy(r, mBounds);
     dirty.union(getBounds());
     return dirty;
   }
@@ -127,52 +123,13 @@ public class Region {
     return setBounds(new Rectangle(padding, padding, w-padding, h-padding));
   }
   
+  /**
+   * Update the bounds of the region.
+   */
   public void updateBounds() {
     if (mShape == Shape.POLYGON) {
-      copyRectangle(getBounds(), mBounds);
+      RectangleUtil.copy(getBounds(), mBounds);
     }
-  }
-  
-  private static void copyRectangle(Rectangle source, Rectangle dest) {
-    dest.x = source.x;
-    dest.y = source.y;
-    dest.width = source.width;
-    dest.height = source.height;
-  }
-  
-  private static int centerX(Rectangle r) {
-    return (r.x + (r.width / 2));
-  }
-
-  private static int centerY(Rectangle r) {
-    return (r.y + (r.height / 2));
-  }
-  
-  private static void offsetRectangle(Rectangle r, int dx, int dy) {
-    r.x += dx;
-    r.y += dy;
-  }
-  
-  private static void offsetRectangleTo(Rectangle r, int x, int y) {
-    int dx = x - r.x;
-    int dy = y - r.y;
-    offsetRectangle(r, dx, dy);
-  }
-  
-  private static int right(Rectangle r) {
-    return r.x + r.width;
-  }
-  
-  private static int bottom(Rectangle r) {
-    return r.y + r.height;
-  }
-  
-  private static void setRight(Rectangle r, int right) {
-    r.width = right - r.x;
-  }
-
-  private static void setBottom(Rectangle r, int bottom) {
-    r.height = bottom - r.y;
   }
   
   /**
@@ -208,7 +165,7 @@ public class Region {
    */
   public Rectangle setPolygon(Polygon poly) {
     Rectangle dirty = new Rectangle(0, 0, 0, 0);
-    copyRectangle(getBounds(), dirty);
+    RectangleUtil.copy(getBounds(), dirty);
     mPoly.set(poly);
     updateBounds();
     dirty.union(getBounds());
@@ -221,7 +178,7 @@ public class Region {
    */
   public Rectangle resetPolygon() {
     Rectangle dirty = new Rectangle(0, 0, 0, 0);
-    copyRectangle(getBounds(), dirty);
+    RectangleUtil.copy(getBounds(), dirty);
     mPoly.reset();
     updateBounds();
     return dirty;
@@ -244,6 +201,10 @@ public class Region {
     }
   }
   
+  /**
+   * Returns the points of the region in an int array.
+   * @return
+   */
   public int[] toArray() {
     Point[] points = getPoints();
     int[] rtn = new int[points.length * 2];
@@ -255,6 +216,11 @@ public class Region {
     return rtn;
   }
   
+  /**
+   * Returns whether the given point is contained by the region.
+   * @param point
+   * @return
+   */
   public boolean contains(Point point) {
     Rectangle bounds = getBounds();
     boolean contains = false;
@@ -265,11 +231,11 @@ public class Region {
           contains = mPoly.contains(point.x, point.y);
           break;
         case OVAL:
-          int cx = centerX(bounds);
-          int cy = centerY(bounds);
-          int rx2 = right(bounds) - cx;
+          int cx = RectangleUtil.centerX(bounds);
+          int cy = RectangleUtil.centerY(bounds);
+          int rx2 = RectangleUtil.right(bounds) - cx;
           rx2 *= rx2; // square
-          int ry2 = bottom(bounds) - cy;
+          int ry2 = RectangleUtil.bottom(bounds) - cy;
           ry2 *= ry2; // square
           float dx = (float)(point.x - cx);
           dx *= dx;
@@ -304,8 +270,8 @@ public class Region {
         // find all the points within the poly
         int[] tmp = new int[bounds.width * bounds.height];
         int i = -1;
-        for (int y = bounds.y; y < bottom(bounds); y++) {
-          for (int x = bounds.x; x < right(bounds); x++) {
+        for (int y = bounds.y; y < RectangleUtil.bottom(bounds); y++) {
+          for (int x = bounds.x; x < RectangleUtil.right(bounds); x++) {
             if (mPoly.contains(x, y)) {
               tmp[++i] = mImage.getIndex(x, y);
             }
@@ -320,15 +286,15 @@ public class Region {
         int[] tmp2 = new int[bounds.width * bounds.height];
         int j = -1;
 
-        int cx = centerX(bounds);
-        int cy = centerY(bounds);
-        int rx2 = right(bounds) - cx;
+        int cx = RectangleUtil.centerX(bounds);
+        int cy = RectangleUtil.centerY(bounds);
+        int rx2 = RectangleUtil.right(bounds) - cx;
         rx2 *= rx2; // square
-        int ry2 = bottom(bounds) - cy;
+        int ry2 = RectangleUtil.bottom(bounds) - cy;
         ry2 *= ry2; // square
         
-        for (int y = bounds.y; y < bottom(bounds); y++) {
-          for (int x = bounds.x; x < right(bounds); x++) {
+        for (int y = bounds.y; y < RectangleUtil.bottom(bounds); y++) {
+          for (int x = bounds.x; x < RectangleUtil.right(bounds); x++) {
             
             float dx = (float)(x - cx);
             dx *= dx;
@@ -348,7 +314,11 @@ public class Region {
         break;
         
       default: // RECTANGLE
-        indices = mImage.getIndices(bounds.x, bounds.y, right(bounds), bottom(bounds));
+        indices = mImage.getIndices(
+            bounds.x, 
+            bounds.y, 
+            RectangleUtil.right(bounds), 
+            RectangleUtil.bottom(bounds));
         break;
     }
     return indices;
@@ -374,7 +344,7 @@ public class Region {
    */  
   public int getCenterIndex() {
     Rectangle bounds = getBounds();
-    return mImage.getIndex(centerX(bounds), centerY(bounds));
+    return mImage.getIndex(RectangleUtil.centerX(bounds), RectangleUtil.centerY(bounds));
   }
   
   /**
@@ -386,16 +356,16 @@ public class Region {
     Rectangle bounds = getBounds();
   
     // move
-    offsetRectangle(bounds, dx, dy);
+    RectangleUtil.offset(bounds, dx, dy);
   
     // constrain top and left
-    offsetRectangleTo(
+    RectangleUtil.offsetTo(
         bounds, 
         Math.max(0, bounds.x),
         Math.max(0, bounds.y));
   
     // constrain bottom and right
-    offsetRectangleTo(
+    RectangleUtil.offsetTo(
         bounds,
         Math.min(mImage.getWidth() - bounds.width, bounds.x),
         Math.min(mImage.getHeight() - bounds.height, bounds.y));
@@ -415,25 +385,32 @@ public class Region {
     return setBounds(newBounds);
   }
 
+  /**
+   * Resizes the given edge of the region by the given deltas.
+   * @param dx
+   * @param dy
+   * @param edg
+   * @param newBounds
+   */
   private void resize(int dx, int dy, Edge edg, Rectangle newBounds) {
     switch (edg) {
       case L: 
         // constrain to image area
         newBounds.x = Math.max(0, newBounds.x + dx); 
         // prevent flipping and keep min size
-        newBounds.x = Math.min(newBounds.x, right(newBounds)); 
+        newBounds.x = Math.min(newBounds.x, RectangleUtil.right(newBounds)); 
         break;
       case R: 
-        setRight(newBounds, (Math.min(mImage.getWidth(), right(newBounds) + dx)));
-        setRight(newBounds, Math.max(right(newBounds), newBounds.x));
+        RectangleUtil.setRight(newBounds, (Math.min(mImage.getWidth(), RectangleUtil.right(newBounds) + dx)));
+        RectangleUtil.setRight(newBounds, Math.max(RectangleUtil.right(newBounds), newBounds.x));
         break;
       case T: 
         newBounds.y = Math.max(0, newBounds.y + dy);
-        newBounds.y = Math.min(newBounds.y, bottom(newBounds));
+        newBounds.y = Math.min(newBounds.y, RectangleUtil.bottom(newBounds));
         break;
       case B: 
-        setBottom(newBounds, Math.min(mImage.getHeight(), bottom(newBounds) + dy));
-        setBottom(newBounds, Math.max(bottom(newBounds), newBounds.y));
+        RectangleUtil.setBottom(newBounds, Math.min(mImage.getHeight(), RectangleUtil.bottom(newBounds) + dy));
+        RectangleUtil.setBottom(newBounds, Math.max(RectangleUtil.bottom(newBounds), newBounds.y));
         break;
       case TL:
         resize(dx, dy, Edge.T, newBounds);
@@ -455,6 +432,11 @@ public class Region {
     }
   }
 
+  /**
+   * Adds a point to the polygon of the region.
+   * @param x
+   * @param y
+   */
   public void addPoint(int x, int y) {
     mPoly.addPoint(x, y);
     updateBounds();

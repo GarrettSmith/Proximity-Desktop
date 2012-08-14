@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that toggles displaying the features pane.
  * @author garrett
  *
  */

@@ -36,8 +36,13 @@ import ca.uwinnipeg.proximity.desktop.features.FeaturesLabelProvider;
 import org.eclipse.swt.widgets.Text;
 
 //TODO: preserve path?
-//TODO: prevent duplicates
+/**
+ * The dialog used to add external {@link ProbeFunc}s for use calculating properties.
+ * @author Garrett Smith
+ *
+ */
 public class AddFeaturesDialog extends Dialog {
+  
   private Composite container;
   
   private CheckboxTreeViewer treeViewer;
@@ -46,6 +51,7 @@ public class AddFeaturesDialog extends Dialog {
 
   private String mPath;
   
+  // filters out files that end in ".class"
   protected FilenameFilter mClassFileNameFilter = new FilenameFilter() {
     
     public boolean accept(File dir, String name) {
@@ -57,6 +63,7 @@ public class AddFeaturesDialog extends Dialog {
   
   boolean mTextValid = false;
   
+  // checks if the category text is non empty
   private ModifyListener mTextListener = new ModifyListener() {
     
     public void modifyText(ModifyEvent e) {
@@ -69,6 +76,7 @@ public class AddFeaturesDialog extends Dialog {
   
   boolean mFuncsValid = false;
   
+  // checks if any funcs are pressed
   private ICheckStateListener mFuncsListeners = new ICheckStateListener() {
     
     public void checkStateChanged(CheckStateChangedEvent event) {
@@ -192,6 +200,9 @@ public class AddFeaturesDialog extends Dialog {
     return new Point(450, 500);
   }
 
+  /**
+   * Open a directory dialog for the user to select the directory to load class files from.
+   */
   public void doBrowse() {
     DirectoryDialog dialog = new DirectoryDialog(getShell());
     dialog.setFilterPath(mPath); // start from current directory
@@ -204,6 +215,11 @@ public class AddFeaturesDialog extends Dialog {
     }
   }
   
+  /**
+   * Load probe func classes from the given path. 
+   * @param path
+   */
+  //TODO: support classes in packages other than the empty default package.
   protected void onPathSelected(String path) {
     File dir = new File(path);
     
@@ -275,6 +291,7 @@ public class AddFeaturesDialog extends Dialog {
   @Override
   protected void okPressed() {
     @SuppressWarnings("unchecked")
+    // add all the checked funcs to the controller in the given category
     Object[] funcsArray = treeViewer.getCheckedElements();
     List<ProbeFunc<Integer>> funcs = new ArrayList<ProbeFunc<Integer>>();
     for (int i = 0; i < funcsArray.length; i++) {
@@ -284,6 +301,9 @@ public class AddFeaturesDialog extends Dialog {
     super.okPressed();
   };
   
+  /**
+   * Sets if the ok button is enabled.
+   */
   protected void updateOkEnabled() {
     getOKButton().setEnabled(mFuncsValid && mTextValid);
   }

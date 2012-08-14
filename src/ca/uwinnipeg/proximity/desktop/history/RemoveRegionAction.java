@@ -10,6 +10,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
+ * A {@link HistoryAction} that removes one or more regions from the controller.
  * @author Garrett Smith
  *
  */

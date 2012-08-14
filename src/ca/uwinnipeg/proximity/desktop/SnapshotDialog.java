@@ -28,11 +28,21 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+/**
+ * The dialog used to save snapshots of the canvas to disk.
+ * @author Garrett Smith
+ *
+ */
 //TODO: DOCUMENT!
 //TODO: preserve alpha
 //TODO: externalize strings
 public class SnapshotDialog extends Dialog {
   
+  /**
+   * Draws the thumbnail of the image to be saved to the thumbnail canvas on paint events.
+   * @author Garrett Smith
+   *
+   */
   public class ThumbnailPaintListener implements PaintListener {
     
     // create thumbnail image
@@ -114,12 +124,20 @@ public class SnapshotDialog extends Dialog {
     return container;
   }
   
+  /**
+   * Create the thumbnail canvas.
+   * @param container
+   */
   private void createImage(Composite container) {    
     Label lblThumb = new Label(container, SWT.BORDER);
     lblThumb.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
     lblThumb.addPaintListener(new ThumbnailPaintListener());
   }
   
+  /**
+   * Create the options the user can set.
+   * @param container
+   */
   private void createOptions(Composite container) {
     Label lblName = new Label(container, SWT.NONE);
     lblName.setText(ProximityDesktop.getBundle().getString("SnapshotDialog.NameLabel.text"));
@@ -150,9 +168,13 @@ public class SnapshotDialog extends Dialog {
         widgetSelected(e);
       }
     });
-    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar)));
+    btnFolder.setText(mPath.substring(mPath.lastIndexOf(File.separatorChar) + 1));
   }
 
+  /**
+   * Get the default directory to save the image into.
+   * @return
+   */
   public String getDefaultFileName() {
     int i = 0;
     String origName = mFileName.substring(0, mFileName.lastIndexOf('.'));
@@ -171,8 +193,8 @@ public class SnapshotDialog extends Dialog {
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
     createButton(parent, IDialogConstants.OK_ID, "Save", true);
-    Button button = createButton(parent, 0, "Copy to Clipboard", false);
-    button.setEnabled(false);
+//    Button button = createButton(parent, 0, "Copy to Clipboard", false);
+//    button.setEnabled(false);
     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
   }
 
@@ -203,6 +225,10 @@ public class SnapshotDialog extends Dialog {
     }
   }
   
+  /**
+   * Save the image to disc
+   * @return
+   */
   public int doSave() {
     String fileName = mPath + '/' + text.getText();
     File file = new File(fileName);
@@ -245,7 +271,7 @@ public class SnapshotDialog extends Dialog {
   }
   
   /**
-   * 
+   * Sets the path to the current path.
    */
   private void doSetup() {
     mPath = mPrefs.get(PATH, new File("").getAbsolutePath());
@@ -259,7 +285,7 @@ public class SnapshotDialog extends Dialog {
     String path = dialog.open();
     
     if (path != null) {
-      btnFolder.setText(path.substring(path.lastIndexOf(File.separatorChar)));
+      btnFolder.setText(path.substring(path.lastIndexOf(File.separatorChar) + 1));
       mPath = path;
       mPrefs.put(PATH, mPath);
     }

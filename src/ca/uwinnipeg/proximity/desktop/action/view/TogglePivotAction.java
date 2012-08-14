@@ -6,6 +6,11 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
+/**
+ * An action that toggles drawing the center pivot pixels of regions.
+ * @author Garrett Smith
+ *
+ */
 public class TogglePivotAction extends Action {
 
   public TogglePivotAction() {

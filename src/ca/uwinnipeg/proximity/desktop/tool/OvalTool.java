@@ -10,6 +10,7 @@ import ca.uwinnipeg.proximity.desktop.Region;
 import ca.uwinnipeg.proximity.desktop.action.ToolAction;
 
 /**
+ * A tool that adds oval regions to the system.
  * @author Garrett Smith
  *
  */

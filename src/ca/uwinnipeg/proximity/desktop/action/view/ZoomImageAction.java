@@ -8,6 +8,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that sets the zoom to fit the image to the canvas.
  * @author garrett
  *
  */

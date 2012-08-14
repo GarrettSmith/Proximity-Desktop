@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
+ * A history action for modifying regions. This isn't used currently.
  * @author Garrett Smith
  *
  */

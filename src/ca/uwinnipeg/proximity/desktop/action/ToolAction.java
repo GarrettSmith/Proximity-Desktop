@@ -10,6 +10,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.tool.Tool;
 
 /**
+ * An action that registers the given tool to operate on the canvas.
  * @author garrett
  *
  */

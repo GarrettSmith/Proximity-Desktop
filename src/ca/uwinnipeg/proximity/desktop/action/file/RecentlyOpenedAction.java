@@ -10,6 +10,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that opens recently opened file.
  * @author garrett
  *
  */

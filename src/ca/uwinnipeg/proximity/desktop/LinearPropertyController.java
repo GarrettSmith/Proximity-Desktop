@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Display;
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 
 /**
+ * A {@link PropertyController} that calculates a property by linearly going through each each added
+ * region until the final property is calculated.
  * @author Garrett Smith
  *
  */

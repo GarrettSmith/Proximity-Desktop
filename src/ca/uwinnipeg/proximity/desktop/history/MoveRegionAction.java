@@ -14,6 +14,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.Region;
 
 /**
+ * Creates a {@link HistoryAction} that represents moving one or more regions.
  * @author Garrett Smith
  *
  */

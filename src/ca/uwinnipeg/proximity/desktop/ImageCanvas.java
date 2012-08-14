@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 /**
+ * The canvas used to draw the currently selected image and the property we are currently 
+ * interested in.
  * @author Garrett Smith
  *
  */
@@ -143,6 +145,11 @@ public class ImageCanvas extends Canvas {
     if (changed) redraw();
   }
 
+  /**
+   * Get an image that represents the current view of the image canvas.
+   * This is used to generate the image saved as a snapshot.
+   * @return
+   */
   public Image getImage() {
     Rectangle bounds = mImage.getBounds();
     Image img = new Image(mDisplay, bounds.width, bounds.height);
@@ -237,10 +244,27 @@ public class ImageCanvas extends Canvas {
     mOldBounds = currentBounds;
   }
   
+  /**
+   * Draws the given region on the canvas.
+   * @param gc the GC being used
+   * @param region the region to be drawn
+   * @param selected whether the region should be drawn as selected
+   * @param drawCenter whether the center pixel of the region should be blown up and drawn
+   * @param scale whether the region should be scaled to the screen
+   */
   public void drawRegion(GC gc, Region region, boolean selected, boolean drawCenter, boolean scale) {
     drawRegion(gc, region.getShape(), region.toArray(), selected, drawCenter, scale);
   }
   
+  /**
+   * Draws a region using the given shape and points.
+   * @param gc the GC being used
+   * @param shape the shape to be drawn
+   * @param points the points used to define the shape
+   * @param selected whether the region should be drawn as selected
+   * @param drawCenter whether the center pixel of the region should be blown up and drawn
+   * @param scale whether the region should be scaled to the screen
+   */
   public void drawRegion(
       GC gc, 
       Region.Shape shape, 
@@ -257,6 +281,7 @@ public class ImageCanvas extends Canvas {
     // translate to screen space
     int[] usedPoints;
     
+    // check if we should scale to screen space
     if (scale) {
       usedPoints = toScreenSpace(points);
     }
@@ -293,7 +318,7 @@ public class ImageCanvas extends Canvas {
         break;
     }
     
-    // draw the center pixel blow up
+    // draw the center pixel blown up
     if (drawCenter) {
       
       Rectangle imageBounds = new Rectangle(0, 0, 0, 0);
@@ -387,31 +412,42 @@ public class ImageCanvas extends Canvas {
       else {
         float dx = (float)(current.width - old.width) / 2;
         float dy = (float)(current.height - old.height) / 2;
-//        mTranslateX += dx;
-//        mTranslateY += dy;
         mTransform.translate(dx, dy);
       }
     }
   }  
   
+  /**
+   * Gets values from the image transformation.
+   * @return
+   */
   private float[] getValues() {
     float[] values = new float[6];
     mTransform.getElements(values);
     return values;
   }
   
+  /**
+   * Get the current scale.
+   * @return
+   */
   public float getScale() {
-//    return mScale;
     return getValues()[0];
   }
   
+  /**
+   * Get the translation in the x axis.
+   * @return
+   */
   public float getTranslateX() {
-//    return mTranslateX;
     return getValues()[4];
   }
   
+  /**
+   * Get the translation in the y axis.
+   * @return
+   */
   public float getTranslateY() {
-//    return mTranslateY;
     return getValues()[5];
   }
   
@@ -431,16 +467,29 @@ public class ImageCanvas extends Canvas {
     }
   }
   
+  /**
+   * Sets the scale to 1 so the image is 1 to 1 on the screen.
+   */
   public void zoomTo1() {
     zoomTo(1);
     mFitToImage = false;
   }
   
+  /**
+   * Zoom to the given scale from the center of the image.
+   * @param scale
+   */
   public void zoomTo(float scale) {
     float dScale = scale / getScale();
     zoomBy(dScale);
   }
   
+  /**
+   * Zooms to the given scale at the given point.
+   * @param startPoint
+   * @param endPoint
+   */
+  // TODO: get this working!
   public void zoomTo(Point startPoint, Point endPoint) {
     
     Rectangle canvasBounds = getBounds();
@@ -480,6 +529,10 @@ public class ImageCanvas extends Canvas {
     redraw();
   }
 
+  /**
+   * Zooms using the given delta in scale at the center of the image.
+   * @param dScale
+   */
   public void zoomBy(float dScale) {    
     Rectangle imageBounds = mImage.getBounds();
     float scale = getScale();
@@ -504,6 +557,12 @@ public class ImageCanvas extends Canvas {
 //    zoomBy(dScale, bounds.width / 2, bounds.height / 2);
   }
   
+  /**
+   * Zooms using the given delta in scale at the given point.
+   * @param dScale
+   * @param x
+   * @param y
+   */
   public void zoomBy(float dScale, float x, float y) {
     Rectangle imageBounds = mImage.getBounds();
     float scale = getScale();
@@ -525,34 +584,58 @@ public class ImageCanvas extends Canvas {
     redraw();
   }
 
+  /**
+   * Zoom in to the image at a default value.
+   */
   public void zoomIn() {
     zoomBy(1.2f);
     mFitToImage = false;
   }
   
+  /**
+   * Zoom out of the image at a default value.
+   */
   public void zoomOut() {
 //    zoomTo(Math.max(mScale * 0.9f, mMinScale));
     zoomTo(Math.max(getScale() * 0.8f, mMinScale));
     mFitToImage = false;
   }
   
+  /**
+   * Sets the current pan to the current value.
+   * @param x
+   * @param y
+   */
   public void panTo(float x, float y) {
     float dx = getTranslateX() - x;
     float dy = getTranslateY() - y;
     panBy(dx, dy);
   }
   
+  /**
+   * Pans the image by the given deltas.
+   * @param dx
+   * @param dy
+   */
   public void panBy(float dx, float dy) {
     float scale = getScale();
     mTransform.translate(dx / scale, dy / scale);
     redraw();
   }
   
+  /**
+   * Called by outside objects to pan the image.
+   * @param dx
+   * @param dy
+   */
   public void pan(float dx, float dy) {
     panBy(dx, dy);
     mFitToImage = false;
   }
   
+  /**
+   * Centers the image in the screen.
+   */
   public void center() {
     Rectangle canvasBounds = getBounds();
     Rectangle imageBounds = mImage.getBounds();
@@ -566,6 +649,11 @@ public class ImageCanvas extends Canvas {
     redraw();
   }
   
+  /**
+   * Converts a point from screen space to image space.
+   * @param p
+   * @return
+   */
   public Point toImageSpace(Point p) {
     Point rtn = new Point(p.x, p.y);
     
@@ -581,6 +669,11 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
+  /**
+   * Converts a point from image space to screen space.
+   * @param p
+   * @return
+   */
   public Point toScreenSpace(Point p) {
     Point rtn = new Point(p.x, p.y);
     
@@ -596,6 +689,12 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
+  /**
+   * Converts an array of integers representing points alternating the x and y value from image
+   * space to screen space.
+   * @param points
+   * @return
+   */
   public int[] toScreenSpace(int[] points) {
     int[] rtn = new int[points.length];
     
@@ -616,6 +715,11 @@ public class ImageCanvas extends Canvas {
     return rtn;
   }
   
+  /**
+   * Converts a rectangle from image space to screen space.
+   * @param r
+   * @return
+   */
   public Rectangle toScreenSpace(Rectangle r) {
     
     // un-scale

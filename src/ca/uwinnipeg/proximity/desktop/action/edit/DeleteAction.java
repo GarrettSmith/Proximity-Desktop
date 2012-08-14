@@ -11,6 +11,7 @@ import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.desktop.history.RemoveRegionAction;
 
 /**
+ * An action that deletes the selected regions.
  * @author garrett
  *
  */

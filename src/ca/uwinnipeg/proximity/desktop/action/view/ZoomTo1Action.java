@@ -8,6 +8,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Sets the zoom level to 1. That is the image is displayed 1 to 1 on the screen.
  * @author garrett
  *
  */

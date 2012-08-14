@@ -10,6 +10,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.SnapshotDialog;
 
 /**
+ * An action that creates a snapshot dialog to save the current image.
  * @author garrett
  *
  */

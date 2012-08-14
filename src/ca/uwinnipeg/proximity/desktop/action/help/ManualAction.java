@@ -8,6 +8,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Show a dialog with the usage manual. This does nothing right now.
  * @author garrett
  *
  */

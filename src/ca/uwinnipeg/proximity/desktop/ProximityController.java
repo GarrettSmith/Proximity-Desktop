@@ -33,9 +33,9 @@ import ca.uwinnipeg.proximity.image.GreenFunc;
 import ca.uwinnipeg.proximity.image.Image;
 import ca.uwinnipeg.proximity.image.RedFunc;
 
-
 /**
- * The main controller of the application.
+ * The main controller of the application, maintains all the {@link PropertyController}s and the 
+ * {@link Image} perceptual system.
  * @author Garrett Smith
  *
  */
@@ -93,7 +93,9 @@ public class ProximityController {
     createPropertyControllers();
   }
   
-  //TODO: load external funcs
+  /**
+   * Loads the initial probe functions and their enabled status.
+   */
   @SuppressWarnings("unchecked")
   private void loadFuncs() {
     // load the default probe functions and enable
@@ -173,6 +175,9 @@ public class ProximityController {
     }
   }
 
+  /**
+   * Creates the initial property controllers.
+   */
   private void createPropertyControllers() {
     for (Class<PropertyController> clazz : PROPERTY_CONTROLLER_CLASSES) {
       try {
@@ -190,14 +195,29 @@ public class ProximityController {
     }
   }
   
+  /**
+   * Returns the instantiated {@link PropertyController} of the given class if it exists.
+   * @param key
+   * @return
+   */
   public PropertyController getPropertyController(Class<? extends PropertyController> key) {
     return mPropertyControllers.get(key);
   }
   
+  /**
+   * Returns all the categories of features loaded.
+   * @return
+   */
   public Collection<Category<Integer>> getCategories() {
     return mCategories.values();
   }
   
+  /**
+   * Adds a list of {@link ProbeFunc}s under the given category.
+   * @param categoryName the name of the category to add to
+   * @param funcs the list of funcs
+   * @param path the file system path to the class files so the funcs can be reloaded
+   */
   // TODO: prevent duplicates
   public void addProbeFuncs(String categoryName, List<ProbeFunc<Integer>> funcs, String path) {
     // find the given category
@@ -219,7 +239,54 @@ public class ProximityController {
     // update the tree in the window
     ProximityDesktop.getApp().refreshFeaturesTree();
   }
+  
+  /**
+   * Removes probe funcs from the system.
+   * @param func
+   */
+  // TODO: prevent removing default funcs
+  public void removeProbeFuncs(ProbeFunc<Integer> func) {
+    for (Category<Integer> cat: mCategories.values()) {
+      cat.remove(func);
+      // remove category if it is empty
+      if (cat.isEmpty()) {
+        mCategories.remove(cat.getName());
+      }
+      // update preferences
+      String className = func.getClass().getName();
+      mFuncPrefs.remove(className);
+      mCatPrefs.remove(className);
+      mClassPrefs.remove(className);
+    }
+    // remove from the system
+    mImage.removeProbeFunc(func);
+    // update the tree in the window
+    ProximityDesktop.getApp().refreshFeaturesTree();
+  }
+  
+  /**
+   * Removes a category of {@link ProbeFunc}s.
+   * @param category
+   */
+  // TODO: prevent removing default categories
+  public void removeCategory(Category<Integer> category) {
+    // remove from categories
+    mCategories.remove(category.getName());
+    // remove all the child funcs
+    for (ProbeFunc<Integer> f: category.getProbeFuncs()) {
+      String className = f.getClass().getName();
+      mFuncPrefs.remove(className);
+      mCatPrefs.remove(className);
+      mClassPrefs.remove(className);
+    }
+    // update the tree in the window
+    ProximityDesktop.getApp().refreshFeaturesTree();
+  }
 
+  /**
+   * Returns the number of {@link ProbeFunc}s loaded.
+   * @return
+   */
   public int probeFuncsSize() {
     int sum = 0;
     for (Category<Integer> cat : mCategories.values()) {
@@ -228,6 +295,10 @@ public class ProximityController {
     return sum;
   }
 
+  /**
+   * Returns the number of enabled {@link ProbeFunc}s.
+   * @return
+   */
   public int enabledProbeFuncsSize() {
     int sum = 0;
     for (Category<Integer> cat : mCategories.values()) {
@@ -236,6 +307,11 @@ public class ProximityController {
     return sum;
   }
   
+  /**
+   * Enables or disables the given {@link ProbeFunc}.
+   * @param func
+   * @param enabled
+   */
   public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
     // set the probe func's state
     for (Category<Integer> cat: mCategories.values()) {
@@ -256,10 +332,20 @@ public class ProximityController {
     }
   }
 
+  /**
+   * Reutrns the maximum possible epsilon value. This is determined by the number of 
+   * {@link ProbeFunc}s that have been enabled.
+   * @return
+   */
   public float getEpsilonMaximum() {
-    return (float) Math.sqrt(enabledProbeFuncsSize());
+    return (float) mImage.getNorm();
   }
   
+  /**
+   * Enables or disables an entire category of {@link ProbeFunc}s.
+   * @param category
+   * @param enabled
+   */
   public void setCategoryEnabled(Category<Integer> category, boolean enabled) {
     for (ProbeFunc<Integer> func: category.getProbeFuncs()) {
       setProbeFuncEnabled(func, enabled);
@@ -278,9 +364,13 @@ public class ProximityController {
     reset();
   }
   
+  /**
+   * Resets the history stacks and removes all regions. This is called when a new image is opened.
+   */
   public void reset() {
     mUndoStack.clear();
     mRedoStack.clear();
+    // clear the regions and tell the property controllers.
     mRegions.clear();
     for (PropertyController pc : mPropertyControllers.values()) {
       pc.clearRegions();
@@ -295,6 +385,13 @@ public class ProximityController {
     return new ArrayList<Region>(mRegions);
   }
   
+  /**
+   * Adds a region to the system. 
+   * <p>
+   * This should only be called directly from a history action in order
+   * for the action to be added to the history stack allowing the user to undo and redo the action.
+   * @param region
+   */
   public void addRegion(Region region) {
     mRegions.add(region);
     // update property controllers
@@ -303,6 +400,13 @@ public class ProximityController {
     }
   }
   
+  /**
+   * Removes a region from the system.
+   * <p>
+   * This should only be called directly from a history action in order
+   * for the action to be added to the history stack allowing the user to undo and redo the action.
+   * @param region
+   */
   public void removeRegion(Region region) {
     mRegions.remove(region);
     // notify property controllers
@@ -312,7 +416,8 @@ public class ProximityController {
   }
   
   /**
-   * 
+   * Notifies the {@link PropertyController}s that the given regions have been modified and that
+   * new results will need to be calculated.
    * @param regions
    */
   public void regionsModified(List<Region> regions) {
@@ -321,6 +426,11 @@ public class ProximityController {
     }
   }
   
+  /**
+   * Sets the neighbourhood of the given region for all the property controllers.
+   * @param region
+   * @param neighbourhood
+   */
   public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
     // notify property controllers
     for (PropertyController pc : mPropertyControllers.values()) {
@@ -328,6 +438,10 @@ public class ProximityController {
     }
   }
   
+  /**
+   * Sets the given region to be the currently selected region.
+   * @param r
+   */
   public void setSelected(Region r) {
     mSelectedRegions.clear();
     if (r != null) {
@@ -340,6 +454,10 @@ public class ProximityController {
     ProximityDesktop.getApp().getCanvas().redraw();
   }
   
+  /**
+   * Sets the list of regions to be the currently selected regions.
+   * @param regs
+   */
   public void setSelected(List<Region> regs) {
     mSelectedRegions.clear();
     if (regs != null) {
@@ -352,10 +470,19 @@ public class ProximityController {
     ProximityDesktop.getApp().getCanvas().redraw();
   }
   
+  /**
+   * Returns a list of the currently selected regions.
+   * @return
+   */
   public List<Region> getSelectedRegions() {
     return new ArrayList<Region>(mSelectedRegions);
   }
   
+  /**
+   * Returns the bounds of the current selection of regions. This is a rectangle that contains all
+   * the selected regions.
+   * @return
+   */
   public Rectangle getSelectionBounds() {
     Rectangle bounds = null;
     for (Region r: mSelectedRegions) {
@@ -369,10 +496,21 @@ public class ProximityController {
     return bounds;
   }
   
+  /**
+   * Sets the epsilon of the {@link PropertyController} of the given class to the given value.
+   * @param key
+   * @param epsilon
+   */
   public void setEpsilon(Class<? extends PropertyController> key, float epsilon) {
     mPropertyControllers.get(key).setEpsilon(epsilon);
   }
   
+  /**
+   * Sets whether the {@link PropertyController} of the given class should use neighbourhoods to 
+   * calculate results.
+   * @param key
+   * @param enabled
+   */
   public void setUseNeighbourhoods(Class<? extends PropertyController> key, boolean enabled) {
     mPropertyControllers.get(key).setUseNeighbourhoods(enabled);
   }
@@ -394,6 +532,10 @@ public class ProximityController {
     app.getCanvas().redraw();
   }
   
+  /**
+   * Culls out all regions from the selection that are no longer part of the system. That is they 
+   * have been deleted in some way.
+   */
   private void updateSelectedRegions() {
     // get rid of regions that have been removed
     List<Region> newSelected = new ArrayList<Region>();
@@ -473,7 +615,7 @@ public class ProximityController {
    * Perform closing operations.
    */
   public void onClose() {
-    
+    // Nothing here at the moment, maybe save current state one day.
   }
   
 }

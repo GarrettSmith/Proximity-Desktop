@@ -9,6 +9,8 @@ import java.util.List;
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 
 /**
+ * A {@link PropertyController} used to calculate the compliment of the image with the selected 
+ * regions.
  * @author Garrett Smith
  *
  */

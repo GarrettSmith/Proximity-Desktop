@@ -12,6 +12,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Listens to when a a feature is enabled and adds or removes it from the system.
  * @author Garrett Smith
  *
  */

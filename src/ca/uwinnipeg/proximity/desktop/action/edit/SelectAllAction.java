@@ -10,6 +10,7 @@ import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * Selects all the regions added to the image.
  * @author garrett
  *
  */

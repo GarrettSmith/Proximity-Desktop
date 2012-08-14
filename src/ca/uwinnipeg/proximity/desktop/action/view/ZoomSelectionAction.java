@@ -8,9 +8,11 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that zooms to fit the selected regions to the canvas. This currently does nothing.
  * @author garrett
  *
  */
+// TODO: Implement zooming to selection
 public class ZoomSelectionAction extends Action {
   
   public ZoomSelectionAction() {

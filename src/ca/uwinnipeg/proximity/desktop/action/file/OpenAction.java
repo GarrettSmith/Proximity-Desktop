@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 
 /**
+ * An action that selects a file to open.
  * @author garrett
  *
  */
