@@ -39,7 +39,8 @@ public abstract class LinearPropertyController extends PropertyController {
   protected void onNeighbourhoodSet(Region region, List<Integer> neighbourhood) {
     super.onNeighbourhoodSet(region, neighbourhood);
     if (getUseNeighbourhoods()) {
-      addRunnable(region);
+//      addRunnable(region);
+      invalidate();
     }
   }
   

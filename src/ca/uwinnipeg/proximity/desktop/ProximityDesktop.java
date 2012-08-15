@@ -170,7 +170,9 @@ public class ProximityDesktop extends ApplicationWindow {
       new HashMap<Class<? extends PropertyController>, Integer>();
   private ProgressBar mProgressBar;
   
-  private Text mDegreeText;
+  private Text mDegreeText;  
+  private Text mUnionText;
+  private Text mIntersectionText;
   
   private CheckboxTreeViewer checkboxTreeViewer;
 
@@ -423,8 +425,10 @@ public class ProximityDesktop extends ApplicationWindow {
    * Sets the degree of nearness of the intersection.
    * @param degree
    */
-  public void setDegree(float degree) {
+  public void setDegree(float degree, int unionSize, int intSize) {
     mDegreeText.setText(Float.toString(degree));
+    mUnionText.setText(Integer.toString(unionSize));
+    mIntersectionText.setText(Integer.toString(intSize));
   }
 
   /**
@@ -629,10 +633,12 @@ public class ProximityDesktop extends ApplicationWindow {
       composite.setLayout(gl_composite);
       composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
       
+      // epsilon
       Label lblNewLabel = new Label(composite, SWT.NONE);
-      lblNewLabel.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel.text_1")); //$NON-NLS-1$
+      lblNewLabel.setText(BUNDLE.getString("ProximityDesktop.lblEpsilon.text")); //$NON-NLS-1$
       
       mEpsilonSpinner = new Spinner(composite, SWT.BORDER);
+      mEpsilonSpinner.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
       mEpsilonSpinner.setDigits(getEpsilonDigits());
       mEpsilonSpinner.setMinimum(0);
       // set max
@@ -642,17 +648,7 @@ public class ProximityDesktop extends ApplicationWindow {
       // disable spinner by default
       mEpsilonSpinner.setEnabled(false);
       
-      Label lblNewLabel_1 = new Label(composite, SWT.NONE);
-      lblNewLabel_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-      lblNewLabel_1.setText(BUNDLE.getString("ProximityDesktop.lblNewLabel_1.text_3"));
-      
-      mDegreeText = new Text(composite, SWT.BORDER);
-      mDegreeText.setEditable(false);
-      GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-      gd_text.widthHint = 50;
-      mDegreeText.setLayoutData(gd_text);
-      mDegreeText.setEnabled(false);
-      
+      // use neighbourhoods
       mNeighbourhoodButton = new Button(composite, SWT.CHECK);
       mNeighbourhoodButton.setText(BUNDLE.getString("ProximityDesktop.btnCheckButton.text"));
       mNeighbourhoodButton.addSelectionListener(mNeighbourhoodsListener);
@@ -661,10 +657,47 @@ public class ProximityDesktop extends ApplicationWindow {
       mProgressBar = new ProgressBar(composite, SWT.NONE);
       mProgressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
       
+      mIntersectionInfoPane = new Composite(composite, SWT.NONE);
+      GridLayout gl_composite_1 = new GridLayout(6, false);
+      gl_composite_1.marginWidth = 0;
+      gl_composite_1.verticalSpacing = 0;
+      gl_composite_1.marginHeight = 0;
+      mIntersectionInfoPane.setLayout(gl_composite_1);
+      mIntersectionInfoPane.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1));
+      
+      // intersection degree
+      Label lblNewLabel_1 = new Label(mIntersectionInfoPane, SWT.NONE);
+      lblNewLabel_1.setText(BUNDLE.getString("ProximityDesktop.lblDegree.text"));
+      
+      mDegreeText = new Text(mIntersectionInfoPane, SWT.BORDER);
+      mDegreeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+      mDegreeText.setEditable(false);
+      mDegreeText.setEnabled(false);
+      
+      // union size
+      Label lblNewLabel_2 = new Label(mIntersectionInfoPane, SWT.NONE);
+      lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+      lblNewLabel_2.setText(BUNDLE.getString("ProximityDesktop.lblUnion.text"));
+      
+      mUnionText = new Text(mIntersectionInfoPane, SWT.BORDER);
+      mUnionText.setEditable(false);
+      mUnionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+      
+      // intersection size
+      Label lblNewLabel_3 = new Label(mIntersectionInfoPane, SWT.NONE);
+      lblNewLabel_3.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+      lblNewLabel_3.setText(BUNDLE.getString("ProximityDesktop.lblIntersection.text"));
+      
+      mIntersectionText = new Text(mIntersectionInfoPane, SWT.BORDER);
+      mIntersectionText.setEditable(false);
+      mIntersectionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+      
       // setup first tool
       actnPointer.run();
     }
   }
+  
+  private Composite mIntersectionInfoPane;
   
   /**
    * Create the frame with the button requesting to select the first image.

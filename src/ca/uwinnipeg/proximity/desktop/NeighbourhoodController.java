@@ -78,7 +78,7 @@ public class NeighbourhoodController extends PropertyController {
     broadcastValueChanged(indices);    
 
     // set neighbourhoods of other controllers
-    ProximityDesktop.getController().setNeighbourhood(region, indices);
+    ProximityDesktop.getController().setNeighbourhood(region, mNeighbourhoods.get(region));
   }
   
   @Override

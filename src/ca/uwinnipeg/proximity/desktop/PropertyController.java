@@ -184,7 +184,9 @@ public abstract class PropertyController {
    * @param regions
    */
   protected void onRegionsModified(List<Region> regions) {
-    invalidate();
+    if (!mUseNeighbourhoods) {
+      invalidate();
+    }
   }
 
   // broadcasting

@@ -15,7 +15,14 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
  */
 public class IntersectionController extends LinearPropertyController {
 
-  private float mDegree;
+  // the degree of nearness
+  private float mDegree = 1;
+  
+  // the number of pixels in the union
+  private int mUnionSize = 0;
+  
+  // the number of pixels in the intersections
+  private int mIntersectionSize = 0;
 
   @Override
   protected List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub) {
@@ -54,34 +61,31 @@ public class IntersectionController extends LinearPropertyController {
    * Updates and broadcasts the current degree of nearness.
    * @param degree
    */
-  protected void setDegree(float degree) {
+  protected void setDegree(float degree, int unionSize, int intSize) {
     mDegree = degree;
+    mUnionSize = unionSize;
+    mIntersectionSize = intSize;
     
     // broadcast the change if we are finished calculating
     if (mQueue.isEmpty()) {
-      ProximityDesktop.getApp().setDegree(mDegree);
+      ProximityDesktop.getApp().setDegree(mDegree, unionSize, intSize);
     }
   }
   
   @Override
   protected void setResult(List<Integer> intersection, Region region) {    
-    setDegree(calculateDegree(intersection, getIndices(region)));    
-    setValue(intersection);
-  }
-  
-  /**
-   * Calculates the degree of nearness.
-   * @param intersection
-   * @param regionIndices
-   * @return
-   */
-  protected float calculateDegree(List<Integer> intersection, List<Integer> regionIndices) {
     // size of the intersection
-    float intSize = intersection.size();    
+    int intSize = intersection.size();    
     // union of indices in the current intersection and in the added region
-    float unionSize = MathUtil.union(mValue, regionIndices).size();
-    float degree = 1 - (intSize / unionSize);
-    return degree;
+    List<Integer> union = new ArrayList<Integer>();
+    for (Region r: mRegions) {
+      union = MathUtil.union(union, getIndices(r));
+    }
+    int unionSize = union.size();
+    float degree = 1 - ((float) intSize / unionSize);
+    
+    setDegree(degree, unionSize, intSize);    
+    super.setResult(intersection, region);
   }
 
 }
