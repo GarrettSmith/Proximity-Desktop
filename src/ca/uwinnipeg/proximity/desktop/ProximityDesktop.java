@@ -66,7 +66,6 @@ import ca.uwinnipeg.proximity.desktop.action.view.TogglePivotAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomImageAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomInAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomOutAction;
-import ca.uwinnipeg.proximity.desktop.action.view.ZoomSelectionAction;
 import ca.uwinnipeg.proximity.desktop.action.view.ZoomTo1Action;
 import ca.uwinnipeg.proximity.desktop.features.FeaturesCheckStateProvider;
 import ca.uwinnipeg.proximity.desktop.features.FeaturesContentProvider;
@@ -388,8 +387,10 @@ public class ProximityDesktop extends ApplicationWindow {
       mProgressBar.setSelection(0);
     }
     
-    // disable degree field when we are not showing intersection
-    mDegreeText.setEnabled(key == IntersectionController.class);
+    // set intersection info
+    for (Control c: mIntersectionInfoPane.getChildren()) {
+      c.setEnabled(key == IntersectionController.class);
+    }
 
     // disable the spinner when the key is null enable otherwise
     mEpsilonSpinner.setEnabled(key != null);
@@ -672,7 +673,6 @@ public class ProximityDesktop extends ApplicationWindow {
       mDegreeText = new Text(mIntersectionInfoPane, SWT.BORDER);
       mDegreeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
       mDegreeText.setEditable(false);
-      mDegreeText.setEnabled(false);
       
       // union size
       Label lblNewLabel_2 = new Label(mIntersectionInfoPane, SWT.NONE);
@@ -694,6 +694,11 @@ public class ProximityDesktop extends ApplicationWindow {
       
       // setup first tool
       actnPointer.run();
+      
+      // disable intersection info by default
+      for (Control c: mIntersectionInfoPane.getChildren()) {
+        c.setEnabled(false);
+      }
     }
   }
   
