@@ -76,8 +76,11 @@ public class AboutDialog extends Dialog {
     
     // the copyright string
     Label lblCopyright = new Label(mainFrame, SWT.NONE);
+    lblCopyright.setAlignment(SWT.CENTER);
     lblCopyright.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, true, 1, 1));
-    lblCopyright.setText("© 2012 Holder");
+    lblCopyright.setText("Programmed by Garrett Smith \n" +
+    		"Research by Christopher Henry \n" +
+    		"University of Winnipeg");
     
     Composite licenceFrame = new Composite(frameStack, SWT.NONE);
     licenceFrame.setLayout(new FillLayout(SWT.HORIZONTAL));
