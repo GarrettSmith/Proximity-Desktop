@@ -8,7 +8,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Provides the probe funcs when adding probe funcs.
@@ -17,14 +17,14 @@ import ca.uwinnipeg.proximity.ProbeFunc;
  */
 public class AddFeaturesContentProvider implements ITreeContentProvider {
   
-  private List<ProbeFunc<Integer>> mFuncs;
+  private List<ImageFunc> mFuncs;
 
   public void dispose() {
     // do nothing
   }
 
   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    mFuncs = (List<ProbeFunc<Integer>>) newInput;
+    mFuncs = (List<ImageFunc>) newInput;
   }
 
   public Object[] getElements(Object inputElement) {

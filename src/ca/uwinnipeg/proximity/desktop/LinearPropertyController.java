@@ -11,21 +11,27 @@ import org.eclipse.swt.widgets.Display;
 import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
 
 /**
- * A {@link PropertyController} that calculates a property by linearly going through each each added
+ * A {@link PropertyController} that calculates a property by linearly going through each added
  * region until the final property is calculated.
  * @author Garrett Smith
  *
  */
-public abstract class LinearPropertyController extends PropertyController {
+public abstract class LinearPropertyController<T> extends PropertyController<T> {
 
   // The indices of the pixels selected by the property
-  protected List<Integer> mValue = new ArrayList<Integer>();
+  protected T mValue = initialValue();
   
   // The list of operations that will bring us to our desired result 
   protected LinearRunnable mCurrentRunnable = null;
   
   // The list of regions to be used by intersect runnables
   protected List<Region> mQueue = new ArrayList<Region>(); 
+  
+  /**
+   * Set the initial value.
+   * @return
+   */
+  protected abstract T initialValue();
   
   @Override
   protected void onRegionAdded(Region region) {
@@ -60,7 +66,7 @@ public abstract class LinearPropertyController extends PropertyController {
    * Returns the current list of indices calculated to form the property.
    * @return
    */
-  protected List<Integer> getValue() {
+  protected T getValue() {
     return mValue;
   }
   
@@ -68,10 +74,11 @@ public abstract class LinearPropertyController extends PropertyController {
    * Sets and broadcasts the current general value calculated for the property.
    * @param indices
    */
-  protected void setValue(List<Integer> indices) {
+  protected void setValue(T value) {
     // save the new intersection
-    mValue.clear();
-    if (indices != null) mValue.addAll(indices);
+//	mValue = initialValue();
+//    if (indices != null) mValue.addAll(indices);
+    mValue = value;
     
     // broadcast the change if we are finished calculating
     if (mQueue.isEmpty()) {
@@ -106,7 +113,7 @@ public abstract class LinearPropertyController extends PropertyController {
     // clear upcoming runnables
     mQueue.clear();
     // clear calculated value
-    mValue.clear();
+    mValue = initialValue();
     
     // add all regions to the queue to be recalculated
     for (Region r : mRegions) {
@@ -167,12 +174,12 @@ public abstract class LinearPropertyController extends PropertyController {
     }
 
     @Override
-    protected List<Integer> calculateProperty(Region region) {
+    protected T calculateProperty(Region region) {
       return getProperty(region, this);
     }
 
     @Override
-    protected void onPostRun(List<Integer> result, Region region) {   
+    protected void onPostRun(T result, Region region) {   
       setResult(result, region);
       // run the next runnable if there is one
       runNextRunnable();
@@ -185,14 +192,14 @@ public abstract class LinearPropertyController extends PropertyController {
    * @param sub
    * @return
    */
-  protected abstract List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub);
+  protected abstract T getProperty(Region region, PerceptualSystemSubscriber sub);
 
   /**
    * Sets the result of calculating using the given region to the given value.
    * @param result
    * @param region
    */
-  protected void setResult(List<Integer> result, Region region) {    
+  protected void setResult(T result, Region region) {    
     // store result as the new value
     setValue(result);
   }  

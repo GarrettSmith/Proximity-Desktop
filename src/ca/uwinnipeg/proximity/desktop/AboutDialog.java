@@ -91,7 +91,7 @@ public class AboutDialog extends Dialog {
     Composite creditsFrame = new Composite(frameStack, SWT.NONE);
     creditsFrame.setLayout(new FillLayout(SWT.HORIZONTAL));
     
-    StyledText creditsText = new StyledText(creditsFrame, SWT.BORDER);
+    //StyledText creditsText = new StyledText(creditsFrame, SWT.BORDER);
     
     stackLayout.topControl = mainFrame;
     frameStack.layout();

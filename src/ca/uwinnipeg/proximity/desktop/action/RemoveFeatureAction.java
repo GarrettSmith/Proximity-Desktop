@@ -10,6 +10,7 @@ import org.eclipse.jface.action.Action;
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
 import ca.uwinnipeg.proximity.desktop.features.Category;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Removes the selected {@link ProbeFunc}s and {@link Category}s.
@@ -31,11 +32,11 @@ public class RemoveFeatureAction extends Action {
   @Override
   public void run() {
     for (Object o: mSelection) {
-      if (o instanceof Category<?>) {
-        ProximityDesktop.getController().removeCategory((Category<Integer>) o);
+      if (o instanceof Category) {
+        ProximityDesktop.getController().removeCategory((Category) o);
       }
-      else if (o instanceof ProbeFunc<?>) {
-        ProximityDesktop.getController().removeProbeFuncs((ProbeFunc<Integer>) o);
+      else if (o instanceof ImageFunc) {
+        ProximityDesktop.getController().removeProbeFuncs((ImageFunc) o);
       }
     }
   }

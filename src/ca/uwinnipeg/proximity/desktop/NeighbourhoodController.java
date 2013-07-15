@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Display;
  * @author Garrett Smith
  *
  */
-public class NeighbourhoodController extends PropertyController {
+public class NeighbourhoodController extends PropertyController<List<Integer>> {
 
   // The map of regions to the indices of the pixels in their neighbourhoods
   protected Map<Region, List<Integer>> mNeighbourhoods = new HashMap<Region, List<Integer>>();
@@ -79,6 +79,12 @@ public class NeighbourhoodController extends PropertyController {
 
     // set neighbourhoods of other controllers
     ProximityDesktop.getController().setNeighbourhood(region, mNeighbourhoods.get(region));
+  }
+  
+  @Override
+  protected void broadcastValueChanged(List<Integer> indices) {
+	 ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
+	 canvas.updateProperty(getClass(), indicesToPoints(indices));
   }
   
   @Override

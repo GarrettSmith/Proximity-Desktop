@@ -8,6 +8,7 @@ import java.util.Collection;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Sets the checked state in the features pane for {@link ProbeFunc} and {@link Category}.
@@ -16,25 +17,25 @@ import ca.uwinnipeg.proximity.ProbeFunc;
  */
 public class FeaturesCheckStateProvider implements ICheckStateProvider {
   
-  private Collection<Category<Integer>> mCategories;
+  private Collection<Category> mCategories;
 
   /**
    * 
    */
-  public FeaturesCheckStateProvider(Collection<Category<Integer>> collection) {
+  public FeaturesCheckStateProvider(Collection<Category> collection) {
     mCategories = collection;
   }
 
   public boolean isChecked(Object element) {
     // return if the category is enabled
-    if (element instanceof Category<?>) {
-      boolean enabled = !((Category<?>) element).isDisabled();
+    if (element instanceof Category) {
+      boolean enabled = !((Category) element).isDisabled();
       return enabled;
     }
     // return if the function is enabled
     else {
-      ProbeFunc<Integer> func = (ProbeFunc<Integer>) element;
-      for (Category<Integer> cat: mCategories) {
+      ImageFunc func = (ImageFunc) element;
+      for (Category cat: mCategories) {
         if (cat.contains(func)) {
           boolean enabled = cat.isEnabled(func);
           return enabled;

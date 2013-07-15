@@ -13,7 +13,7 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
  * @author Garrett Smith
  *
  */
-public class IntersectionController extends LinearPropertyController {
+public class IntersectionController extends LinearPropertyController<List<Integer>> {
 
   // the degree of nearness
   private float mDegree = 1;
@@ -23,6 +23,11 @@ public class IntersectionController extends LinearPropertyController {
   
   // the number of pixels in the intersections
   private int mIntersectionSize = 0;
+  
+	@Override
+	protected List<Integer> initialValue() {
+		return new ArrayList<Integer>();
+	}
 
   @Override
   protected List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub) {
@@ -86,6 +91,12 @@ public class IntersectionController extends LinearPropertyController {
     
     setDegree(degree, unionSize, intSize);    
     super.setResult(intersection, region);
+  }
+  
+  @Override
+  protected void broadcastValueChanged(List<Integer> indices) {
+	 ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
+	 canvas.updateProperty(getClass(), indicesToPoints(indices));
   }
 
 }

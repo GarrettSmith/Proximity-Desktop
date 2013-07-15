@@ -29,8 +29,12 @@ import ca.uwinnipeg.proximity.desktop.features.FeaturesCheckedListener;
 import ca.uwinnipeg.proximity.desktop.history.HistoryAction;
 import ca.uwinnipeg.proximity.image.AlphaFunc;
 import ca.uwinnipeg.proximity.image.BlueFunc;
+import ca.uwinnipeg.proximity.image.DifferentialExcitationFunc;
 import ca.uwinnipeg.proximity.image.GreenFunc;
+import ca.uwinnipeg.proximity.image.HomogeneityFunc;
 import ca.uwinnipeg.proximity.image.Image;
+import ca.uwinnipeg.proximity.image.ImageFunc;
+import ca.uwinnipeg.proximity.image.PerceptualGrayScaleFunc;
 import ca.uwinnipeg.proximity.image.RedFunc;
 
 /**
@@ -53,16 +57,17 @@ public class ProximityController {
   private Deque<HistoryAction> mUndoStack = new ArrayDeque<HistoryAction>();
   private Deque<HistoryAction> mRedoStack = new ArrayDeque<HistoryAction>();
   
-  private Map<Class<? extends PropertyController>, PropertyController> mPropertyControllers = 
-      new HashMap<Class<? extends PropertyController>, PropertyController>();
+  private Map<Class<? extends PropertyController<?>>, PropertyController<?>> mPropertyControllers = 
+      new HashMap<Class<? extends PropertyController<?>>, PropertyController<?>>();
   
   @SuppressWarnings("unchecked")
-  private static final Class<PropertyController>[] PROPERTY_CONTROLLER_CLASSES = 
-      (Class<PropertyController>[]) new Class<?>[] {
+  private static final Class<PropertyController<?>>[] PROPERTY_CONTROLLER_CLASSES = 
+      (Class<PropertyController<?>>[]) new Class<?>[] {
           NeighbourhoodController.class,
           IntersectionController.class,
           ComplimentController.class,
-          DifferenceController.class
+          DifferenceController.class,
+          UpperApprox.class
       };
   
   private Preferences mFuncPrefs = Preferences.userRoot().node("proximity-system").node("probe-funcs");
@@ -70,17 +75,44 @@ public class ProximityController {
   private Preferences mClassPrefs = mFuncPrefs.node("class-files");
   
   @SuppressWarnings("unchecked")
-  private static final Class<ProbeFunc<Integer>>[] DEFAULT_FUNCS = 
-      (Class<ProbeFunc<Integer>>[]) new Class<?>[] {
+  private static final Class<ImageFunc>[] COLOR_FUNCS = 
+      (Class<ImageFunc>[]) new Class<?>[] {
         AlphaFunc.class,
         RedFunc.class,
         GreenFunc.class,
-        BlueFunc.class
+        BlueFunc.class,
+        PerceptualGrayScaleFunc.class,
       };
   
-  private static final String COLOR_CATEGORY = "Colours";
+  @SuppressWarnings("unchecked")
+  private static final Class<ImageFunc>[] EDGE_FUNCS = 
+      (Class<ImageFunc>[]) new Class<?>[] {
+        DifferentialExcitationFunc.class
+       };  
   
-  private Map<String, Category<Integer>> mCategories = new HashMap<String, Category<Integer>>();
+  @SuppressWarnings("unchecked")
+  private static final Class<ImageFunc>[] TEXTURE_FUNCS = 
+      (Class<ImageFunc>[]) new Class<?>[] {
+        HomogeneityFunc.class
+       };
+  
+  private static final Class<?>[][] FUNCS = {
+    COLOR_FUNCS,
+    EDGE_FUNCS,
+    TEXTURE_FUNCS
+  };
+  
+  private static final String COLOR_CATEGORY = "Colours";
+  private static final String EDGE_CATEGORY = "Edge";
+  private static final String TEXTURE_CATEGORY = "Texture";
+  
+  private static final String[] CATEGORIES = {
+    COLOR_CATEGORY, 
+    EDGE_CATEGORY, 
+    TEXTURE_CATEGORY
+  };
+  
+  private Map<String, Category> mCategories = new HashMap<String, Category>();
   
   private ICheckStateListener mCheckStateListener = new FeaturesCheckedListener(this);
   
@@ -99,10 +131,13 @@ public class ProximityController {
   @SuppressWarnings("unchecked")
   private void loadFuncs() {
     // load the default probe functions and enable
-    for (Class<ProbeFunc<Integer>> clazz : DEFAULT_FUNCS) {
-      String className = clazz.getName();
-      mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
-      mCatPrefs.put(className, COLOR_CATEGORY);
+    for (int i = 0; i < FUNCS.length; i++) {
+      for (Class<?> clazz : FUNCS[i]) {
+        Class<ImageFunc> funcClazz = (Class<ImageFunc>) clazz;
+        String className = funcClazz.getName();
+        mFuncPrefs.putBoolean(className, mFuncPrefs.getBoolean(className, true));
+        mCatPrefs.put(className, CATEGORIES[i]);
+      }
     }
 
     // load the previously loaded probe funcs
@@ -134,18 +169,18 @@ public class ProximityController {
         try {
 
           // load the probe func
-          Class<ProbeFunc<Integer>> funcClazz;
-          funcClazz = (Class<ProbeFunc<Integer>>) Class.forName(className, true, loader);
+          Class<ImageFunc> funcClazz;
+          funcClazz = (Class<ImageFunc>) Class.forName(className, true, loader);
 
           String categoryStr = mCatPrefs.get(className, "Uncategorized");
-          Category<Integer> category = null;
+          Category category = null;
 
           // find the matching category
           category = mCategories.get(categoryStr);
 
           // create the category if we haven't yet
           if (category == null) {
-            category = new Category<Integer>(categoryStr);
+            category = new Category(categoryStr);
             mCategories.put(categoryStr, category);
           }
 
@@ -168,8 +203,8 @@ public class ProximityController {
     }
 
     // add enabled probe funcs
-    for (Category<Integer> cat: mCategories.values()) {
-      for (ProbeFunc<Integer> func: cat.getEnabledProbeFuncs()) {
+    for (Category cat: mCategories.values()) {
+      for (ImageFunc func: cat.getEnabledProbeFuncs()) {
         mImage.addProbeFunc(func);
       }
     }
@@ -178,12 +213,13 @@ public class ProximityController {
   /**
    * Creates the initial property controllers.
    */
-  private void createPropertyControllers() {
-    for (Class<PropertyController> clazz : PROPERTY_CONTROLLER_CLASSES) {
+  @SuppressWarnings("unchecked")
+private void createPropertyControllers() {
+    for (Class<PropertyController<?>> clazz : PROPERTY_CONTROLLER_CLASSES) {
       try {
-        PropertyController pc = clazz.newInstance();
+        PropertyController<?> pc = clazz.newInstance();
         pc.setup(mImage);
-        mPropertyControllers.put(pc.getClass(), pc);
+        mPropertyControllers.put((Class<? extends PropertyController<?>>) pc.getClass(), pc);
         
       } catch (InstantiationException e) {
         // TODO Auto-generated catch block
@@ -200,7 +236,7 @@ public class ProximityController {
    * @param key
    * @return
    */
-  public PropertyController getPropertyController(Class<? extends PropertyController> key) {
+  public PropertyController<?> getPropertyController(Class<? extends PropertyController<?>> key) {
     return mPropertyControllers.get(key);
   }
   
@@ -208,7 +244,7 @@ public class ProximityController {
    * Returns all the categories of features loaded.
    * @return
    */
-  public Collection<Category<Integer>> getCategories() {
+  public Collection<Category> getCategories() {
     return mCategories.values();
   }
   
@@ -219,16 +255,16 @@ public class ProximityController {
    * @param path the file system path to the class files so the funcs can be reloaded
    */
   // TODO: prevent duplicates
-  public void addProbeFuncs(String categoryName, List<ProbeFunc<Integer>> funcs, String path) {
+  public void addProbeFuncs(String categoryName, List<ImageFunc> funcs, String path) {
     // find the given category
-    Category<Integer> cat = mCategories.get(categoryName);
+    Category cat = mCategories.get(categoryName);
     // create the category if it is new
     if (cat == null) {
-      cat = new Category<Integer>(categoryName);
+      cat = new Category(categoryName);
       mCategories.put(categoryName, cat);
     }
     // add the funcs to the category
-    for (ProbeFunc<Integer> f: funcs) {
+    for (ImageFunc f: funcs) {
       cat.set(f, false);
       // save the funcs to the prefs
       String className = f.getClass().getName();
@@ -245,8 +281,8 @@ public class ProximityController {
    * @param func
    */
   // TODO: prevent removing default funcs
-  public void removeProbeFuncs(ProbeFunc<Integer> func) {
-    for (Category<Integer> cat: mCategories.values()) {
+  public void removeProbeFuncs(ImageFunc func) {
+    for (Category cat: mCategories.values()) {
       cat.remove(func);
       // remove category if it is empty
       if (cat.isEmpty()) {
@@ -269,11 +305,11 @@ public class ProximityController {
    * @param category
    */
   // TODO: prevent removing default categories
-  public void removeCategory(Category<Integer> category) {
+  public void removeCategory(Category category) {
     // remove from categories
     mCategories.remove(category.getName());
     // remove all the child funcs
-    for (ProbeFunc<Integer> f: category.getProbeFuncs()) {
+    for (ImageFunc f: category.getProbeFuncs()) {
       String className = f.getClass().getName();
       mFuncPrefs.remove(className);
       mCatPrefs.remove(className);
@@ -289,7 +325,7 @@ public class ProximityController {
    */
   public int probeFuncsSize() {
     int sum = 0;
-    for (Category<Integer> cat : mCategories.values()) {
+    for (Category cat : mCategories.values()) {
       sum += cat.size();
     }
     return sum;
@@ -301,7 +337,7 @@ public class ProximityController {
    */
   public int enabledProbeFuncsSize() {
     int sum = 0;
-    for (Category<Integer> cat : mCategories.values()) {
+    for (Category cat : mCategories.values()) {
       sum += cat.enabledSize();
     }
     return sum;
@@ -312,9 +348,9 @@ public class ProximityController {
    * @param func
    * @param enabled
    */
-  public void setProbeFuncEnabled(ProbeFunc<Integer> func, boolean enabled) {
+  public void setProbeFuncEnabled(ImageFunc func, boolean enabled) {
     // set the probe func's state
-    for (Category<Integer> cat: mCategories.values()) {
+    for (Category cat: mCategories.values()) {
       if (cat.contains(func)) {
         cat.set(func, enabled);
       }
@@ -327,7 +363,7 @@ public class ProximityController {
     else {
       mImage.removeProbeFunc(func);
     }
-    for (PropertyController pc : mPropertyControllers.values()) {
+    for (PropertyController<?> pc : mPropertyControllers.values()) {
       pc.onProbeFuncsChanged();
     }
   }
@@ -346,8 +382,8 @@ public class ProximityController {
    * @param category
    * @param enabled
    */
-  public void setCategoryEnabled(Category<Integer> category, boolean enabled) {
-    for (ProbeFunc<Integer> func: category.getProbeFuncs()) {
+  public void setCategoryEnabled(Category category, boolean enabled) {
+    for (ImageFunc func: category.getProbeFuncs()) {
       setProbeFuncEnabled(func, enabled);
     }
   }
@@ -372,7 +408,7 @@ public class ProximityController {
     mRedoStack.clear();
     // clear the regions and tell the property controllers.
     mRegions.clear();
-    for (PropertyController pc : mPropertyControllers.values()) {
+    for (PropertyController<?> pc : mPropertyControllers.values()) {
       pc.clearRegions();
     }
   }
@@ -395,7 +431,7 @@ public class ProximityController {
   public void addRegion(Region region) {
     mRegions.add(region);
     // update property controllers
-    for (PropertyController pc : mPropertyControllers.values()) {
+    for (PropertyController<?> pc : mPropertyControllers.values()) {
       pc.addRegion(region);
     }
   }
@@ -410,7 +446,7 @@ public class ProximityController {
   public void removeRegion(Region region) {
     mRegions.remove(region);
     // notify property controllers
-    for (PropertyController pc : mPropertyControllers.values()) {
+    for (PropertyController<?> pc : mPropertyControllers.values()) {
       pc.removeRegion(region);
     }
   }
@@ -421,7 +457,7 @@ public class ProximityController {
    * @param regions
    */
   public void regionsModified(List<Region> regions) {
-    for (PropertyController pc: mPropertyControllers.values()) {
+    for (PropertyController<?> pc: mPropertyControllers.values()) {
       pc.regionsModified(regions);
     }
   }
@@ -433,7 +469,7 @@ public class ProximityController {
    */
   public void setNeighbourhood(Region region, List<Integer> neighbourhood) {
     // notify property controllers
-    for (PropertyController pc : mPropertyControllers.values()) {
+    for (PropertyController<?> pc : mPropertyControllers.values()) {
       pc.setNeighbourhood(region, neighbourhood);
     }
   }
@@ -501,7 +537,7 @@ public class ProximityController {
    * @param key
    * @param epsilon
    */
-  public void setEpsilon(Class<? extends PropertyController> key, float epsilon) {
+  public void setEpsilon(Class<? extends PropertyController<?>> key, float epsilon) {
     mPropertyControllers.get(key).setEpsilon(epsilon);
   }
   
@@ -511,7 +547,7 @@ public class ProximityController {
    * @param key
    * @param enabled
    */
-  public void setUseNeighbourhoods(Class<? extends PropertyController> key, boolean enabled) {
+  public void setUseNeighbourhoods(Class<? extends PropertyController<?>> key, boolean enabled) {
     mPropertyControllers.get(key).setUseNeighbourhoods(enabled);
   }
 

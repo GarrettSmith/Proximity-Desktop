@@ -7,9 +7,9 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 
-import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.ProximityController;
 import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Listens to when a a feature is enabled and adds or removes it from the system.
@@ -30,13 +30,13 @@ public class FeaturesCheckedListener implements ICheckStateListener {
     boolean enabled = event.getChecked();
     
     // enable or disable the given probe function
-    if (element instanceof ProbeFunc<?>) {
-      ProbeFunc<Integer> func = (ProbeFunc<Integer>) element;
+    if (element instanceof ImageFunc) {
+      ImageFunc func = (ImageFunc) element;
       mController.setProbeFuncEnabled(func, enabled);
     }
     // enable or disable the entire category of probe funcs
-    else if (element instanceof Category<?>) {
-      Category<Integer> category = (Category<Integer>) element;
+    else if (element instanceof Category) {
+      Category category = (Category) element;
       mController.setCategoryEnabled(category, enabled);
     }
     viewer.refresh();

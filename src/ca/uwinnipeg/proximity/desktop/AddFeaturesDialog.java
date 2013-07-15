@@ -28,12 +28,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
 import ca.uwinnipeg.proximity.desktop.features.AddFeaturesContentProvider;
 import ca.uwinnipeg.proximity.desktop.features.FeaturesLabelProvider;
-import org.eclipse.swt.widgets.Text;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 //TODO: preserve path?
 /**
@@ -224,7 +225,7 @@ public class AddFeaturesDialog extends Dialog {
     File dir = new File(path);
     
     // clear the current funcs
-    List<ProbeFunc<Integer>> funcs = new ArrayList<ProbeFunc<Integer>>();
+    List<ImageFunc> funcs = new ArrayList<ImageFunc>();
     
     // if we can read the directory
     if (dir.canRead()) {
@@ -245,9 +246,9 @@ public class AddFeaturesDialog extends Dialog {
                 Object o = clazz.newInstance();
 
                 // if the object is a probe func
-                if (o instanceof ProbeFunc<?>) {
+                if (o instanceof ImageFunc) {
                   System.out.println("Loaded succesfully: " + className);
-                  funcs.add((ProbeFunc<Integer>) o);
+                  funcs.add((ImageFunc) o);
                 }
                 else {
                   System.out.println("Does not extend ProbeFunc: " + className);
@@ -290,12 +291,11 @@ public class AddFeaturesDialog extends Dialog {
   
   @Override
   protected void okPressed() {
-    @SuppressWarnings("unchecked")
     // add all the checked funcs to the controller in the given category
     Object[] funcsArray = treeViewer.getCheckedElements();
-    List<ProbeFunc<Integer>> funcs = new ArrayList<ProbeFunc<Integer>>();
+    List<ImageFunc> funcs = new ArrayList<ImageFunc>();
     for (int i = 0; i < funcsArray.length; i++) {
-      funcs.add((ProbeFunc<Integer>) funcsArray[i]);
+      funcs.add((ImageFunc) funcsArray[i]);
     }
     ProximityDesktop.getController().addProbeFuncs(text.getText().trim(), funcs, mPath);
     super.okPressed();

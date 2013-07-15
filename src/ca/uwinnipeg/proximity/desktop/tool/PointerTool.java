@@ -104,7 +104,7 @@ public class PointerTool extends Tool {
     @Override
     public void onMouseDown(Event event, Point imageStart, Point screenStart) {
       
-      if (event.button == 1) {
+      if (event.button == 1 && imageStart != null) {
         // find if we clicked a region
         for (Region r : getController().getRegions()) {
           if (r.contains(imageStart)) {

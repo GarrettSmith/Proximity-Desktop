@@ -14,8 +14,19 @@ import ca.uwinnipeg.proximity.PerceptualSystem.PerceptualSystemSubscriber;
  * @author Garrett Smith
  *
  */
-public class DifferenceController extends LinearPropertyController {
+public class DifferenceController extends LinearPropertyController<List<Integer>> {
 
+	@Override
+	protected List<Integer> initialValue() {
+		return new ArrayList<Integer>();
+	}
+	
+  @Override
+  protected void broadcastValueChanged(List<Integer> indices) {
+	 ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
+	 canvas.updateProperty(getClass(), indicesToPoints(indices));
+  }
+	
   @Override
   protected List<Integer> getProperty(Region region, PerceptualSystemSubscriber sub) {
     List<Integer> indices = new ArrayList<Integer>();

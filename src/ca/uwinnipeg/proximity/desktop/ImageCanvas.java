@@ -44,10 +44,10 @@ public class ImageCanvas extends Canvas {
   
   private Rectangle mOldBounds;
   
-  private Map<Class<? extends PropertyController>, Image> mPropertyImages = 
-      new HashMap<Class<? extends PropertyController>, Image>();
+  private Map<Class<? extends PropertyController<?>>, Image> mPropertyImages = 
+      new HashMap<Class<? extends PropertyController<?>>, Image>();
   
-  private Class<? extends PropertyController> mPropertyKey;
+  private Class<? extends PropertyController<?>> mPropertyKey;
   
   private boolean mShowPivots = true;
   
@@ -92,7 +92,7 @@ public class ImageCanvas extends Canvas {
    * Sets the property to be displayed to the given string.
    * @param key
    */
-  public void setProperty(Class<? extends PropertyController> key) {
+  public void setProperty(Class<? extends PropertyController<?>> key) {
     boolean changed = mPropertyKey != key;
     mPropertyKey = key;
     if (changed) redraw();
@@ -103,7 +103,7 @@ public class ImageCanvas extends Canvas {
    * @param key
    * @param points
    */
-  public void updateProperty(Class<? extends PropertyController> key, int[] points) {
+  public void updateProperty(Class<? extends PropertyController<?>> key, int[] points) {
     if (mImage != null) {
       ImageData baseData = mImage.getImageData();
       Image img = new Image(mDisplay, mImage.getBounds());
@@ -133,6 +133,42 @@ public class ImageCanvas extends Canvas {
         redraw();
       }
     }
+  }
+  
+  public void updateProperty(Class<? extends PropertyController<?>> key, List<int[]> pointsList) {
+    if (mImage != null) {
+        Image img = new Image(mDisplay, mImage.getBounds());
+        ImageData data = img.getImageData();
+
+        // fill with transparent
+        data.alphaData = new byte[data.data.length];
+
+        for (int[] points : pointsList) {
+          // use a random colour
+        	int red = (int) (Math.random() * 256);
+        	int green = (int) (Math.random() * 256);
+        	int blue = (int) (Math.random() * 256);
+        	int color = (red << 16) + (green << 8) + blue;
+          for (int i = 0; i < points.length; i += 2) {
+              int x = points[i];
+              int y = points[i + 1];
+              data.setPixel(x, y, color);
+              data.setAlpha(x, y, 255);
+            }        	
+        }
+
+        Image previousImage = mPropertyImages.put(key, new Image(mDisplay, data));
+        
+        // dispose the previous image
+        if (previousImage != null) {
+          previousImage.dispose();
+        }
+
+        //redraw if the current key was updated
+        if (mPropertyKey != null && key != null && mPropertyKey.equals(key)) {
+          redraw();
+        }
+      }
   }
 
   /**
@@ -216,6 +252,32 @@ public class ImageCanvas extends Canvas {
           gc.setTransform(null);
         }
       }
+      // debug feature draw
+      /*      
+      else {
+        Image img = new Image(mDisplay, mImage.getBounds());
+        ImageData data = img.getImageData();
+        ca.uwinnipeg.proximity.image.Image system = ProximityDesktop.getController().getImage();
+        ca.uwinnipeg.proximity.image.ImageFunc func = system.getProbeFuncs().get(0);
+
+        // fill with transparent
+        data.alphaData = new byte[data.data.length];
+
+        for (int y = 0; y < data.height; y++) {
+          for (int x = 0; x < data.width; x++) {
+            double val = func.apply(system.getIndex(x, y), system);
+            int pixel = (int) (val * 255);
+            pixel = (pixel << 16) | (pixel << 8) | pixel;
+            data.setPixel(x, y, pixel);
+            data.setAlpha(x, y, 255);
+          }
+        }
+
+        gc.setTransform(mTransform);
+        gc.drawImage(new Image(mDisplay, data), 0, 0);
+        gc.setTransform(null);
+      }
+      */
 
       // draw regions
       ProximityController controller = ProximityDesktop.getController();
@@ -276,7 +338,7 @@ public class ImageCanvas extends Canvas {
     gc.setLineWidth(2);
     
     gc.setForeground(mDisplay.getSystemColor(SWT.COLOR_WHITE));
-    gc.setXORMode(true);
+    //gc.setXORMode(true);
     
     // translate to screen space
     int[] usedPoints;
@@ -354,7 +416,7 @@ public class ImageCanvas extends Canvas {
           new Color(Display.getCurrent(), (pxl >> 16) & 0xFF, (pxl >> 8) & 0xFF, pxl & 0xFF);
       
       gc.setBackground(color);
-      gc.setXORMode(false);
+      //gc.setXORMode(false);
       gc.fillRectangle(
           center.x - (PIVOT_SIZE / 2), 
           center.y - (PIVOT_SIZE / 2), 

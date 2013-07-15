@@ -18,7 +18,7 @@ import ca.uwinnipeg.proximity.image.Image;
  * @author Garrett Smith
  *
  */
-public abstract class PropertyController {
+public abstract class PropertyController<T> {
 
   // the maximum progress value
   public static final int MAX_PROGRESS = 100;
@@ -195,10 +195,7 @@ public abstract class PropertyController {
    * @param indices
    * @param region
    */
-  protected void broadcastValueChanged(List<Integer> indices) {
-    ImageCanvas canvas = ProximityDesktop.getApp().getCanvas();
-    canvas.updateProperty(getClass(), indicesToPoints(indices));
-  }
+  protected abstract void broadcastValueChanged(T indices);
 
   /**
    * Converts the given list of indices into an array of points those indices are at.
@@ -230,12 +227,13 @@ public abstract class PropertyController {
    * Sets and broadcasts the progress of the calculation.
    * @param value
    */
+  @SuppressWarnings("unchecked")
   public void setProgress(int value) {
     // store progress
     mProgress = value;
 
     // broadcast progress
-    ProximityDesktop.getApp().setProgress(getClass(), mProgress);
+    ProximityDesktop.getApp().setProgress((Class<? extends PropertyController<?>>) getClass(), mProgress);
   }
   
   /**
@@ -252,7 +250,7 @@ public abstract class PropertyController {
     private boolean mCancelled = false;
     private boolean mRunning = false;
     
-    private List<Integer> mResult;
+    private T mResult;
     
     /**
      * Create a runnable to calculate the property using the given {@link Region}.
@@ -286,7 +284,7 @@ public abstract class PropertyController {
      * @param region
      * @return
      */
-    protected abstract List<Integer> calculateProperty(Region region);
+    protected abstract T calculateProperty(Region region);
     
     protected void postRun() {
       mRunning = false;
@@ -299,13 +297,13 @@ public abstract class PropertyController {
      * @param result
      * @param region
      */
-    protected void onPostRun(List<Integer> result, Region region) {}
+    protected void onPostRun(T result, Region region) {}
     
     /**
      * Returns the result of running or null if the runnable has not finished yet.
      * @return
      */
-    public List<Integer> getResult() {
+    public T getResult() {
       return mResult;
     }
 

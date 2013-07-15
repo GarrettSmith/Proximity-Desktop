@@ -6,6 +6,7 @@ package ca.uwinnipeg.proximity.desktop.features;
 import org.eclipse.jface.viewers.LabelProvider;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Returns the name of the {@link Category} or the toString method of the {@link ProbeFunc}.
@@ -19,7 +20,7 @@ public class FeaturesLabelProvider extends LabelProvider {
     if (element instanceof Category) {
       return ((Category) element).getName();
     }
-    else return ((ProbeFunc<Integer>) element).toString();
+    else return ((ImageFunc) element).toString();
   }
 
 }

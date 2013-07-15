@@ -16,13 +16,13 @@ import org.eclipse.swt.widgets.Button;
  */
 public class NeighbourhoodSelectionListener implements SelectionListener {
 
-  private Class<? extends PropertyController> mKey = null;
+  private Class<? extends PropertyController<?>> mKey = null;
   
   /**
    * Sets the current property we are dealing with.
    * @param key
    */
-  public void setProperty(Class<? extends PropertyController> key) {
+  public void setProperty(Class<? extends PropertyController<?>> key) {
     mKey = key;
   }
 

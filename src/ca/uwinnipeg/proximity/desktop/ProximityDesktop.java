@@ -111,6 +111,7 @@ public class ProximityDesktop extends ApplicationWindow {
   private Action actnIntersection;
   private Action actnCompliment;
   private Action actnDifference;
+  private Action actnUpperApprox;
   
   private Action actnPointer;
   private Action actnRectangle;
@@ -163,10 +164,10 @@ public class ProximityDesktop extends ApplicationWindow {
   private NeighbourhoodSelectionListener mNeighbourhoodsListener = new NeighbourhoodSelectionListener();
   private Button mNeighbourhoodButton;
   
-  private Class<? extends PropertyController> mProperty = null;
+  private Class<? extends PropertyController<?>> mProperty = null;
   
-  private Map<Class<? extends PropertyController>, Integer> mProgress = 
-      new HashMap<Class<? extends PropertyController>, Integer>();
+  private Map<Class<? extends PropertyController<?>>, Integer> mProgress = 
+      new HashMap<Class<? extends PropertyController<?>>, Integer>();
   private ProgressBar mProgressBar;
   
   private Text mDegreeText;  
@@ -356,7 +357,7 @@ public class ProximityDesktop extends ApplicationWindow {
    * canvas.
    * @param key
    */
-  public void setProperty(Class<? extends PropertyController> key) {
+  public void setProperty(Class<? extends PropertyController<?>> key) {
     mProperty = key;
     
     canvas.setProperty(key);
@@ -393,7 +394,7 @@ public class ProximityDesktop extends ApplicationWindow {
     }
 
     // disable the spinner when the key is null enable otherwise
-    mEpsilonSpinner.setEnabled(key != null);
+    mEpsilonSpinner.setEnabled(key != null && key != UpperApprox.class);
     
     // neighbourhoods
     mNeighbourhoodButton.setEnabled(key != null && key != NeighbourhoodController.class);
@@ -413,7 +414,7 @@ public class ProximityDesktop extends ApplicationWindow {
    * @param key
    * @param value
    */
-  public void setProgress(Class<? extends PropertyController> key, int value) {
+  public void setProgress(Class<? extends PropertyController<?>> key, int value) {
     mProgress.put(key, value);
     
     // update the progress bar if this is the current property
@@ -600,6 +601,7 @@ public class ProximityDesktop extends ApplicationWindow {
       propertyBarManager.add(actnIntersection);
       propertyBarManager.add(actnCompliment);
       propertyBarManager.add(actnDifference);
+      propertyBarManager.add(actnUpperApprox);
       propertyBarManager.update(false);
       
       // select the first action
@@ -770,6 +772,8 @@ public class ProximityDesktop extends ApplicationWindow {
           new PropertyAction("Properties.Compliment.text", ComplimentController.class);
       actnDifference = 
           new PropertyAction("Properties.Difference.text", DifferenceController.class);
+      actnUpperApprox = 
+          new PropertyAction("Properties.UpperApprox.text", UpperApprox.class);
     
     // tools
     actnPointer = new PointerTool.Action();

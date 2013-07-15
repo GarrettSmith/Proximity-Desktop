@@ -9,17 +9,18 @@ import java.util.Map;
 import java.util.Set;
 
 import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * A category of {@link ProbeFunc}s with a name.
  * @author Garrett Smith
  *
  */
-public class Category<T> {
+public class Category {
   
   private String mName;
   
-  private Map<ProbeFunc<T>, Boolean> mFuncs = new HashMap<ProbeFunc<T>, Boolean>();
+  private Map<ImageFunc, Boolean> mFuncs = new HashMap<ImageFunc, Boolean>();
  
   /**
    * Creates a new category with the given name.
@@ -49,7 +50,7 @@ public class Category<T> {
    * @param func
    * @param enabled
    */
-  public void set(ProbeFunc<T> func, boolean enabled) {
+  public void set(ImageFunc func, boolean enabled) {
     mFuncs.put(func, enabled);
   }
   
@@ -57,7 +58,7 @@ public class Category<T> {
    * Removes the given {@link ProbeFunc} from the category.
    * @param func
    */
-  public void remove(ProbeFunc<T> func) {
+  public void remove(ImageFunc func) {
     mFuncs.remove(func);
   }
   
@@ -66,7 +67,7 @@ public class Category<T> {
    * @param func
    * @return
    */
-  public boolean contains(ProbeFunc<T> func) {
+  public boolean contains(ImageFunc func) {
     return mFuncs.containsKey(func);
   }
   
@@ -74,7 +75,7 @@ public class Category<T> {
    * Returns a set of all the {@link ProbeFunc}s in the category.
    * @return
    */
-  public Set<ProbeFunc<T>> getProbeFuncs() {
+  public Set<ImageFunc> getProbeFuncs() {
     return mFuncs.keySet();
   }
   
@@ -82,10 +83,10 @@ public class Category<T> {
    * Returns a set of all {@link ProbeFunc} that are enabled.
    * @return
    */
-  public Set<ProbeFunc<T>> getEnabledProbeFuncs() {
-    Set<ProbeFunc<T>> funcs = mFuncs.keySet();
-    Set<ProbeFunc<T>> enabledFuncs = new HashSet<ProbeFunc<T>>();
-    for (ProbeFunc<T> func: funcs) {
+  public Set<ImageFunc> getEnabledProbeFuncs() {
+    Set<ImageFunc> funcs = mFuncs.keySet();
+    Set<ImageFunc> enabledFuncs = new HashSet<ImageFunc>();
+    for (ImageFunc func: funcs) {
       if (isEnabled(func)) {
         enabledFuncs.add(func);
       }
@@ -106,7 +107,7 @@ public class Category<T> {
    * @param func
    * @return
    */
-  public boolean isEnabled(ProbeFunc<T> func) {
+  public boolean isEnabled(ImageFunc func) {
     return mFuncs.get(func);
   }
   
@@ -115,7 +116,7 @@ public class Category<T> {
    * @param enabled
    */
   public void setEnabled(boolean enabled) {
-    for (ProbeFunc<T> func: mFuncs.keySet()) {
+    for (ImageFunc func: mFuncs.keySet()) {
       mFuncs.put(func, enabled);
     }
   }

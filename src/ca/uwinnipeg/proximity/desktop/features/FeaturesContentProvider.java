@@ -8,7 +8,7 @@ import java.util.Collection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import ca.uwinnipeg.proximity.ProbeFunc;
+import ca.uwinnipeg.proximity.image.ImageFunc;
 
 /**
  * Provides the features and categories for the features pane.
@@ -17,14 +17,14 @@ import ca.uwinnipeg.proximity.ProbeFunc;
  */
 public class FeaturesContentProvider implements ITreeContentProvider  {
   
-  private Collection<Category<Integer>> mCategories;
+  private Collection<Category> mCategories;
 
   public void dispose() {
     // do nothing
   }
 
   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    mCategories = (Collection<Category<Integer>>) newInput;
+    mCategories = (Collection<Category>) newInput;
   }
 
   public Object[] getElements(Object inputElement) {
@@ -32,8 +32,8 @@ public class FeaturesContentProvider implements ITreeContentProvider  {
   }
 
   public Object[] getChildren(Object parentElement) {
-    if (parentElement instanceof Category<?>) {
-      return ((Category<Integer>) parentElement).getProbeFuncs().toArray();
+    if (parentElement instanceof Category) {
+      return ((Category) parentElement).getProbeFuncs().toArray();
     }
     else {
       return null;
@@ -41,9 +41,9 @@ public class FeaturesContentProvider implements ITreeContentProvider  {
   }
 
   public Object getParent(Object element) {
-    if (element instanceof ProbeFunc<?>) {
-      for (Category<Integer> cat : mCategories) {
-        if (cat.contains((ProbeFunc<Integer>) element)) {
+    if (element instanceof ImageFunc) {
+      for (Category cat : mCategories) {
+        if (cat.contains((ImageFunc) element)) {
           return cat;
         }
       }
@@ -53,7 +53,7 @@ public class FeaturesContentProvider implements ITreeContentProvider  {
   }
 
   public boolean hasChildren(Object element) {
-    if (element instanceof Category<?>) {
+    if (element instanceof Category) {
       return !((Category) element).isEmpty();
     }
     else {

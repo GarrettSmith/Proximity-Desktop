@@ -16,9 +16,9 @@ import ca.uwinnipeg.proximity.desktop.ProximityDesktop;
  */
 public class PropertyAction extends Action {
   
-  private Class<? extends PropertyController> mKey;
+  private Class<? extends PropertyController<?>> mKey;
   
-  public PropertyAction(String textKey, Class<? extends PropertyController> key) {
+  public PropertyAction(String textKey, Class<? extends PropertyController<?>> key) {
     super(ProximityDesktop.getBundle().getString(textKey), Action.AS_RADIO_BUTTON);
     mKey = key;
   }

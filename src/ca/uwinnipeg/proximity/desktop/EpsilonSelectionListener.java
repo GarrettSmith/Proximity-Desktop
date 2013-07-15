@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Spinner;
 public class EpsilonSelectionListener implements SelectionListener {
   
   private Preferences mPref  = Preferences.userRoot().node("proximity-system").node("epsilon");
-  private Class<? extends PropertyController> mKey = null;
+  private Class<? extends PropertyController<?>> mKey = null;
   
   /**
    * Sets the key for the property we are currently working with.
    * @param key
    */
-  public void setProperty(Class<? extends PropertyController> key) {
+  public void setProperty(Class<? extends PropertyController<?>> key) {
     mKey = key;
   }
   
