@@ -67,7 +67,12 @@ public class AboutDialog extends Dialog {
     // the version
     Label lblVersion = new Label(mainFrame, SWT.NONE);
     lblVersion.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
-    lblVersion.setText("1.0");
+    lblVersion.setText("2.0");
+    
+    // the release date
+    Label lblDate = new Label(mainFrame, SWT.NONE);
+    lblDate.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 1, 1));
+    lblDate.setText("01/17/2014");
     
     // the description sentence for the program
     Label lblDescription = new Label(mainFrame, SWT.NONE);
